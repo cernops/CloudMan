@@ -1,0 +1,64 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!DOCTYPE HTML>><HTML><HEAD>
+<META content="text/html; charset=windows-1252" http-equiv="Content-Type">
+</HEAD>
+<BODY><PRE>&lt;public:component&gt;
+&lt;public:attach event="onpropertychange" onevent="doFix()" /&gt;
+
+&lt;script type="text/javascript"&gt;
+
+if (typeof blankImg == 'undefined') var blankImg = 'blank.gif';
+
+
+var f = 'DXImageTransform.Microsoft.AlphaImageLoader';
+
+function filt(s, m)
+{
+ if (filters[f])
+ {
+  filters[f].enabled = s ? true : false;
+  if (s) with (filters[f]) { src = s; sizingMethod = m }
+ }
+ else if (s) style.filter = 'progid:'+f+'(src="'+s+'",sizingMethod="'+m+'")';
+}
+
+function doFix()
+{
+ // Assume IE7 is OK.
+ if (!/MSIE (5\.5|6\.)/.test(navigator.userAgent) ||
+  (event &amp;&amp; !/(background|src)/.test(event.propertyName))) return;
+
+ var bgImg = currentStyle.backgroundImage || style.backgroundImage;
+
+ if (tagName == 'IMG')
+ {
+  if ((/\.png$/i).test(src))
+  {
+   if (currentStyle.width == 'auto' &amp;&amp; currentStyle.height == 'auto')
+    style.width = offsetWidth + 'px';
+   filt(src, 'scale');
+   src = blankImg;
+  }
+  else if (src.indexOf(blankImg) &lt; 0) filt();
+ }
+ else if (bgImg &amp;&amp; bgImg != 'none')
+ {
+  if (bgImg.match(/^url[("']+(.*\.png)[)"']+$/i))
+  {
+   var s = RegExp.$1;
+   if (currentStyle.width == 'auto' &amp;&amp; currentStyle.height == 'auto')
+    style.width = offsetWidth + 'px';
+   style.backgroundImage = 'none';
+   filt(s, 'crop');
+   // IE link fix.
+   for (var n = 0; n &lt; childNodes.length; n++)
+    if (childNodes[n].style) childNodes[n].style.position = 'relative';
+  }
+  else filt();
+ }
+}
+
+doFix();
+
+&lt;/script&gt;
+&lt;/public:component&gt;</PRE></BODY></HTML>

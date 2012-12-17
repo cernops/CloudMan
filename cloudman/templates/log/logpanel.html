@@ -1,0 +1,49 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}stylesheet/listTable.css" />
+  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}stylesheet/common.css" />
+  <link type="text/css" rel="stylesheet" href="{{ MEDIA_URL }}stylesheet/Tooltip.css" />
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/Tooltip.js"></script> 
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/general.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/table_sort_filter.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/jquery-1.7.1.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/selectmultiple.js"></script>
+</head>
+<body id="databody">
+{% include "base/search.html" %}
+{% load filters%}
+    <pre style="white-space:normal;text-align:center;"> Change Log(Total:{{changeLogList|length}}) </pre>
+    <center>
+        <table class="autosort" id='logtable' border="1" align="center" style="table-layout: auto;">
+         <thead>
+            <tr>
+              <th name="tcol7" id="tcol7" class="table-sortable:ignorecase">Date</th>
+              <th name="tcol1" id="tcol1" class="table-sortable:ignorecase">Category (Name)</th>
+              <th name="tcol3" id="tcol3" class="table-sortable:ignorecase">Operation</th>
+              <th name="tcol5" id="tcol5" class="table-sortable:ignorecase">Log</th>
+              <th name="tcol4" id="tcol4" class="table-sortable:ignorecase">Comment</th>
+              <th name="tcol6" id="tcol6" class="table-sortable:ignorecase">User</th>
+            </tr>
+         </thead>
+         <tbody>
+         {% for oneRow in changeLogList %}
+            {% if  forloop.counter|divisibleby:"2" %}
+                <tr class="odd" text="wrap">
+            {% else %}
+                <tr class="even" text="wrap">
+            {% endif %}
+              <td name="tcol7" id="tcol7" scope="row" nowrap="nowrap">{{ oneRow.datetime }}</td>
+              <td name="tcol1" id="tcol1" scope="row" text="wrap">{{ oneRow.category }} <br/><b>{{ oneRow.name }}</b></td>
+              <td name="tcol3" id="tcol3" scope="row" text="wrap">{{ oneRow.operation }}</td>
+              <td name="tcol5" id="tcol5" scope="row" text="wrap"><span class="tooltip" onmouseover='tooltip.pop(this,wordwrap("{{oneRow.sys_comment}}"))'> {{ oneRow.sys_comment|truncchar:100|safe	}}</span></td>
+              <td name="tcol4" id="tcol4" scope="row" text="wrap">{{ oneRow.comment }}</td>
+              <td name="tcol6" id="tcol6" scope="row" text="wrap">{{ oneRow.user }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+        </table>
+    </center>
+</body>
+</html>

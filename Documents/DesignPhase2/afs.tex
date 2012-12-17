@@ -1,0 +1,32 @@
+At the time of writing this document, AFS resources at CERN are managed like this:
+
+\begin{itemize}
+\item the AFS service provide so called "project spaces"
+\item in 1st approximation project spaces are defined by a project name, e.g. "atlas", a path, e.g. "/afs/cern.ch/atlas", and a quota, "e.g. 10TB"
+\item the management of the project spaces is outsourced to so-called project admins
+\item being a project admin basically means being member of the AFS group "\_projectname\_", e.g. "\_atlas\_"
+\item project admin's task include
+\begin{itemize}
+    \item creating/deleting different types of volumes
+    \item managing ACLs
+    \item managing readonly volumes
+\end{itemize}
+\item tool to manage all this is afs\_admin (running it as an admin of a project w/o any option will list all the subcommands)    
+\end{itemize}
+
+The AFS service managers see a possible benefit in managing at least parts of the AFS resource~\cite{arne}. In particular:
+
+\begin{itemize}
+\item quicker overview of the managed AFS project space
+\item easier to execute specific commands (e.g. if CloudMan "knows" to required parameters and can do some sanity checking)
+\end{itemize}
+
+Requirements for a potential web-interface include:
+
+\begin{itemize}
+\item CloudMan cannot be the primary source of any information, so it must be able to retrieve information from somewhere else (like parsing a file or running a command)
+\item CloudMan must be able to somehow trigger a authenticated command (afs\_admin) on behalf of the user
+\item CloudMan must be able to give feedback to the user if a command succeeded or not
+\item extending/changing afs\_admin should not require changes in CloudMan and it should support the full command set
+\item AFS project administration is based on AFS groups, not e-groups, so CloudMan needs to either grab that info from the AFS group or establish a sync from AFS into e-groups 
+\end{itemize}

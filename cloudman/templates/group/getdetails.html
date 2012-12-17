@@ -1,0 +1,62 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Group Detailed Information</title>
+  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}stylesheet/listTable.css" />
+  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}stylesheet/common.css" />
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/general.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/table_sort_filter.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/selectmultiple.js"></script>
+</head>
+<body id="databody">
+<form name="dataForm" id="dataForm">
+  <pre style="white-space:normal:text-align:center;"> <center>Detailed Information of Group <br/> Name: {{ groupName }} &nbsp; &nbsp; &nbsp; Description: {{ groupInfo.description }} &nbsp; &nbsp; &nbsp; Admin E-Group: {{ groupInfo.admin_group }}</center> </pre>
+
+  <pre style="white-space:normal;text-align:center;"> Top Allocations for this Group </pre>
+   <center>
+   {% if tpAllocNames|length == 0 %}
+      None
+   {% endif %}
+   {% for oneRow in tpAllocNames %}
+   {% if forloop.counter == tpAllocNames|length %}
+     <a class="links" href="/cloudman/toplevelallocation/getdetails?name={{ oneRow }}" style="cursor:pointer;"> {{ oneRow }} </a> &nbsp; 
+   {% else %}
+     <a class="links" href="/cloudman/toplevelallocation/getdetails?name={{ oneRow }}" style="cursor:pointer;"> {{ oneRow }}</a>, &nbsp;
+   {% endif %}
+   {% endfor %}
+   </center>
+  <br/>
+  <pre style="white-space:normal;text-align:center;"> Project Allocations for this Group </pre>
+   <center>
+   {% if prAllocNames|length == 0 %}
+      None
+   {% endif %}
+   {% for oneRow in prAllocNames %}
+   {% if forloop.counter == prAllocNames|length %}
+     <a class="links" href="/cloudman/projectallocation/getdetails?name={{ oneRow }}" style="cursor:pointer;"> {{ oneRow }} </a> &nbsp;
+   {% else %}
+     <a class="links" href="/cloudman/projectallocation/getdetails?name={{ oneRow }}" style="cursor:pointer;"> {{ oneRow }} </a>, &nbsp;
+   {% endif %}
+   {% endfor %}
+   </center>
+  <br/>
+  <pre style="white-space:normal;text-align:center;"> Group Allocations for this group </pre>
+   <center>
+   {% if grAllocNames|length == 0 %}
+      None
+   {% endif %}
+   {% for oneRow in grAllocNames %}
+   {% if forloop.counter == grAllocNames|length %}
+     <a class="links" href="/cloudman/groupallocation/getdetails?name={{ oneRow }}" style="cursor:pointer;">{{ oneRow }}</a> &nbsp;
+   {% else %}
+     <a class="links" href="/cloudman/groupallocation/getdetails?name={{ oneRow }}" style="cursor:pointer;">{{ oneRow }}</a>, &nbsp;
+
+   {% endif %}
+   {% endfor %}
+   </center> 
+   {% include "log/logshow.html"%}   
+   
+</form>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Top Level Allocation Names</title>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/general.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/jquery-1.7.1.js"></script>
+  <script type="text/javascript">
+    $(function() {
+      $("#tpallocname").change(onTpAllocChange);
+    });
+
+    var onTpAllocChange = function(){
+        tpAllocElem = getElement("tpallocname");
+        if (tpAllocElem.selectedIndex <= 0){
+            getElement("tpallocdetail").innerHTML = "";
+        }else{
+            $("#tpallocdetail").load('/cloudman/toplevelallocation/getdetails?name=' + escape(tpAllocElem.options[tpAllocElem.selectedIndex].value));
+        }
+    };
+  </script>
+</head>
+<body id="databody">
+  <fieldset>
+  <legend>Top Level Allocation Name</legend>
+  <dl style="top:0px;">
+   <dd><select name='tpallocname' id='tpallocname' style="width:140px;" class="textbox">
+       <option value="---Select---">---Select---</option>
+       {% for oneRow in tpAllocNameList %}
+         <option value="{{ oneRow.name }}">{{ oneRow.name }}</option>
+       {% endfor %}
+       </select>
+   </dd>
+  </dl>
+ </fieldset>
+ <br/>
+ <fieldset>
+  <legend>Top Level Allocation Information</legend>
+  <div id="tpallocdetail" name="tpallocdetail" style="display:block;left:0px;">
+  </div>
+ </fieldset>
+</body>
+</html>

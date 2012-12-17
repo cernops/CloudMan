@@ -1,0 +1,23 @@
+<script type="text/javascript">
+   $(document).ready(function()
+   {
+	 $('#search').keyup(function()
+	 {
+		searchMultiTable($(this).val());
+	 	$("tr[class=collapse]").hide();	
+	 });
+   });
+   addEvent(window, 'load', initSearchBox, false);
+   function initSearchBox() 
+   {
+    	var searchInput = document.getElementById('search');
+	    addEvent(searchInput, 'focus', clearDefaultText, false);
+	    addEvent(searchInput, 'blur', replaceDefaultText, false);
+	    if (searchInput.value != '')
+	    	searchInput.defaultText = searchInput.value;
+   }
+</script>
+
+<pre style="text-align:RIGHT;">
+	<input type="text"  id="search" size=10 value="Search" class="cleardefault"/>
+</pre>

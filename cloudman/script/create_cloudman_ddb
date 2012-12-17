@@ -1,0 +1,51 @@
+#!/usr/bin/python
+
+import MySQLdb
+import sys
+from ConfigParser import ConfigParser, NoSectionError
+config = ConfigParser()
+config_file = '/etc/cloudman/config'
+read_files = config.read([config_file])
+if not read_files:
+    raise Exception("Could not read config file : %s"%config_file)
+    exit()
+#Read the config file /etc/cloudman/config and get the database parameter
+try:
+    USER = config.get('database', 'USER')
+    PASSWORD = config.get('database', 'PASSWORD')
+    HOST = config.get('database', 'HOST')
+    PORT = config.get('database', 'PORT')
+    NAME = config.get('database', 'NAME')
+    DB_SCHEMA_FILE = config.get('database','DB_SCHEMA_FILE')
+except NoSectionError, e:
+    raise Exception(e)
+    exit()
+
+##Here Check if the Databse Already exist if it already exist then exit from the script
+try:
+    db= MySQLdb.connect(host=HOST,user=USER,passwd=PASSWORD,db=NAME)
+    print 'Database:%s Already Exist' %NAME
+    exit()
+except MySQLdb.Error , e:
+    print 'Datbase:%s does not exist going to create it' %NAME
+##Here if the database does not exist create the database
+try:
+    db= MySQLdb.connect(host=HOST,user=USER,passwd=PASSWORD)
+    cursor = db.cursor()
+    cursor.execute('create database if not exists ' + NAME)
+    cursor.close()
+except MySQLdb.Error , e:
+    print 'Error in creating the Database:%s'%NAME
+    exit()
+
+###Here import the DDB Schema into the newly created database
+
+
+try:
+    db= MySQLdb.connect(host=HOST,user=USER,passwd=PASSWORD,db=NAME)
+    cursor = db.cursor()
+    cursor.execute(open(DB_SCHEMA_FILE,'r').read())
+    cursor.close()
+    print 'Database Schema created Successfully'
+except MySQLdb.Error ,e:
+    print 'Database %s created Successfully But error in creating the Database Schema\nCheck the Database Schema file Manually delete the database and run the script again' %NAME

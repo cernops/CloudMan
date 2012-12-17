@@ -1,0 +1,44 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Regions Name</title>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/general.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/jquery-1.7.1.js"></script>
+  <script type="text/javascript">
+    $(function() {
+      $("#regionname").change(onRegionChange);
+    });
+
+    var onRegionChange = function(){
+        regionElem = getElement("regionname");
+        if (regionElem.selectedIndex <= 0){
+            getElement("regiondetail").innerHTML = "";
+        }else{
+            $("#regiondetail").load('/cloudman/region/getdetails?name=' + escape(regionElem.options[regionElem.selectedIndex].value));
+        }
+    };
+  </script>
+</head>
+<body id="databody">
+  <fieldset>
+  <legend>Region Name</legend>
+  <dl style="top:0px;">
+   <dd><select name='regionname' id='regionname' style="width:140px;" class="textbox">
+       <option value="---Select---">---Select---</option>
+       {% for oneRow in regionsNameList %}
+         <option value="{{ oneRow.name }}">{{ oneRow.name }}</option>
+       {% endfor %}
+       </select>
+   </dd>
+  </dl>
+ </fieldset>
+ <br/>
+ <fieldset>
+  <legend>Region Information</legend>
+  <div id="regiondetail" name="regiondetail" style="display:block;left:0px;">
+  </div>
+ </fieldset>
+</body>
+</html>
+

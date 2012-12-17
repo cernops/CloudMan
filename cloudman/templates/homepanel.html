@@ -1,0 +1,187 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Home Page</title>
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}stylesheet/homepanel.css" />
+<script type="text/javascript" src="{{ MEDIA_URL }}javascript/general.js"></script>
+<script type="text/javascript" src="{{ MEDIA_URL }}javascript/jquery-1.7.1.js"></script>
+<script type="text/javascript" src="{{ MEDIA_URL }}javascript/highcharts.js"></script>
+<script type="text/javascript" src="{{ MEDIA_URL }}javascript/gray.js"></script>
+<script type="text/javascript" src="{{ MEDIA_URL }}javascript/piechart.js"></script>
+<script type="text/javascript">
+   totalRegionHepSpecs = 0;
+   regionsAllocatedHepSpecPer = 0;
+   regionsFreeHepSpecPer = 0;
+   totalTpAllocHepSpecs = 0;
+   tpLevelAllocatedHepSpecPer = 0;
+   tpLevelFreeHepSpecPer = 0;
+
+   $(document).ready(function() {
+       $.ajax( {
+          type: 'get',
+          data: {},
+          url:  '/cloudman/homepagedata/',
+          success: function( result ) {
+             var obj = jQuery.parseJSON(result);
+             if (obj.length <= 0){
+                alert('No Data Available to Draw Pie Charts');
+                getElement("getallregionhepspecspiechart").innerHTML = 'No Data Available to Draw Pie Chart for Total Hep Specs Allocation - All Regions';
+                getElement("gettopallochepspecspiechart").innerHTML = 'No Data Available to Draw Pie Chart for Total Hep Specs - Top Level Allocation'; 
+             }else{
+                for (i=0; i<obj.length; i++){
+                  modelName = obj[i].model;
+                  modelSplit = modelName.split(".");
+                  if (modelSplit[1] == "region"){
+                      totalRegionHepSpecs = round_float(obj[i].fields.totalhepsecs, 3);
+                      regionsAllocatedHepSpecPer = round_float(obj[i].fields.allocatedhepspecper, 3);
+                      regionsFreeHepSpecPer = round_float(obj[i].fields.freehepspecper, 3);
+                  }else if (modelSplit[1] == "toplevelallocation"){
+                      totalTpAllocHepSpecs = round_float(obj[i].fields.totalhepspecs, 3);
+                      tpLevelAllocatedHepSpecPer = round_float(obj[i].fields.allocatedhepspecper, 3);
+                      tpLevelFreeHepSpecPer = round_float(obj[i].fields.freehepspecper, 3);
+                  }
+                }
+                loadRegionHepSpecsChart();
+                loadTpAllocHepSpecsChart();
+             }
+          }
+       });
+   });
+
+   function loadRegionHepSpecsChart(){
+        region_piechart = initPieChart('getallregionhepspecspiechart', 'Total Hepspec Allocation - All Regions <br/> Total : ' + totalRegionHepSpecs+ ' HS06');
+        region_piechart.addSeries({
+	      type: 'pie',
+	      name: 'Regions Share',
+      	      data: [
+                    ['Free', regionsFreeHepSpecPer],
+                    ['Allocated', regionsAllocatedHepSpecPer]
+              ],
+              labels: {
+                formatter: function() {
+                  return Highcharts.numberFormat(this.value, 3);
+                }
+              },
+              cursor:'pointer',
+              events: {
+	            click: function(event) {
+                       openNewWinLinkUrl('/cloudman/region/listonlynames/');
+	      	    }
+              },
+              showInLegend: false,
+              allowPointSelect: true,
+              legendItemClick: false
+        }, true);
+
+    }
+
+    function loadTpAllocHepSpecsChart(){
+        region_piechart = initPieChart('gettopallochepspecspiechart', 'Total Hepspec - Top Level Allocation <br/> Total : ' + totalTpAllocHepSpecs + ' HS06');
+        region_piechart.addSeries({
+              type: 'pie',
+              name: 'Top Level Allocations Share',
+              data: [
+                    ['Free', tpLevelFreeHepSpecPer],
+                    ['Allocated', tpLevelAllocatedHepSpecPer]
+              ],
+              cursor:'pointer',
+              events: {
+                    click: function(event) {
+                       openNewWinLinkUrl('/cloudman/toplevelallocation/listonlynames/');
+                    }
+              },
+              showInLegend: false,
+              allowPointSelect: true,
+              legendItemClick: false
+        }, true);
+    }
+
+</script>
+<!--[if IE]>
+        <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}stylesheet/ie_special.css" />
+<![endif]-->
+</head>
+    <body >
+        <div id="wrapper">
+            <div id="content">
+                <div id="groupslisttable" style="border:0px;border-color:white;">
+	         {% if anyRolePresent %}
+        	    <table>
+	             {% if regionManagerRolePresent %}
+        	      <tr>
+	               <td class="infotable" align="center">Regions managed by you
+        	       </td>
+	               <td class="infotable" align="center">{% for oneRegion in regionManagerRoles %}
+                                  <a class="links" href="region?name={{ oneRegion}}">{{ oneRegion }}</a> &nbsp; &nbsp;
+                                  {% endfor %}
+        	       </td>
+	              </tr>
+        	     {% endif %}
+
+	             {% if projectManagerRolePresent %}
+        	      <tr>
+	               <td class="infotable" align="center">Projects managed by you</td>
+        	       <td class="infotable" align="center">{% for oneProject in projectManagerRoles %}
+                                  <a class="links" href="project/getdetails?name={{ oneProject }}">{{ oneProject }}</a> &nbsp; &nbsp;
+                                  {% endfor %}
+	               </td>
+        	     </tr>
+	            {% endif %}
+        	    {% if groupManagerRolePresent %}
+	             <tr>
+        	      <td class="infotable" align="center">Groups managed by you</td>
+	              <td class="infotable" align="center">{% for oneGroup in groupManagerRoles %}
+                                  <a class="links" href="group/getdetails?role=manager&name={{ oneGroup }}">{{ oneGroup }}</a> &nbsp; &nbsp;
+                                  {% endfor %}
+        	      </td>
+	             </tr>
+        	    {% endif %}
+	            {% if groupUserRolePresent %}
+        	     <tr>
+	              <td class="infotable" align="center">Groups you are member of</td>
+        	      <td class="infotable" align="center">{% for oneGroup in groupUserRoles %}
+                                  <a class="links" href="group/getdetails?role=user&name={{ oneGroup }}">{{ oneGroup }}</a> &nbsp; &nbsp;
+                                  {% endfor %}
+	              </td>
+        	     </tr>
+	           {% endif %}
+        	  </table>
+	        {% else %}
+	          Roles: Sorry, you do not have any privileges currently.</p>
+        	{% endif %}
+	        </div>
+                <div id="rightnow">
+                   <h3 class="reallynow">
+                     <span>Right Now</span>
+                     <br />
+                   </h3>
+                    <p class="youhave">There are <a class="links" href="#" onClick="openNewWinLinkUrl('/cloudman/region/list/');return false;" style="cursor:pointer;"> {{ regionsCount }} Regions </a>, <a class="links" href="#" onClick="openNewWinLinkUrl('/cloudman/zone/list/');return false;" style="cursor:pointer;"> {{ zonesCount }} Zones </a> and <a class="links" href="#" onClick="openNewWinLinkUrl('/cloudman/group/list/');return false;" style="cursor:pointer;"> {{ groupsCount }} Groups </a>
+                    </p>
+                </div>
+                
+                
+              <div id="infowrap">
+              <div id="infobox">
+                <h3>Regions Allocation</h3>
+                 <div id="getallregionhepspecspiechart" class="image" style="overflow:auto;float:left;margin-left:8px;width:360px;height:300px;" ></div>
+              </div>
+              <div id="infobox">
+                <h3>Top Level Allocation</h3>
+                  <div id="gettopallochepspecspiechart" class="image" style="overflow:auto;float:left;width:360px;height:300px;" ></div>
+              </div>
+              </div> 
+           </div>
+           <div id="rightnow">
+                   <h3 class="reallynow">Change Log in the Resource Manager<br /></h3>
+                   <iframe scrolling=auto id="dataframe" name="dataframe" src="/cloudman/log/logpanel" width="100%" height="260px" frameborder="0" ></iframe>                    
+           </div>
+           <div id="rightnow">
+                   <h3 class="reallynow">Issues<br /></h3>
+                   <iframe scrolling=auto id="dataframe" name="dataframe" src="/cloudman/log/issuepanel" width="100%" height="260px" frameborder="0" ></iframe>                    
+           </div>
+                                    
+            </div>
+       </div>
+</body>
+</html>

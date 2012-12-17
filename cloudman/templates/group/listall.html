@@ -1,0 +1,83 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Groups List</title>
+  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}stylesheet/listTable.css" />
+  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}stylesheet/common.css" />
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/general.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/selectmultiple.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/jquery-1.7.1.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/selectmultiple.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/table_sort_filter.js"></script>
+  <script type="text/javascript">
+   manyTimesClick = false;
+   function getGroupDetails(groupName){
+     if (!manyTimesClick){
+        loadSplitter();
+     }
+     manyTimesClick = true;
+     $("#BottomPane").load('/cloudman/group/getdetails?name=' + escape(groupName));
+   }
+  </script>
+</head>
+<body id="databody" >
+<div id="MySplitter">
+
+<div id="TopPane">
+{% include "base/search.html" %}
+{% include "base/deleteForm.html" %}
+{% load filters%}
+<form name="dataForm" id="dataForm"  action="/cloudman/group/deletemultiple/" method="post" class="niceform">{% csrf_token %} 
+  <input type="hidden" name="name_list" id="name_list" value="">  	
+  <pre style="white-space:normal;text-align:center;"> Groups List (Managed by you:{{numManaged}} Total:{{ groupsList|length }}) </pre>
+  <center>
+  	<input type="button" title='Add new group' name="add" value="Add Group" style="margin-bottom:3px;" onClick="self.location.href = '/cloudman/group/add/';"/>
+  	<input type="button" title='Show all group' name="add" value="Show ALL" style="margin-bottom:3px;" onClick="toggleTableList(this,'grouptable','Group')"/>
+  </center>
+  <table class="autosort" border="1" id='grouptable' align="center" style="table-layout: auto;">
+  <thead>
+   <tr>
+    <th name="tcol1" id="tcol1" class="table-sortable:ignorecase">Group Name</th>
+    <th name="tcol2" id="tcol2" class="table-sortable:ignorecase">Description</th>
+    <th name="tcol3" id="tcol3" class="table-sortable:ignorecase">Admin E-Group</th>
+    <th name="tcol4" id="tcol4">  &nbsp&nbsp&nbsp&nbsp&nbsp 
+	 {% if groupsList and showMultiDeleteOption %}
+		 <a href="#" style="cursor: pointer" onClick="javascript:submitForm('dataForm','checkBoxGroup[]' ,'Select groups to delete','Do you really want to delete all the selected groups')">
+		   <img src="{{ MEDIA_URL }}images/remove.png" height="15px" width="15px" align="center" title="Delete multiple groups" border="0"/>
+		 </a>
+		 <input name="checkAll" type="checkbox" id="checkAll" style="cursor: pointer" title='CheckAll/UnCheckAll' value="Check All" onclick="javascript:checkThemAll(this,'dataForm','checkBoxGroup[]');" /> 
+	 {% endif %} 	 
+	</th>
+   </tr>
+  </thead>
+  <tbody>
+	{% for oneRow in groupsList %}
+    
+    <tr  {% if not deleteDict|dictvalue:oneRow.name %} id='hidden' style="display:none" {%endif%} class="{% cycle 'even' 'odd' %}" text="wrap">
+	    <td name="tcol1" id="tcol1" scope="row" text="wrap"><a class="links" href="/cloudman/group/getdetails?name={{oneRow.name}}" style="cursor:pointer;">{{ oneRow.name }}</a></td>
+	    <td name="tcol2" id="tcol2" scope="row" text="wrap">{{ oneRow.description }}</td>
+	    <td name="tcol3" id="tcol3" scope="row" text="wrap">{{ oneRow.admin_group }}</td>
+	    <td name="tcol4" id="tcol4" scope="row" text="wrap">
+	    {% if deleteDict|dictvalue:oneRow.name %}
+		    <a href="/cloudman/group/update?name={{ oneRow.name }}" style="cursor: pointer">
+		      <img src="{{ MEDIA_URL }}images/edit.png" height="15px" width="15px" align="center" title="Edit {{ oneRow.name }}" border="0"/>
+		    </a>
+			<a href="#" style="cursor: pointer" onClick="deleteItem('/cloudman/group/delete/','name={{ oneRow.name }}','Do you really want to delete')">
+		      <img src="{{ MEDIA_URL }}images/remove.png" height="15px" width="15px" align="center" title="Delete {{ oneRow.name }}" border="0"/>
+		    </a>   
+		    <input name="checkBoxeGroup[]" type="checkbox" id="checkBoxGroup[]" value="{{ oneRow.name}}" />
+		{% else %}
+	     	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		{% endif%}
+	    </td>
+    </tr>
+   {% endfor %}
+  </tbody>
+  </table>
+</form>
+</div>
+<div id="BottomPane">
+</div>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>CLOUDMAN Portal</title>
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}stylesheet/main.css" />
+<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}stylesheet/jkmegamenu.css" />
+<!--[if IE]>
+        <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}stylesheet/ie_special.css" />
+<![endif]-->
+<script type="text/javascript" src="{{ MEDIA_URL }}javascript/general.js"></script>
+<script type="text/javascript" src="{{ MEDIA_URL }}javascript/jquery-1.7.1.js"></script>
+<script type="text/javascript" src="{{ MEDIA_URL }}javascript/jkmegamenu.js"></script>
+<script type="text/javascript">
+jkmegamenu.definemenu("menuresources", "optionsresources", "mouseover");
+jkmegamenu.definemenu("menuallocations", "optionsallocations", "mouseover");
+jkmegamenu.definemenu("menulog", "optionslog", "mouseover");
+window.onresize = resizeFunc;
+function resizeFunc(){
+   var viewportwidth;
+   var viewportheight;
+   // the more standards compliant browsers (mozilla/netscape/opera/IE7) use window.innerWidth and window.innerHeight
+   if (typeof window.innerWidth != 'undefined'){
+      viewportwidth = window.innerWidth,
+      viewportheight = window.innerHeight
+   }  
+   // IE6 in standards compliant mode (i.e. with a valid doctype as the first line in the document)
+   else if (typeof document.documentElement != 'undefined'
+     && typeof document.documentElement.clientWidth !=
+     'undefined' && document.documentElement.clientWidth != 0){
+       viewportwidth = document.documentElement.clientWidth,
+       viewportheight = document.documentElement.clientHeight
+   }// older versions of IE
+   else{
+       viewportwidth = document.getElementsByTagName('body')[0].clientWidth,
+       viewportheight = document.getElementsByTagName('body')[0].clientHeight
+   }
+   getElement("dataframe").style.minHeight = (viewportheight - 150) + "px";
+   //document.write('<p>Your viewport width is '+viewportwidth+'x'+viewportheight+'</p>');
+}
+</script>
+</head>
+<body id="page" onLoad="resizeFunc();">
+      <div id="banner" align="center" style="border:0px;height:35px">
+           <table width=100% border="0" cellspacing="0" style="border-color:blue;">
+           <tr align="center">
+                <td style="border:0px;" width="20%" align="left" valign="top" height="35px">
+                    <img alt="baba" src="{{ MEDIA_URL }}images/CERN-logo.jpg" style="left:0px;height:55px;border:0;"/>
+                </td>
+                <td style="border:0px;" width="50%" align="center" height="35px">
+                    <h3><font size="5" face="century gothic" style="color:white;">
+                    CLOUDMAN PORTAL
+                    <br/></font></h3>
+                    <font face="Lucida Calligraphy" style="color:yellow;">
+                     (Welcome to {{ fullName }})
+                    </font>
+                </td>
+                <td style="border:0px;" width="30%" align="right" valign="top" height="35px">
+                    <img alt="baba" src="{{ MEDIA_URL }}images/DAELogo.png" style="left:0px;height:55px;border:0;"/>
+                </td>
+         </tr></table>
+       </div>
+       <div class="wrapper">
+	<div class="header-b">
+	 <div class="header-bl">
+	  <div class="header-br">
+	   <div id="menu">
+	     <a href="/cloudman/homepanel" target="dataframe">Home<aa class="justpad"></aa></a>
+	     <a href="/cloudman/resourcetype/list/" target="dataframe" id="menuresources">Resources<span></span></a>
+	     <a href="/cloudman/group/list/" target="dataframe">Groups<aa class="justpad"></aa></a>
+	     <a href="/cloudman/project/list/" target="dataframe">Projects<aa class="justpad"></aa></a>
+	     <a href="/cloudman/toplevelallocation/list/" target="dataframe" id="menuallocations">Allocations<span></span></a>
+	     <a href="/cloudman/log/changeloglist/" target="dataframe" id="menulog">Logging<span></span></a>
+	     <a href="https://twiki.cern.ch/twiki/bin/view/CloudServices/ProjectCloudManUserManual" target="dataframe">Documentation<aa class="justpad"></aa></a>
+	     <a href="https://login.cern.ch/adfs/ls/?wa=wsignout1.0" >SignOut</a>
+	     <div id="optionsresources" class="megamenu">
+  	      <div class="column">
+	        <h3>Resources</h3>
+        	<ul>
+                <li><a href="/cloudman/resourcetype/list/" target="dataframe">Resource Types</a></li>
+	        <li><a href="/cloudman/region/list/" target="dataframe">Regions</a></li>
+	        <li><a href="/cloudman/zone/list/" target="dataframe">Zones</a></li>
+	        </ul>
+	      </div>
+         </div>
+         <div id="optionsallocations" class="megamenu">
+              <div class="column">
+                <h3>Allocations</h3>
+                <ul>
+                <li><a href="/cloudman/toplevelallocation/list/" target="dataframe">Top Level</a></li>
+                <li><a href="/cloudman/projectallocation/list/" target="dataframe">Project</a></li>
+                <li><a href="/cloudman/groupallocation/list/" target="dataframe">Group</a></li>
+                </ul>
+              </div>
+         </div>
+         <div id="optionslog" class="megamenu">
+              <div class="column">
+                <h3>Logging</h3>
+                <ul>
+                <li><a href="/cloudman/log/changeloglist/" target="dataframe">Change Log</a></li>
+                <li><a href="/cloudman/log/issuelist/" target="dataframe">Issue</a></li>
+                </ul>
+              </div>
+         </div>
+	    </div>  
+	   </div>
+	  </div>
+	 </div>
+	</div>
+       <br/>
+       <iframe id="dataframe" name="dataframe" src="/cloudman/homepanel" frameborder="0" style="border:none;float:left;">
+       </iframe>
+</script>
+</body>
+</html>
+

@@ -1,0 +1,24 @@
+<script>
+	$(function() {
+		$( "#id_admin_group" ).autocomplete({
+			minLength:4,
+			delay:50,
+			source: function(request, response){
+				$.ajax({
+					url: '/cloudman/group/getegrouplist',
+					dataType: 'json',
+					data: {
+						namecontain: request.term,
+					},
+					success: function(data){
+							response( $.map( data.egroup, function( item ) {
+							return 	{
+									label: item.label										
+								}
+							}));
+					}
+				});
+			}
+		});
+	});
+</script>

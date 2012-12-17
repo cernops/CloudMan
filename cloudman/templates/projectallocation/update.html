@@ -1,0 +1,553 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Edit Project Allocation</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" media="all" href="{{ MEDIA_URL }}stylesheet/niceforms.css" />
+<script type="text/javascript" src="{{ MEDIA_URL }}javascript/general.js"></script>
+<script type="text/javascript" src="{{ MEDIA_URL }}javascript/cloudman.js"></script>
+<script type="text/javascript" src="{{ MEDIA_URL }}javascript/jquery-1.7.1.js"></script>
+{% load filters%}
+{% include "base/convert_unit.html" %}
+<script type="text/javascript">
+  function restoreResourceTypes(){
+     currPrAllocRtElem = getElement("currprallocrt");
+     prAllocRtElem = getElement("prallocallowedrt");
+     for(i=(prAllocRtElem.options.length-1); i>=0; i--){
+         prAllocRtElem.remove(i);
+     }
+     for(i=0; i<currPrAllocRtElem.options.length; i++){
+         prAllocRtElem.options[i] = new Option(currPrAllocRtElem.options[i].value, currPrAllocRtElem.options[i].value, true, true);
+     }
+  }
+  
+  function restoreMetaData()
+  { 	
+    csrftoken = getElement("updateprojectallocationform").csrfmiddlewaretoken.value;
+  	$.ajax( {
+              type: 'post',
+              data: {'allocName':'{{prAllocObject.name}}', 'projectName': '{{prAllocObject.project.name}}', 'csrfmiddlewaretoken': csrftoken},
+              url:  '/cloudman/projectallocation/getattrinfo/',              
+              success: function( result ) 
+              {              	
+                var obj = jQuery.parseJSON(result);                 
+                var str = ''
+                if (obj.length <= 0)
+                {
+                   	alert('No attribute set for the Project Allocation'+ allocName);
+                }
+                else
+                {                    		  		
+		    		for (index=0; index<obj.length; index++)
+		    		{                       		                       		
+                   		attribute = obj[index].attribute;
+                   		value = obj[index].value;                   		 
+                   		str += "<dl><dd>Attribute Name:<input type=text name='attribute_name' readonly='readonly' value='" + attribute + "'></dd>";                       		
+                   		if(value.replace(/\s/g,"") != "")
+                   		{
+                   			var value_list = value.split(' ');                       		
+                   			var option_str = '';                       		                       		                       		                       		
+                   			for(var i=0;i<value_list.length;i++)
+                   			{
+								selected ='' 
+                   				if (obj[index].selected == value_list[i])
+                   					selected='selected';
+                   				option_str += "<option " + selected + " value='"+value_list[i]+"'>"+value_list[i]+"</option>";
+                   			} 
+                   			str += "<dd>Value:<select name='attribute_value'>"+option_str+"</select></dd></dl>";
+                   		}
+                   		else
+                   		{
+                   			str += "<dd>Value:<input type=text name='attribute_value' value='"+obj[index].selected+"'></dd></dl>";
+                   		}                      		                       		                       		
+                  	}                    	
+                }
+                document.getElementById("projectattribute").innerHTML = str;
+              }
+          } );
+    document.getElementById("projectattribute").innerHTML = '';
+  }
+
+  function changeValueType(valueType){
+     if (valueType == 'absolute'){
+       getElement("percentagevaluesdiv").style.display = "none";
+       getElement("absolutevaluesdiv").style.display = "block";
+     }else if (valueType == 'percentage'){
+       getElement("absolutevaluesdiv").style.display = "none";
+       getElement("percentagevaluesdiv").style.display = "block";
+     }
+     getElement("hepspec").value = getElement("currhepspec").value;
+     getElement("memory").value = getElement("currmemory").value;
+     getElement("storage").value = getElement("currstorage").value;
+     getElement("bandwidth").value = getElement("currbandwidth").value;
+     getElement("hepspec_per").value = getElement("currhepspec_per").value;
+     getElement("memory_per").value = getElement("currmemory_per").value;
+     getElement("storage_per").value = getElement("currstorage_per").value;
+     getElement("bandwidth_per").value = getElement("currbandwidth_per").value;
+  }
+
+
+  function formValid(){
+     currName = getElement("currname").value;
+     currHepSpec = getElement("currhepspec").value;
+     currMemory = getElement("currmemory").value;
+     currStorage = getElement("currstorage").value;
+     currBandwidth = getElement("currbandwidth").value;
+     currPrAllocRtElem = getElement("currprallocrt");
+
+     nameElem = getElement("newname");
+
+     hepSpecElem = getElement("hepspec");
+     selHepSpecsUnitElem = getElement("selhepspecsunit");
+     selStorageUnitElem = getElement("selstorageunit");
+     memoryElem = getElement("memory");
+     storageElem = getElement("storage");
+     bandwidthElem = getElement("bandwidth");
+
+     hepSpecPerElem = getElement("hepspec_per");
+     memoryPerElem = getElement("memory_per");
+     storagePerElem = getElement("storage_per");
+     bandwidthPerElem = getElement("bandwidth_per");
+
+     prAllocRtElem = getElement("prallocallowedrt");
+
+     name = trim(nameElem.value);
+     nameElem.value = name;
+     hepSpec = trim(hepSpecElem.value);
+     selHepSpecsUnitValue = trim(selHepSpecsUnitElem.value);
+     hepSpec = convertCPUUnit(hepSpec,selHepSpecsUnitValue)
+     
+     hepSpecElem.value = hepSpec;
+     memory = trim(memoryElem.value);
+     memoryElem.value = memory;
+     storage = trim(storageElem.value);
+     selStorageUnitValue = trim(selStorageUnitElem.value);
+     storage = convertStorageUnit(storage,selStorageUnitValue)	
+     storageElem.value = storage;
+     bandwidth = trim(bandwidthElem.value);
+     bandwidthElem.value = bandwidth;
+
+     hepSpecPer = trim(hepSpecPerElem.value);
+     hepSpecPerElem.value = hepSpecPer;
+     memoryPer = trim(memoryPerElem.value);
+     memoryPerElem.value = memoryPer;
+     storagePer = trim(storagePerElem.value);
+     storagePerElem.value = storagePer;
+     bandwidthPer = trim(bandwidthPerElem.value);
+     bandwidthPerElem.value = bandwidthPer;
+
+     updateSel = false;
+     if (currName != name){
+        if (name == ''){
+           alert('Provide a name to the Project Allocation');
+           return false;
+        }
+        updateSel = true;
+     }
+
+     valueType = '';
+     for (var i = 0; i < document.updateprojectallocationform.valuetype.length; i++) {
+        if (document.updateprojectallocationform.valuetype[i].checked) {
+           valueType = document.updateprojectallocationform.valuetype[i].value;
+           break;
+        }
+     }
+     errorMessage = '';
+     if (valueType == 'absolute'){
+        errorMessage = validateResourceParameters(hepSpec, memory, storage, bandwidth);
+     }else if (valueType == 'percentage'){
+        errorMessage = validateResourceParameters(hepSpecPer, memoryPer, storagePer, bandwidthPer)
+     }
+
+     if (errorMessage != ''){
+        alert(errorMessage);
+        return false;
+     }
+     if (valueType == 'percentage'){ 
+        if (hepSpecPer != ''){
+           hepSpecPer= round_float(hepSpecPer, 3);
+           hepSpecPerElem.value = hepSpecPer;
+           if (getElement("totalhepspec").value == ''){
+              alert('Hepspec for Top Level Allocation is Undefined and so Hepspec for Project Allocation can only be blank');
+              return false;
+           }
+           totalhepspec = parseFloat(getElement("totalhepspec").value);
+           hepSpec = round_float(((hepSpecPer/100) * totalhepspec), 3);
+        }else{
+           hepSpec = '';
+        }
+
+        if (memoryPer != ''){
+           memoryPer= round_float(memoryPer, 3);
+           memoryPerElem.value = memoryPer;
+           if (getElement("totalmemory").value == ''){
+              alert('Memory for Top Level Allocation is Undefined and so Memory for Project Allocation can only be blank');
+              return false;
+           }
+           totalmemory = parseFloat(getElement("totalmemory").value);
+           memory = round_float(((memoryPer/100) * totalmemory), 3);
+        }else{
+           memory = '';
+        }
+
+        if (storagePer != ''){
+           storagePer= round_float(storagePer, 3);
+           storagePerElem.value = storagePer;
+           if (getElement("totalstorage").value == ''){
+              alert('Storage for Top Level Allocation is Undefined and so Storage for Project Allocation can only be blank');
+              return false;
+           }
+           totalstorage = parseFloat(getElement("totalstorage").value);
+           storage = round_float(((storagePer/100) * totalstorage), 3);
+        }else{
+           storage = '';
+        }
+
+        if (bandwidthPer != ''){
+           bandwidthPer= round_float(bandwidthPer, 3);
+           bandwidthPerElem.value = bandwidthPer;
+           if (getElement("totalbandwidth").value == ''){
+              alert('Bandwidth for Top Level Allocation is Undefined and so Bandwidth for Project Allocation can only be blank');
+              return false;
+           }
+           totalbandwidth = parseFloat(getElement("totalbandwidth").value);
+           bandwidth = round_float(((bandwidthPer/100) * totalbandwidth), 3);
+        }else{
+           bandwidth = '';
+        }
+
+     }
+     hepSpecChange = checkNumberParameterChange(currHepSpec, hepSpec);
+     memoryChange = checkNumberParameterChange(currMemory, memory);
+     storageChange = checkNumberParameterChange(currStorage, storage);
+     bandwidthChange = checkNumberParameterChange(currBandwidth, bandwidth);
+
+     if (hepSpec != ''){
+        hepSpec = round_float(hepSpec, 3)
+     }
+
+     if (memory != ''){
+        memory = round_float(memory, 3)
+     }
+
+     if (storage != ''){
+        storage = round_float(storage, 3)
+     }
+
+     if (bandwidth != ''){
+        bandwidth = round_float(bandwidth, 3)
+     }
+     if (hepSpecChange || memoryChange || storageChange || bandwidthChange){
+        updateSel = true;
+     }
+
+     hepSpecElem.value = hepSpec;
+     memoryElem.value = memory;
+     storageElem.value = storage;
+     bandwidthElem.value = bandwidth;
+
+     if (prAllocRtElem.selectedIndex < 0){
+        alert('Atleast one Resource Type should be selected for the Project Allocation');
+        return false;
+     }
+     for(i=0; i<prAllocRtElem.options.length; i++){
+        rtValue = prAllocRtElem.options[i].value;
+        rt_exists = false;
+        for(k=0; k<currPrAllocRtElem.options.length; k++){
+           if (currPrAllocRtElem.options[k].value == rtValue){
+              rt_exists = true;
+              break;
+           }
+        }
+        if (prAllocRtElem.options[i].selected){
+           if (!rt_exists){
+              updateSel = true;
+              break;
+           }
+        }else{
+           if (rt_exists){
+              updateSel = true;
+              break;
+           }
+        }
+     }
+   	updateSel =true
+     if (!updateSel){
+        alert('No Changes done to perform Edit Operation');
+        return false;
+     }
+     return true;
+  }
+
+  function resetDefault(){
+     getElement("newname").value = getElement("currname").value;
+     getElement("hepspec").value = getElement("currhepspec").value;
+     getElement("memory").value = getElement("currmemory").value;
+     getElement("storage").value = getElement("currstorage").value;
+     getElement("bandwidth").value = getElement("currbandwidth").value;
+     getElement("hepspec_per").value = getElement("currhepspec_per").value;
+     getElement("memory_per").value = getElement("currmemory_per").value;
+     getElement("storage_per").value = getElement("currstorage_per").value;
+     getElement("bandwidth_per").value = getElement("currbandwidth_per").value;
+     restoreResourceTypes();
+     restoreMetaData();
+  }
+</script>
+</head>
+<body onLoad="resetDefault();"><div id="container">
+<form name="updateprojectallocationform" id="updateprojectallocationform" action="/cloudman/projectallocation/update/" method="post" class="niceform" onSubmit="return formValid();">{% csrf_token %}
+  <fieldset><legend> Edit Project Allocation {{prAllocName}}</legend>
+   <dl>
+     <dt><label for="newname">Allocation Name</label>:</dt>
+     <dd><input id="newname" type="text" name="newname" maxlength="50" value="{{prAllocObject.name}}"/>
+         <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+           onmouseover="return ShowToolTip('nameToolTip');" onmouseout="return HideToolTip('nameToolTip');" />
+         <div id="nameToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+           Enter Unique Name - Maximum of 50 Characters
+         </div>
+     </dd>
+   </dl>
+    <input type="hidden" name="currname" id="currname" value="{{prAllocObject.name}}">
+    <input type="hidden" name="name" id="name" value="{{prAllocObject.name}}">   
+   <dl>
+     <dt><label for="top_level_allocation">Top level allocation</label>:</dt>
+     <dd> {{prAllocObject.top_level_allocation.name}} </dd>
+   </dl> 
+   <dl>
+     <dt><label for="project">Project</label>:</dt>
+     <dd> {{prAllocObject.project.name}} </dd>
+   </dl>
+   <dl>
+     <dt><label for="Group">Group</label>:</dt>
+     <dd> {{prAllocObject.group.name}} </dd>
+   </dl>
+   <dl>
+      <dt><input type="radio" id="valuetype1" name="valuetype" value="absolute" CHECKED onClick="changeValueType('absolute')"/>
+          Absolute Values
+      </dt>
+      <dd><input type="radio" id="valuetype2" name="valuetype" value="percentage" onClick="changeValueType('percentage')"/>
+          Percentage Values
+      </dd>
+   </dl>
+
+   <div name="absolutevaluesdiv" id="absolutevaluesdiv" style="display:block;">
+   <dl>
+     <dt> <label for="hepspec">Capacity (HS06)</label>: </dt>
+     <dd>
+        {% if prAllocObject.hepspec == None %}
+          <input type="text" name="hepspec" id="hepspec" value=""/>{% displayHepSpecUnit%}
+          <input type="hidden" name="currhepspec" id="currhepspec" value=""/>
+        {% else %}
+          <input type="text" name="hepspec" id="hepspec" value="{{prAllocObject.hepspec}}"/>{% displayHepSpecUnit%}
+          <input type="hidden" name="currhepspec" id="currhepspec" value="{{prAllocObject.hepspec}}"/>
+        {% endif %}
+          <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+                onmouseover="return ShowToolTip('hepspecToolTip');" onmouseout="return HideToolTip('hepspecToolTip');" />
+          <div id="hepspecToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+               Total Resources Capacity - If entered Positive Value greater than 0
+          </div>
+		  <br/>
+		  AutoScale: <input type="checkbox" name="scale" />	
+      </dd>
+   </dl>
+   <dl>
+      <dt> <label for="memory">Memory (MB)</label>: </dt>
+      <dd>
+        {% if prAllocObject.memory == None %}
+          <input type="text" name="memory" id="memory" value=""/>
+          <input type="hidden" name="currmemory" id="currmemory" value=""/>
+        {% else %}
+          <input type="text" name="memory" id="memory" value="{{prAllocObject.memory}}"/>
+          <input type="hidden" name="currmemory" id="currmemory" value="{{prAllocObject.memory}}"/>
+        {% endif %}
+          <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+                onmouseover="return ShowToolTip('memoryToolTip');" onmouseout="return HideToolTip('memoryToolTip');" />
+          <div id="memoryToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+               Total Available Memory in MB - Can be left blank
+          </div>
+       </dd>
+   </dl>
+   <dl>
+      <dt> <label for="storage">Storage (MB)</label>: </dt>
+      <dd>
+         {% if prAllocObject.storage == None %}
+          <input type="text" name="storage" id="storage" value=""/>{% displayStorageUnit%}
+          <input type="hidden" name="currstorage" id="currstorage" value=""/>
+         {% else %}
+          <input type="text" name="storage" id="storage" value="{{prAllocObject.storage}}"/>{% displayStorageUnit%}
+          <input type="hidden" name="currstorage" id="currstorage" value="{{prAllocObject.storage}}"/>
+         {% endif %}
+          <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+                onmouseover="return ShowToolTip('storageToolTip');" onmouseout="return HideToolTip('storageToolTip');" />
+          <div id="storageToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+               Total Available Storage in MB - If entered Positive Value greater than 0
+          </div>
+		  <br/>
+		  AutoScale: <input type="checkbox" name="storagescale" />	
+      </dd>
+    </dl>
+
+    <dl>
+      <dt> <label for="bandwidth">Bandwidth (Mbps)</label>: </dt>
+      <dd>
+         {% if prAllocObject.bandwidth == None %}
+          <input type="text" name="bandwidth" id="bandwidth" value=""/>
+          <input type="hidden" name="currbandwidth" id="currbandwidth" value=""/>
+         {% else %}
+          <input type="text" name="bandwidth" id="bandwidth" value="{{prAllocObject.bandwidth}}"/>
+          <input type="hidden" name="currbandwidth" id="currbandwidth" value="{{prAllocObject.bandwidth}}"/>
+         {% endif %}
+          <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+                onmouseover="return ShowToolTip('bandwidthToolTip');" onmouseout="return HideToolTip('bandwidthToolTip');" />
+          <div id="bandwidthToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+               Total Available Bandwidth in Mbps - Can be left blank
+          </div>
+      </dd>
+    </dl>
+    </div>
+
+   <div name="percentagevaluesdiv" id="percentagevaluesdiv" style="display:none;">
+   <dl>
+     <dt> <label for="hepspec_per">Capacity (%)</label>: </dt>
+     <dd>
+        {% if hepSpecPer == None %}
+          <input type="text" name="hepspec_per" id="hepspec_per" value=""/>
+          <input type="hidden" name="currhepspec_per" id="currhepspec_per" value=""/>
+        {% else %}
+          <input type="text" name="hepspec_per" id="hepspec_per" value="{{hepSpecPer}}"/>
+          <input type="hidden" name="currhepspec_per" id="currhepspec_per" value="{{hepSpecPer}}"/>
+        {% endif %}
+          <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+                onmouseover="return ShowToolTip('hepspecPerToolTip');" onmouseout="return HideToolTip('hepspecPerToolTip');" />
+          <div id="hepspecPerToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+               Total Capacity in Percentage of Top Level Allocation Total Capacity
+          </div>
+          <br/>
+		  AutoScale: <input type="checkbox" name="scale" />	
+      </dd>
+       {% if totalHepSpec == None %}
+          <input type="hidden" name="totalhepspec" id="totalhepspec" value=""/>
+       {% else %}
+          <input type="hidden" name="totalhepspec" id="totalhepspec" value="{{totalHepSpec}}"/>
+       {% endif %}
+   </dl>
+   <dl>
+      <dt> <label for="memory_per">Memory (%)</label>: </dt>
+      <dd>
+        {% if memoryPer == None %}
+          <input type="text" name="memory_per" id="memory_per" value=""/>
+          <input type="hidden" name="currmemory_per" id="currmemory_per" value=""/>
+        {% else %}
+          <input type="text" name="memory_per" id="memory_per" value="{{memoryPer}}"/>
+          <input type="hidden" name="memory_per" id="memory_per" value="{{memoryPer}}"/>
+        {% endif %}
+          <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+                onmouseover="return ShowToolTip('memoryPerToolTip');" onmouseout="return HideToolTip('memoryPerToolTip');" />
+          <div id="memoryPerToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+               Total Memory in Percentage of Top Level Allocation Total Memory
+          </div>
+       </dd>
+       {% if totalMemory == None %}
+          <input type="hidden" name="totalmemory" id="totalmemory" value=""/>
+       {% else %}
+          <input type="hidden" name="totalmemory" id="totalmemory" value="{{totalMemory}}"/>
+       {% endif %}
+   </dl>
+   <dl>
+      <dt> <label for="storage_per">Storage (%)</label>: </dt>
+      <dd>
+         {% if storagePer == None %}
+          <input type="text" name="storage_per" id="storage_per" value=""/>
+          <input type="hidden" name="currstorage_per" id="currstorage_per" value=""/>
+         {% else %}
+          <input type="text" name="storage_per" id="storage_per" value="{{storagePer}}"/>
+          <input type="hidden" name="currstorage_per" id="currstorage_per" value="{{storagePer}}"/>
+         {% endif %}
+          <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+                onmouseover="return ShowToolTip('storagePerToolTip');" onmouseout="return HideToolTip('storagePerToolTip');" />
+          <div id="storagePerToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+               Total Storage in Percentage of Top Level Allocation Total Storage
+          </div>
+          <br/>
+		  AutoScale: <input type="checkbox" name="storagescale" />	
+      </dd>
+       {% if totalStorage == None %}
+          <input type="hidden" name="totalstorage" id="totalstorage" value=""/>
+       {% else %}
+          <input type="hidden" name="totalstorage" id="totalstorage" value="{{totalStorage}}"/>
+       {% endif %}
+    </dl>
+
+    <dl>
+      <dt> <label for="bandwidth_per">Bandwidth (%)</label>: </dt>
+      <dd>
+         {% if bandwidthPer == None %}
+          <input type="text" name="bandwidth_per" id="bandwidth_per" value=""/>
+          <input type="hidden" name="currbandwidth_per" id="currbandwidth_per" value=""/>
+         {% else %}
+          <input type="text" name="bandwidth_per" id="bandwidth_per" value="{{bandwidthPer}}"/>
+          <input type="hidden" name="currbandwidth_per" id="currbandwidth_per" value="{{bandwidthPer}}"/>
+         {% endif %}
+          <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+                onmouseover="return ShowToolTip('bandwidthPerToolTip');" onmouseout="return HideToolTip('bandwidthPerToolTip');" />
+          <div id="bandwidthPerToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+               Total Bandwidth in Percentage of Top Level Allocation Total Bandwidth
+          </div>
+      </dd>
+       {% if totalBandwidth == None %}
+          <input type="hidden" name="totalbandwidth" id="totalbandwidth" value=""/>
+       {% else %}
+          <input type="hidden" name="totalhepspec" id="totalbandwidth" value="{{totalBandwidth}}"/>
+       {% endif %}
+    </dl>
+    </div>
+   
+    <div id="prallocrtlist" name="prallocrtlist" style="display:none;">
+        <select id="currprallocrt" name="currprallocrt" SIZE="5" MULTIPLE>
+        {% for onert in prAllocRTList %}
+        <option value="{{onert}}" SELECTED>{{onert}}</option>
+        {% endfor %}
+        </select>
+     </div>
+
+     <dl>
+      <dt> <label for="prallocallowedrt">Allowed Resource Types</label>: </dt>
+      <dd>
+        <select id="prallocallowedrt" name="prallocallowedrt" SIZE="5" MULTIPLE>
+        {% for onert in prAllocRTList %}
+          <option value="{{onert}}" SELECTED>{{onert}}</option>
+        {% endfor %}
+        </select>
+        <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+           onmouseover="return ShowToolTip('resourceTypesToolTip');" onmouseout="return HideToolTip('resourceTypesToolTip');" />
+        <div id="resourceTypesToolTip" style="width:120px; position:absolute; z-index:20; display:none" class="boxcontent">
+           Displayed Currently Allowed Resource Types as selected, Select or De-select for Changing the list
+        </div>
+      </dd>
+    </dl>
+    <dl>
+     	<dt><label for="comment">Comment</label>:</dt>
+        <dd><textarea id="comment" rows="5" cols="30" name="comment"  ></textarea>
+            <img height="9px" width="9px" src="/media/images/qmark.jpg" style="cursor:pointer"
+               onmouseover="return ShowToolTip('commentToolTip');" onmouseout="return HideToolTip('commentToolTip');" />
+             <div id="commentToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+               Enter Comments about the project allocation(Useful for Logging)- Maximum of 3000 Characters
+             </div>
+        </dd>
+    </dl>
+   <fieldset>
+          <legend>Project Attribute</legend>
+      	  <div id="projectattribute" name="seltoplevelallocation" style="width:650px; overflow:auto; overflow-x:hidden;"></div>
+   </fieldset> 
+    <br/>
+  <center>
+     <input type="button" id="loadcurr" name="loadcurr" value="Reset to Current Values" style="padding: 5px 5px 5px 5px;" onClick="javascript:resetDefault();"/></center>
+  </fieldset>
+  <br/>
+  <fieldset class="action">
+    <input type ="submit" id="submit" name="submit" title="Save" value="Save" style="padding: 5px 5px 5px 5px;" />
+  </fieldset>
+</form>
+</div></body>
+</html>
+

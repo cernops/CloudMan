@@ -1,0 +1,406 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Edit Zone</title>
+  <link rel="stylesheet" type="text/css" media="all" href="{{ MEDIA_URL }}stylesheet/niceforms.css" />
+  <link rel="stylesheet" type="text/css" media="all" href="{{ MEDIA_URL }}stylesheet/bluecurve.css" />
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/general.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/cloudman.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/range.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/timer.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/slider.js"></script>
+  <script type="text/javascript">
+    function formValid(){
+       // Existing values
+       currRegion = getElement("currregion").value;
+       currName = getElement("currname").value;
+       currDescription = getElement("currdescription").value;
+       currHepSpecs = getElement("currhepspecs").value;
+       currMemory = getElement("currmemory").value;
+       currStorage = getElement("currstorage").value;
+       currBandwidth = getElement("currbandwidth").value;
+       currHepspec_Overcommit = getElement("currhepspec_overcommit").value;
+       currMemory_Overcommit = getElement("currmemory_overcommit").value;
+       currZoneRtElem = getElement("currzonert");
+
+       // New values
+       regionElem = getElement("region");
+       nameElem = getElement("name");
+       descriptionElem = getElement("description");
+       hepSpecsElem = getElement("hepspecs");
+       memoryElem = getElement("memory");
+       storageElem = getElement("storage");
+       bandwidthElem = getElement("bandwidth");
+       hepspec_overCommitElem = getElement("hepspec_overcommit");
+       memory_overCommitElem = getElement("memory_overcommit");
+       zoneAllowedRtElem = getElement("zoneallowedrt");
+
+       name = trim(nameElem.value);
+       nameElem.value = name;
+       descriptionElem.value = trim(descriptionElem.value);
+       hepSpecs = trim(hepSpecsElem.value);
+       hepSpecsElem.value = hepSpecs;
+       memory = trim(memoryElem.value);
+       memoryElem.value = memory;
+       storage = trim(storageElem.value);
+       storageElem.value = storage;
+       bandwidth = trim(bandwidthElem.value);
+       bandwidthElem.value = bandwidth;
+
+       // The following statements are used to check whether atleast one field values has been changed
+       updateSel = false;
+       if (currRegion != regionElem.options[regionElem.selectedIndex].value){
+          updateSel = true;
+       }
+       if (currName != name){
+          if (name == ''){
+             alert('Provide a name to the Zone');
+             return false;
+          }
+          updateSel = true;
+       }
+
+       if (currDescription != descriptionElem.value){
+          updateSel = true;
+       }
+
+       // validate the hepspec, memory, storage and bandwidth value
+       errorMessage = validateResourceParameters(hepSpecs, memory, storage, bandwidth)
+       if (errorMessage != ''){
+          alert(errorMessage);
+          return false;
+       }
+
+       hepSpecChange = checkNumberParameterChange(currHepSpecs, hepSpecs);
+       memoryChange = checkNumberParameterChange(currMemory, memory);
+       storageChange = checkNumberParameterChange(currStorage, storage);
+       bandwidthChange = checkNumberParameterChange(currBandwidth, bandwidth);
+
+       if (hepSpecChange || memoryChange || storageChange || bandwidthChange){
+          updateSel = true;
+       }
+
+       // validate hepspec over commit and memory over commit values
+       if (!is_positive_float(hepspec_overCommitElem.value)){
+          alert('Hepspec Over Commit value can be only a positive float value (greater than or equal to 1)');
+          return false;
+       }else{
+          if (parseFloat(hepspec_overCommitElem.value, 10) < 1){
+             alert('Hepspec Over Commit value can be only a positive float value (greater than or equal to 1)');
+             return false;
+          }
+       }
+
+       if (!is_positive_float(memory_overCommitElem.value)){
+          alert('Memory Over Commit value can be only a positive float value (greater than or equal to 1)');
+          return false;
+       }else{
+          if (parseFloat(memory_overCommitElem.value, 10) < 1){
+             alert('Memory Over Commit value can be only a positive float value (greater than or equal to 1)');
+             return false;
+          }
+       }
+
+       hepSpecOverCommitChange = checkNumberParameterChange(currHepspec_Overcommit, hepspec_overCommitElem.value);
+       memoryOverCommitChange = checkNumberParameterChange(currMemory_Overcommit, memory_overCommitElem.value);
+
+       if (hepSpecOverCommitChange || memoryOverCommitChange){
+         updateSel = true;
+       }
+       // check if any new resource type is selected or existing resource type is de-selected
+       zoneAllowedRtElem = getElement("zoneallowedrt");
+       if (zoneAllowedRtElem.selectedIndex < 0){
+          alert('Atleast one Resource Type should be selected for the Zone');
+          return false;
+       }
+       for(i=0; i<zoneAllowedRtElem.options.length; i++){
+          rtValue = zoneAllowedRtElem.options[i].value;
+          rt_exists = false;
+          for(k=0; k<currZoneRtElem.options.length; k++){
+             if (currZoneRtElem.options[k].value == rtValue){
+                rt_exists = true;
+                break;
+             }
+          }
+          if (zoneAllowedRtElem.options[i].selected){
+             if (!rt_exists){
+                updateSel = true;
+                break;
+             }
+          }else{
+             if (rt_exists){
+                updateSel = true;
+                break;
+             }
+          }
+       }
+
+       if (!updateSel){
+          alert('No Changes done to perform Edit Operation');
+          return false;
+       }
+
+       return true;
+    }
+   
+    function resetDefault(){
+       currRegion = getElement("currregion").value;
+       regionElem = getElement("region");
+       for (i=0; i<regionElem.options.length; i++){
+            if (regionElem.options[i].value == currRegion){
+               regionElem.options[i].selected = true;
+            }else{
+               regionElem.options[i].selected = false;
+            }
+       }
+       getElement("name").value = getElement("currname").value;
+       getElement("description").value = getElement("currdescription").value;
+       getElement("hepspecs").value = getElement("currhepspecs").value;
+       getElement("memory").value = getElement("currmemory").value;
+       getElement("storage").value = getElement("currstorage").value;
+       getElement("bandwidth").value = getElement("currbandwidth").value;
+       r.setValue(getElement("currhepspec_overcommit").value);
+       m.setValue(getElement("currmemory_overcommit").value);
+       ri.value = r.getValue();
+       mi.value = m.getValue();
+       currZoneRtElem = getElement("currzonert");
+       zoneAllowedRtElem = getElement("zoneallowedrt");
+       for(i=0; i<zoneAllowedRtElem.options.length; i++){
+            rt_exists = false;
+            for(k=0; k<currZoneRtElem.options.length; k++){
+                  if (zoneAllowedRtElem.options[i].value == currZoneRtElem.options[k].value){
+                     rt_exists =true;
+                     break;
+                  }
+            }
+            if (rt_exists){
+                zoneAllowedRtElem.options[i].selected = true;
+            }else{
+                zoneAllowedRtElem.options[i].selected = false;
+            }
+       }
+
+    }
+  </script>  
+</head>
+<body onLoad="resetDefault();">
+<div id="container">
+<form action="/cloudman/zone/update/" method="post" class="niceform" onSubmit="return formValid();">{% csrf_token %}
+  <fieldset><legend> Edit Zone {{zoneName}} in Region {{regionName}}</legend>
+    
+   <dl>
+      <dt> <label for="region">Region</label>: </dt>
+      <dd> <select name="region" id="region">
+          {% for region in regionList %}
+          <option value="{{region}}">{{region}}</option>
+          {% endfor %}
+          </select>
+         <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+          onmouseover="return ShowToolTip('regionToolTip');" onmouseout="return HideToolTip('regionToolTip');" />
+         <div id="regionToolTip" style="width:120px; position:absolute; z-index:20; display:none" class="boxcontent">
+          Select a Region to add the Zone
+         </div>
+     </dd>
+   </dl>
+   <input type="hidden" name="currregion" id="currregion" value="{{zoneObject.region.name}}">
+   <input type="hidden" name="regionname" id="regionname" value="{{zoneObject.region.name}}">
+   
+   <dl>
+      <dt> <label for="name">Zone Name</label>: </dt>
+      <dd> <input id="name" type="text" name="name" maxlength="50" value="{{zoneObject.name}}"/>
+        <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+           onmouseover="return ShowToolTip('nameToolTip');" onmouseout="return HideToolTip('nameToolTip');" />
+        <div id="nameToolTip" style="width:120px; position:absolute; z-index:20; display:none" class="boxcontent">
+           Enter Unique Name - Maximum of 50 Characters
+        </div>
+      </dd>
+   </dl>   
+   <input type="hidden" name="currname" id="currname" value="{{zoneObject.name}}">
+   <input type="hidden" name="zonename" id="zonename" value="{{zoneObject.name}}">
+
+   <dl>
+      <dt> <label for="description">Description</label>: </dt>
+      <dd> <input id="description" type="text" name="description" maxlength="100" value="{{zoneObject.description}}"/>
+        <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+            onmouseover="return ShowToolTip('descriptionToolTip');" onmouseout="return HideToolTip('descriptionToolTip');" />
+        <div id="descriptionToolTip" style="width:120px; position:absolute; z-index:20; display:none" class="boxcontent">
+           Brief Description of Region - Maximum of 100 Characters
+        </div>
+     </dd>
+   </dl>
+   <input type="hidden" name="currdescription" id="currdescription" value="{{zoneObject.description}}">
+
+   <dl>
+      <dt> <label for="hepspecs">Total Hepspec</label>: </dt>
+      <dd> 
+        {% if zoneObject.hepspecs == None %}
+         <input type="text" name="hepspecs" id="hepspecs" value=""/>
+         <input type="hidden" name="currhepspecs" id="currhepspecs" value=""/>
+        {% else %}
+         <input type="text" name="hepspecs" id="hepspecs" value="{{zoneObject.hepspecs}}"/>
+         <input type="hidden" name="currhepspecs" id="currhepspecs" value="{{zoneObject.hepspecs}}"/>
+        {% endif %}
+        <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+            onmouseover="return ShowToolTip('hepspecsToolTip');" onmouseout="return HideToolTip('hepspecsToolTip');" />
+        <div id="hepspecsToolTip" style="width:120px; position:absolute; z-index:20; display:none" class="boxcontent">
+           Total Resources Hepspec
+        </div>
+      </dd>
+    </dl>
+
+    <dl>
+      <dt> <label for="memory">Total Memory (MB)</label>: </dt>
+      <dd> 
+        {% if zoneObject.memory == None %}
+         <input type="text" name="memory" id="memory" value=""/>
+         <input type="hidden" name="currmemory" id="currmemory" value=""/>
+        {% else %}
+         <input type="text" name="memory" id="memory" value="{{zoneObject.memory}}"/>
+         <input type="hidden" name="currmemory" id="currmemory" value="{{zoneObject.memory}}"/>
+        {% endif %}
+        <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+            onmouseover="return ShowToolTip('memoryToolTip');" onmouseout="return HideToolTip('memoryToolTip');" />
+        <div id="memoryToolTip" style="width:120px; position:absolute; z-index:20; display:none" class="boxcontent">
+           Total Available Memory in MB
+        </div>
+      </dd>
+     </dl>
+      
+     <dl>
+      <dt> <label for="storage">Total Storage (MB)</label>: </dt>
+      <dd> 
+        {% if zoneObject.storage == None %}
+          <input type="text" name="storage" id="storage" value=""/>
+          <input type="hidden" name="currstorage" id="currstorage" value=""/>
+        {% else %}
+          <input type="text" name="storage" id="storage" value="{{zoneObject.storage}}"/>
+          <input type="hidden" name="currstorage" id="currstorage" value="{{zoneObject.storage}}"/>
+        {% endif %}
+        <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+            onmouseover="return ShowToolTip('storageToolTip');" onmouseout="return HideToolTip('storageToolTip');" />
+        <div id="storageToolTip" style="width:120px; position:absolute; z-index:20; display:none" class="boxcontent">
+           Total Available Storage in MB
+        </div>
+      </dd>
+     </dl>
+
+     <dl>
+      <dt> <label for="bandwidth">Total Bandwidth (Mbps)</label>: </dt>
+      <dd> 
+        {% if zoneObject.bandwidth == None %}
+          <input type="text" name="bandwidth" id="bandwidth" value=""/>
+          <input type="hidden" name="currbandwidth" id="currbandwidth" value=""/>
+        {% else %}
+          <input type="text" name="bandwidth" id="bandwidth" value="{{zoneObject.bandwidth}}"/>
+          <input type="hidden" name="currbandwidth" id="currbandwidth" value="{{zoneObject.bandwidth}}"/>
+        {% endif %}
+        <img height="9px" width="9px" src="{{MEDIA_URL}}images/qmark.jpg" style="cursor:pointer"
+            onmouseover="return ShowToolTip('bandwidthToolTip');" onmouseout="return HideToolTip('bandwidthToolTip');" />
+        <div id="bandwidthToolTip" style="width:120px; position:absolute; z-index:20; display:none" class="boxcontent">
+           Total Available Bandwidth in Mbps
+        </div>
+      </dd>
+     </dl>
+     <input type="hidden" name="currhepspec_overcommit" id="currhepspec_overcommit" value="{{zoneObject.hepspec_overcommit}}"/>
+     <input type="hidden" name="currmemory_overcommit" id="currmemory_overcommit" value="{{zoneObject.memory_overcommit}}"/>
+
+     <col style="width: 40px" />
+     <col style="" />
+     <col style="width: 10px" />
+     <col style="width: 50px" />
+     <dl>
+       <dt> <label for="hepspec_overcommit">Hepspec Over Commit</label>: </dt>
+       <dd> <div class="slider" style="width:211px;" id="hepspec_overcommit-slider" tabIndex="1">
+             <input class="slider-input" id="hepspec_overcommit-input" />
+           </div>
+           <input type="text" readonly="true" id="hepspec_overcommit" name="hepspec_overcommit" style="width:60px;" tabIndex="2" value="{{zoneObject.hepspec_overcommit}}"/>
+           <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+            onmouseover="return ShowToolTip('hepspec_overcommitToolTip');" onmouseout="return HideToolTip('hepspec_overcommitToolTip');" />
+           <div id="hepspec_overcommitToolTip" style="width:120px; position:absolute;z-index:20; display:none" class="boxcontent">
+             Drag the bar to select the percentage of hepspec over commit to be allowed
+           </div>
+       </dd>
+     </dl>
+
+     <dl>
+      <dt> <label for="memory_overcommit">Memory Over Commit</label>: </dt>
+      <dd> <div class="slider" style="width:211px;" id="memory_overcommit-slider" tabIndex="1">
+             <input class="slider-input" id="memory_overcommit-input" />
+           </div>
+           <input type="text" readonly="true" id="memory_overcommit" name="memory_overcommit" style="width:60px;" tabIndex="2" value="{{zoneObject.memory_overcommit}}"/>
+           <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+            onmouseover="return ShowToolTip('memory_overcommitToolTip');" onmouseout="return HideToolTip('memory_overcommitToolTip');" />
+           <div id="memory_overcommitToolTip" style="width:120px; position:absolute; z-index:20;display:none" class="boxcontent">
+             Drag the bar to select the percentage of memory over commit to be allowed
+           </div>
+      </dd>
+     </dl>
+
+     <div id="zonertlist" name="zonertlist" style="display:none;">
+        <select id="currzonert" name="currzonert" SIZE="5" MULTIPLE>
+        {% for zonert in zoneRTList %}
+        <option value="{{zonert}}" SELECTED>{{zonert}}</option>
+        {% endfor %}
+        </select>
+     </div>
+     
+     <dl>
+      <dt> <label for="zoneallowedrt">Resource Types</label>: </dt>
+      <dd>
+        <select id="zoneallowedrt" name="zoneallowedrt" SIZE="5" MULTIPLE>
+        {% for rt in resourceTypeList %}
+          <option value="{{rt}}">{{rt}}</option>
+        {% endfor %}
+        </select> 
+        <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+           onmouseover="return ShowToolTip('resourceTypesToolTip');" onmouseout="return HideToolTip('resourceTypesToolTip');" />
+        <div id="resourceTypesToolTip" style="width:120px; position:absolute; z-index:20; display:none" class="boxcontent">
+           Displayed Currently Allowed Resource Types as selected, Select or De-select for Changing the list 
+        </div>
+      </dd>
+   </dl>
+   <dl>
+ 	<dt><label for="comment">Comment</label>:</dt>
+    <dd><textarea id="comment" rows="5" cols="30" name="comment"  ></textarea>
+        <img height="9px" width="9px" src="/media/images/qmark.jpg" style="cursor:pointer"
+           onmouseover="return ShowToolTip('commentToolTip');" onmouseout="return HideToolTip('commentToolTip');" />
+         <div id="commentToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+           Enter Comments about the zone(Useful for Logging)- Maximum of 3000 Characters
+         </div>
+    </dd>
+   </dl>
+   <center><input type="button" id="loadcurr" name="loadcurr" value="Reset to Current Values" style="padding: 5px 5px 5px 5px;" onClick="javascript:resetDefault();"/> </center>
+  </fieldset>
+ 
+     <script type="text/javascript">
+      var r = new Slider(document.getElementById("hepspec_overcommit-slider"), document.getElementById("hepspec_overcommit-input"));
+      var m = new Slider(document.getElementById("memory_overcommit-slider"), document.getElementById("memory_overcommit-input"));
+      r.setMaximum(10);
+      m.setMaximum(10);
+
+      var ri = document.getElementById("hepspec_overcommit");
+      var mi = document.getElementById("memory_overcommit");
+      ri.onchange = function () {
+         r.setValue(parseInt(this.value));
+      };
+      mi.onchange = function () {
+         m.setValue(parseInt(this.value));
+      };
+
+      r.onchange = function () {
+         ri.value = r.getValue();
+      };
+      m.onchange = function () {
+         mi.value = m.getValue();
+      };
+      r.setValue(getElement("currhepspec_overcommit").value);
+      m.setValue(getElement("currmemory_overcommit").value);
+     </script>
+  <fieldset class="action">
+    <input type ="submit" id="submit" name="submit" title="Save" value="Save" style="padding: 5px 5px 5px 5px;" />
+  </fieldset>   
+</form>
+</div>
+</body>
+</html>

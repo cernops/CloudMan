@@ -1,0 +1,85 @@
+
+\begin{table}[bh]
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+key& value type & values \\
+\hline
+\hline
+ProjectName  & string &  Name of the project which this backend configures\\
+BackendState & string &  one of [OK, WARNING,ERROR] \\
+SampleTime   & seconds & Unix time stamp of when this sample was taken \\
+BackendStateInfo& string & Free text \\
+\hline
+\end{tabular}
+\end{center}
+\caption{\label{stateinfo}Current state information as published by the project backends.}
+\end{table}
+
+\begin{table}[bh]
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+key & value type & values \\
+\hline
+\hline
+ResourceName& string & name of the resource \\
+ResourceOwner& string & list of users or e-group\\
+             &        &   to which the resource is allocated \\
+ResourceAllocatedUnit & string & the unit \\
+& & in which the resource is measured \\
+ResourceAllocatedTarget & floating point & the target value for the \\
+& & resource as demanded by CloudMan \\
+ResourceAllocatedCurrent & floating point & the current value for the \\
+& & resource as demanded by CloudMan \\
+\hline
+\end{tabular}
+\end{center}
+\caption{\label{resourceinfo} Required key-value pairs for state information as published by the project backends for each resource. The block is repeated for each ResourceOwner.}
+\end{table}
+
+\begin{table}[bh]
+\begin{center}
+\begin{verbatim} 
+{
+"ProjectName": "batch"
+"TimeStamp": 1348218423
+"BackendState": "OK"
+"BackendStateInfo": "All OK"
+"Resources":[
+    {
+       "ResourceName":"CPU",
+       "ResourceOwner":"user1,user2,user10",
+       "ResourceAllocatedUnit":"HS06",
+       "ResourceAllocatedTarget":"1000",
+       "ResourceAllocatedCurrent":"1000"
+    },
+    {
+       "ResourceName":"CPU",
+       "ResourceOwner":"user5,user6,user999",
+       "ResourceAllocatedUnit":"HS06",
+       "ResourceAllocatedTarget":"10",
+       "ResourceAllocatedCurrent":"10"
+    },
+    {
+       "ResourceName":"disk",
+       "ResourceOwner":"user5,user6,user999",
+       "ResourceAllocatedUnit":"GB",
+       "ResourceAllocatedTarget":"500",
+       "ResourceAllocatedCurrent":"500"
+    }
+ ]
+}
+
+\end{verbatim}
+\end{center}
+\caption{\label{messageformat} Example of backend state data  in JSON format }
+\end{table}
+
+
+Each project backend can publish state data as a flat file which can be located on a shared file system, or which is exported by a web server. The location of the state data as well as its format has to be specified for each project when defining the backend in the form of an URL~\footnote{eg. '' file://afs/cern.ch/project/.../input.json''}. Supported formats include YAML, JSON and XML.
+
+The state information must include the key-value pairs listed in table~\ref{stateinfo}. Optionally, additional fields can be published. These can be displayed by the front end as additional information but have no influence on any actions taken on the frontend. The information in table~\ref{stateinfo} is published once per project backend. 
+
+In addition for reach resource which is allocated to a project the information as described in table~\ref{resourceinfo} has to be published. The block in this table is repeated for each {\it ResourceOwner}. 
+An example output in JSON format is given in table~\ref{messageformat}.

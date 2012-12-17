@@ -1,0 +1,289 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Zones List</title>
+  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}stylesheet/listTable.css" />
+  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}stylesheet/common.css" />
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/general.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/table_sort_filter.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/jquery-1.7.1.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/highcharts.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/gray.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/piechart.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/selectmultiple.js"></script>
+  <script type="text/javascript">
+    var allRegionsInfo = new Object();
+  </script>
+  <script type="text/javascript">
+   manyTimesClick = false;
+   function getZoneDetails(zoneName, regionName){
+     if (!manyTimesClick){
+        loadSplitter();
+     }
+     manyTimesClick = true;
+     $("#BottomPane").load('/cloudman/zone/getdetails?regionname=' + escape(regionName) + '&zonename=' + escape(zoneName));
+   }
+  
+   function getRegionDetails(regionName){
+     if (!manyTimesClick){
+        loadSplitter();
+     }
+     manyTimesClick = true;
+     $("#BottomPane").load('/cloudman/region/getdetails?name=' + escape(regionName));
+   }
+   
+  </script>
+</head>
+<body id="databody">
+{% include "base/deleteForm.html" %}
+{% include "base/search.html" %}
+{% load filters %}
+<form name="dataForm" id="dataForm">
+  <pre style="white-space:normal;text-align:center;"> Zones List (Total:{{ zonesList|length }}) </pre>
+  {% if userIsSuperUser%}
+  <center><input type="button" name="add" value="Add Zone" style="margin-bottom:3px;" onClick="self.location.href = '/cloudman/zone/add/';"/></center>
+  {% endif%}
+  <table class="autosort" border="1" id="zonetable" align="center" style="table-layout: auto;">
+  <thead>
+   <tr>
+    <!-- <th name="tcol0" id="tcol0" class="table-sortable:numeric">No</th> -->
+    <th name="tcol1" id="tcol1" class="table-sortable:ignorecase">Name</th>
+    <th name="tcol2" id="tcol2" class="table-sortable:ignorecase">Region</th>
+    <th name="tcol3" id="tcol3" class="table-sortable:numeric">Capacity <br/> (HS06)</th>
+    <th name="tcol4" id="tcol4" class="table-sortable:numeric">Memory <br/> (MB)</th>
+    <th name="tcol5" id="tcol5" class="table-sortable:numeric">Storage <br/> (MB)</th>
+    <th name="tcol6" id="tcol6" class="table-sortable:numeric">Bandwidth <br/> (Mbps)</th>
+    {% if userIsSuperUser%}
+    <th name="tcol7" id="tcol7"></th>
+    {% endif%}
+   </tr>
+  </thead>
+  <tbody>
+   {% for oneRow in zonesList %}
+   {% if  forloop.counter|divisibleby:"2" %}
+    <tr class="odd" text="wrap">
+   {% else %}
+    <tr class="even" text="wrap">
+   {% endif %}
+    <!-- <td name="tcol0" id="tcol0" scope="row" text="wrap">{{ forloop.counter }}</td>-->
+    <!--<td name="tcol1" id="tcol1" scope="row" text="wrap" title="Description: {{oneRow.description}}     Hepspec Over Commit: {{oneRow.hepspec_overcommit}}     Memory Over Commit: {{oneRow.memory_overcommit}}"><a class="links" href="#" onClick="openNewWinLinkUrl('/cloudman/zone/getdetails?regionname={{ oneRow.region.name }}&zonename={{ oneRow.name }}');return false;" style="cursor:pointer;">{{ oneRow.name }}</a></td>
+    <td name="tcol2" id="tcol2" scope="row" text="wrap"><a class="links" href="#" onClick="openNewWinLinkUrl('/cloudman/region/getdetails?name={{ oneRow.region.name }}');return false;" style="cursor:pointer;">{{ oneRow.region.name }}</a></td>-->
+    <td name="tcol1" id="tcol1" scope="row" text="wrap"><a class="links" href="/cloudman/zone/getdetails?regionname={{oneRow.region.name}}&zonename={{oneRow.name}}" style="cursor:pointer;">{{ oneRow.name }}</a></td>
+    <td name="tcol2" id="tcol2" scope="row" text="wrap"><a class="links" href="/cloudman/region/getdetails?name={{oneRow.region.name}}" style="cursor:pointer;">{{ oneRow.region.name }}</a></td>
+      <td name="tcol3" id="tcol3" scope="row" text="wrap">{{ oneRow.hepspectotal|displayNone }}</td>
+      <td name="tcol4" id="tcol4" scope="row" text="wrap">{{ oneRow.memorytotal|displayNone }}</td>
+      <td name="tcol5" id="tcol5" scope="row" text="wrap">{{ oneRow.storage|displayNone }}</td>
+      <td name="tcol6" id="tcol6" scope="row" text="wrap">{{ oneRow.bandwidth|displayNone }}</td>
+    {% if userIsSuperUser%}
+    <td name="tcol7" id="tcol7" scope="row" text="wrap">
+    <a href="/cloudman/zone/update?zonename={{ oneRow.name }}&regionname={{ oneRow.region.name }}" style="cursor: pointer">
+      <img src="{{ MEDIA_URL }}images/edit.png" height="15px" width="15px" align="center"
+         title="Edit {{ oneRow.name }}" border="0"/>
+    </a>
+    <a href="#" style="cursor: pointer" onClick="deleteItem('/cloudman/zone/delete/','zonename={{ oneRow.name }}&regionname={{ oneRow.region.name }}','Do you really want to delete')">
+      <img src="{{ MEDIA_URL }}images/remove.png" height="15px" width="15px" align="center"
+         title="delete {{ oneRow.name }}" border="0"/>
+    </a>
+    </td>
+    {% endif%}
+    </tr>
+   {% endfor %}
+  </tbody>
+  </table>
+  <table style="width:100%;height:100%"><tr><td>
+  <div style="align:center;"><pre style="white-space:normal;text-align:left;">Region Wise - CPU Resources Share</pre>
+  {% for region in regionsInfo.items %}
+     <div id="{{region.0}}_hepspec" style="float:left;margin-left:8px;width:360px;height:300px;" ></div>
+  {% endfor %}
+  </div>
+  </td></tr></table>
+  <br/>
+
+  <table style="width:100%;height:100%"><tr><td> 
+  <div style="align:center;"><pre style="white-space:normal;text-align:left;">Region Wise - Memory Resources Share</pre>
+  {% for region in regionsInfo.items %}
+     <div id="{{region.0}}_memory" style="float:left;width:360px;margin-left:8px;height:300px;" ></div>
+  {% endfor %}
+  </div>
+  </td></tr></table>
+  <br/>
+
+  <table style="width:100%;height:100%"><tr><td>
+  <div style="align:center;"><pre style="white-space:normal;text-align:left;">Region Wise - Storage Resources Share</pre>
+  {% for region in regionsInfo.items %}
+     <div id="{{region.0}}_storage" style="float:left;width:360px;height:300px;margin-left:8px;" ></div>
+  {% endfor %}
+  </div>
+  </td></tr></table>
+  <br/>
+
+  {% for region in regionsInfo.items %}
+    <script type = "text/javascript">
+     allRegionsInfo['{{region.0}}'] = {};
+     allRegionsInfo['{{region.0}}'].zones = new Array();
+     allRegionsInfo['{{region.0}}'].hepspec = new Array();
+     allRegionsInfo['{{region.0}}'].memory = new Array();
+     allRegionsInfo['{{region.0}}'].storage = new Array();
+     allRegionsInfo['{{region.0}}'].bandwidth = new Array();
+     allRegionsInfo['{{region.0}}'].totalhepspec = 0;
+     allRegionsInfo['{{region.0}}'].totalmemory = 0;
+     allRegionsInfo['{{region.0}}'].totalstorage = 0;
+     allRegionsInfo['{{region.0}}'].totalbandwidth = 0;
+    </script>
+
+    {% for zone in region.1.zones %}
+      <script type = "text/javascript">
+        allRegionsInfo['{{region.0}}'].zones.push('{{zone}}')
+      </script>
+    {% endfor %}
+
+    {% for hepspec in region.1.hepspec %}
+      <script type = "text/javascript">
+        allRegionsInfo['{{region.0}}'].hepspec.push(parseFloat({{hepspec}}, 10))
+      </script>
+    {% endfor %}
+
+    {% for memory in region.1.memory %}
+      <script type = "text/javascript">
+        allRegionsInfo['{{region.0}}'].memory.push(parseFloat({{memory}}, 10))
+      </script>
+    {% endfor %}
+
+    {% for storage in region.1.storage %}
+      <script type = "text/javascript">
+        allRegionsInfo['{{region.0}}'].storage.push(parseFloat({{storage}}, 10))
+      </script>
+    {% endfor %}
+
+    {% for bandwidth in region.1.bandwidth %}
+      <script type = "text/javascript">
+        allRegionsInfo['{{region.0}}'].bandwidth.push(parseFloat({{bandwidth}}, 10))
+      </script>
+    {% endfor %}
+
+    <script type = "text/javascript">
+        allRegionsInfo['{{region.0}}'].totalhepspec = parseFloat({{region.1.totalhepspec}}, 10)
+        allRegionsInfo['{{region.0}}'].totalmemory = parseFloat({{region.1.totalmemory}}, 10)
+        allRegionsInfo['{{region.0}}'].totalstorage = parseFloat({{region.1.totalstorage}}, 10)
+        allRegionsInfo['{{region.0}}'].totalbandwidth = parseFloat({{region.1.totalbandwidth}}, 10)
+    </script>
+
+  {% endfor %}
+
+  <script type="text/javascript">
+     region_piecharts_hepspec = [];
+     region_piecharts_memory = [];
+     region_piecharts_storage = [];
+     k = 0;
+     for (var key in allRegionsInfo) {
+        var zones = allRegionsInfo[key]['zones'];
+        var hepspec = allRegionsInfo[key]['hepspec'];
+        var memory = allRegionsInfo[key]['memory'];
+        var storage = allRegionsInfo[key]['storage'];
+        var bandwidth = allRegionsInfo[key]['bandwidth'];
+        var totalhepspec = allRegionsInfo[key]['totalhepspec'];
+        var totalmemory = allRegionsInfo[key]['totalmemory'];
+        var totalstorage = allRegionsInfo[key]['totalstorage'];
+        var totalbandwidth = allRegionsInfo[key]['totalbandwidth'];
+        
+        zoneData_hepspec = [];
+        zoneData_memory = [];
+        zoneData_storage = [];
+        for(i=0; i<zones.length; i++){
+           zoneName = zones[i];
+           hepspec_value = hepspec[i];
+           memory_value = memory[i];
+           storage_value = storage[i]
+           bandwidth_value = bandwidth[i];
+           hepspec_per = 0;
+           memory_per = 0;
+           storage_per = 0;
+           bandwidth_per = 0;
+           if (totalhepspec > 0){
+              hepspec_per = round_float(((hepspec_value/totalhepspec) * 100), 3)
+           }
+           if (totalmemory > 0){
+              memory_per = round_float(((memory_value/totalmemory) * 100), 3)
+           }
+           if (totalstorage > 0){
+              storage_per = round_float(((storage_value/totalstorage) * 100), 3)
+           }
+           if (totalbandwidth > 0){
+              bandwidth_per = round_float(((bandwidth_value/totalbandwidth) * 100), 3)
+           }
+     
+           zoneData_hepspec.push(['Zone: ' + zoneName, hepspec_per]);
+           zoneData_memory.push(['Zone: ' + zoneName, memory_per]);
+           zoneData_storage.push(['Zone: ' + zoneName, storage_per]);
+        }
+
+        region_piecharts_hepspec[k] = initPieChart((key + '_hepspec'), ('Zone Wise - CPU Resources Share <br/> Region - ' + key + ' (Total: ' + totalhepspec + ' HS06)'));
+        region_piecharts_hepspec[k].addSeries({
+           type: 'pie',
+           name: (key + ' - CPU'),
+           data: zoneData_hepspec,
+           labels: {
+              formatter: function() {
+                return Highcharts.numberFormat(this.value, 3);
+              }
+           },
+           cursor:'pointer',
+              events: {
+                //click: function(event) {
+                //   openNewWinLinkUrl('/cloudman/listonlyregionsname');
+                //}
+           },
+           showInLegend: false,
+           allowPointSelect: true,
+           legendItemClick: false
+        }, true);
+
+        region_piecharts_memory[k] = initPieChart((key + '_memory'), ('Zone Wise - Memory Resources Share <br/> Region - ' + key + ' (Total: ' + totalmemory + ' MB)'));
+        region_piecharts_memory[k].addSeries({
+           type: 'pie',
+           name: (key + ' - Memory'),
+           data: zoneData_memory,
+           labels: {
+              formatter: function() {
+                return Highcharts.numberFormat(this.value, 3);
+              }
+           },
+           cursor:'pointer',
+              events: {
+                //click: function(event) {
+                //   openNewWinLinkUrl('/cloudman/listonlyregionsname');
+                //}
+           },
+           showInLegend: false,
+           allowPointSelect: true,
+           legendItemClick: false
+        }, true);
+
+        region_piecharts_storage[k] = initPieChart((key + '_storage'), ('Zone Wise - Storage Resources Share <br/> Region - ' + key + ' (Total: ' + totalstorage + ' MB)'));
+        region_piecharts_storage[k].addSeries({
+           type: 'pie',
+           name: (key + ' - Storage'),
+           data: zoneData_storage,
+           labels: {
+              formatter: function() {
+                return Highcharts.numberFormat(this.value, 3);
+              }
+           },
+           cursor:'pointer',
+              events: {
+                //click: function(event) {
+                //   openNewWinLinkUrl('/cloudman/listonlyregionsname');
+                //}
+           },
+           showInLegend: false,
+           allowPointSelect: true,
+           legendItemClick: false
+        }, true);
+
+        k++;
+     }
+  </script>
+
+</body>
+</html>

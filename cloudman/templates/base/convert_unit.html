@@ -1,0 +1,19 @@
+{% load filters%}
+{% autoescape off %}
+<script type="text/javascript">
+	function convertCPUUnit(value , unit)
+	{
+		if(value =='')
+			return value
+		{% convertFunction %}	
+	}
+
+	function convertStorageUnit(value , unit)
+	{
+		if(value =='')
+			return value
+		{% convertStorageFunction %}	
+	}
+
+</script>
+{% endautoescape %}

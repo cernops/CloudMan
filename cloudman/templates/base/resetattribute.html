@@ -1,0 +1,24 @@
+<script type="text/javascript">
+   var curr_attr_name_array = new Array();
+   var curr_attr_value_array = new Array();
+   {% for oneRow in Metadata %}
+     curr_attr_name_array[{{ forloop.counter0 }}] = "{{ oneRow.attribute }}";
+     curr_attr_value_array[{{ forloop.counter0 }}] = "{{ oneRow.value }}";
+   {% endfor %}
+
+  function resetAttributeDefault(div_name)
+  {
+       //First delete all the attribute_name and attribute_value pair from project_metadata
+       div_node =  document.getElementById(div_name);
+       while (div_node.hasChildNodes())
+       {
+            div_node.removeChild(div_node.lastChild);
+       }	   
+	   for (var index=0;index < curr_attr_name_array.length; index++ )
+       {       	 
+         attr_name=curr_attr_name_array[index];
+         attr_value=curr_attr_value_array[index];
+       	 addAttribute(div_name,attr_name,attr_value);
+	   }	
+  }
+</script>

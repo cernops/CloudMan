@@ -1,0 +1,37 @@
+\contentsline {section}{\numberline {1}Introduction}{4}
+\contentsline {section}{\numberline {2}Purpose of this document}{4}
+\contentsline {section}{\numberline {3}Terms, definitions and concepts}{5}
+\contentsline {subsection}{\numberline {3.1}Regions}{5}
+\contentsline {subsection}{\numberline {3.2}Resource types}{5}
+\contentsline {subsection}{\numberline {3.3}Zones}{6}
+\contentsline {subsection}{\numberline {3.4}Groups}{6}
+\contentsline {subsection}{\numberline {3.5}Top level allocations}{8}
+\contentsline {subsection}{\numberline {3.6}Projects}{8}
+\contentsline {subsubsection}{\numberline {3.6.1}Project requirements}{8}
+\contentsline {subsubsection}{\numberline {3.6.2}Project attributes}{9}
+\contentsline {subsubsection}{\numberline {3.6.3}Recursion limitation}{9}
+\contentsline {subsection}{\numberline {3.7}Project allocations}{9}
+\contentsline {subsection}{\numberline {3.8}Group and sub-group allocations}{10}
+\contentsline {subsubsection}{\numberline {3.8.1}Group and subgroup attributes}{10}
+\contentsline {section}{\numberline {4}Buisiness continuity}{11}
+\contentsline {section}{\numberline {5}Implementation goals}{11}
+\contentsline {section}{\numberline {6}Backend types}{13}
+\contentsline {subsection}{\numberline {6.1}Project backends}{14}
+\contentsline {subsection}{\numberline {6.2}Mover backend}{15}
+\contentsline {section}{\numberline {7}Project backend examples}{15}
+\contentsline {subsection}{\numberline {7.1}Batch shares}{15}
+\contentsline {subsection}{\numberline {7.2}Cloud drivers: common ideas}{16}
+\contentsline {subsubsection}{\numberline {7.2.1}A possible model}{16}
+\contentsline {subsubsection}{\numberline {7.2.2}Self-service configuration}{17}
+\contentsline {subsubsection}{\numberline {7.2.3}Conversion of units}{17}
+\contentsline {subsection}{\numberline {7.3}OpenStack}{17}
+\contentsline {subsection}{\numberline {7.4}OpenNebula}{17}
+\contentsline {section}{\numberline {8}Storage}{17}
+\contentsline {subsection}{\numberline {8.1}AFS}{18}
+\contentsline {subsection}{\numberline {8.2}EOS}{19}
+\contentsline {subsection}{\numberline {8.3}CASTOR}{19}
+\contentsline {section}{\numberline {9}Details}{19}
+\contentsline {subsection}{\numberline {9.1}Definition of Interfaces}{21}
+\contentsline {subsubsection}{\numberline {9.1.1}Low level data export layer}{21}
+\contentsline {subsubsection}{\numberline {9.1.2}Backend state data}{21}
+\contentsline {subsubsection}{\numberline {9.1.3}CloudMan database schema}{22}

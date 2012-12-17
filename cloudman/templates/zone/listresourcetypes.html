@@ -1,0 +1,62 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Zone Allowed Resource Types List</title>
+  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}stylesheet/listTable.css" />
+  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}stylesheet/common.css" />
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/general.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/table_sort_filter.js"></script>
+</head>
+<body id="databody">
+<form name="dataForm" id="dataForm">
+  <pre style="white-space:normal;text-align:center;"> Allowed Resource Types List For Zone: {{ zoneName }} (Total : {{ allowedResourceTypesList|length }}) </pre>
+  <table class="autosort" border="1" align="center" style="table-layout: auto;">
+  <thead>
+   <tr>
+    <th name="tcol0" id="tcol0" class="table-sortable:ignorecase">No</th>
+    <th name="tcol1" id="tcol1" class="table-sortable:ignorecase">Name</th>
+    <th name="tcol2" id="tcol2" class="table-sortable:ignorecase">Resource Class</th>
+    <th name="tcol3" id="tcol3" class="table-sortable:numeric">Hepspec</th>
+    <th name="tcol4" id="tcol4" class="table-sortable:numeric">Memory (MB)</th>
+    <th name="tcol5" id="tcol5" class="table-sortable:numeric">Storage (MB)</th>
+    <th name="tcol6" id="tcol6" class="table-sortable:numeric">Bandwidth (Mbps)</th>
+   </tr>
+  </thead>
+  <tbody>
+   {% for oneRow in allowedResourceTypesList %}
+   {% if  forloop.counter|divisibleby:"2" %}
+    <tr class="odd" text="wrap">
+   {% else %}
+    <tr class="even" text="wrap">
+   {% endif %}
+    <td name="tcol0" id="tcol0" scope="row" text="wrap">{{ forloop.counter }}</td>
+    <td name="tcol1" id="tcol1" scope="row" text="wrap">{{ oneRow.name }}</td>
+    <td name="tcol2" id="tcol2" scope="row" text="wrap">{{ oneRow.resource_class }}</td>
+    {% if oneRow.hepspecs == None %}
+    <td name="tcol3" id="tcol3" scope="row" text="wrap">UNDEFINED</td>
+    {% else %}
+    <td name="tcol3" id="tcol3" scope="row" text="wrap">{{ oneRow.hepspecs }}</td>
+    {% endif %}
+    {% if oneRow.memory == None %}
+    <td name="tcol4" id="tcol4" scope="row" text="wrap">UNDEFINED</td>
+    {% else %}
+    <td name="tcol4" id="tcol4" scope="row" text="wrap">{{ oneRow.memory }}</td>
+    {% endif %}
+    {% if oneRow.storage == None %}
+    <td name="tcol5" id="tcol5" scope="row" text="wrap">UNDEFINED</td>
+    {% else %}
+    <td name="tcol5" id="tcol5" scope="row" text="wrap">{{ oneRow.storage }}</td>
+    {% endif %}
+    {% if oneRow.bandwidth == None %}
+    <td name="tcol6" id="tcol6" scope="row" text="wrap">UNDEFINED</td>
+    {% else %}
+    <td name="tcol6" id="tcol6" scope="row" text="wrap">{{ oneRow.bandwidth }}</td>
+    {% endif %}
+    </tr>
+   {% endfor %}
+  </tbody>
+  </table>
+</form>
+</body>
+</html>

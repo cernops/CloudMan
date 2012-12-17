@@ -1,0 +1,1050 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Creating a Top Level Allocation</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" media="all" href="{{ MEDIA_URL }}stylesheet/niceforms.css" />
+<link rel="stylesheet" type="text/css" media="all" href="{{ MEDIA_URL }}stylesheet/listTable.css" />
+<script type="text/javascript" src="{{ MEDIA_URL }}javascript/general.js"></script>
+<script type="text/javascript" src="{{ MEDIA_URL }}javascript/cloudman.js"></script>
+<script type="text/javascript" src="{{ MEDIA_URL }}javascript/jquery-1.7.1.js"></script>
+{% load filters%}
+{% include "base/convert_unit.html" %}
+<script type="text/javascript">
+  var zoneNames = [];
+  var zoneInRegion = [];
+
+  var zonesInfo = new Object(); // model = cloudman.zone
+  var zonesUsageInfo = new Object(); // model = cloudman.toplevelallocationbyzone
+  var zonesResourceTypes = new Object(); // model = cloudman.zoneallowedresourcetype
+  var resourceTypes = new Object(); // model = cloudman.resourcetype
+  var zonesPK = [];
+  var zonesUsagePK = [];
+  var zonesResourcePK = [];
+  var resourceTypesPK = [];
+
+  var chboxsTotal = 0;
+
+  function cleanZonesInfo(){
+      for (i=0; i<zonesPK.length; i++){
+         delete zonesInfo[zonesPK[i]];
+      }
+      for (i=0; i<zonesUsagePK.length; i++){
+         delete zonesUsageInfo[zonesUsagePK[i]];
+      }
+      for (i=0; i<zonesResourcePK.length; i++){
+         delete zonesResourceTypes[zonesResourcePK[i]];
+      }
+      for (i=0; i<resourceTypesPK.length; i++){
+         delete resourceTypes[resourceTypesPK[i]];
+      }
+      zonesPK.length = 0;
+      zonesUsagePK.length = 0;
+      zonesResourcePK.length = 0;
+      resourceTypesPK.length = 0;
+      chboxsTotal = 0;
+  }
+
+  function formValid(){
+     opType = getElement("optype").value;
+     if (opType == 'updatename'){
+        currName = getElement("currname").value;
+        nameElem = getElement("newname");
+        name = trim(nameElem.value);
+        nameElem.value = name;
+        if (currName != name){
+           if (name.value == ''){
+              alert('Provide a name to the Top Level Allocation');
+              return false;
+           }
+           return true;
+        }
+     }else if (opType == 'newzone'){
+        allOk = newZoneFormValidate(); 
+        if (allOk){
+           return true;
+        }else{
+           return false;
+        }
+     }else if (opType == 'deletezone'){
+        return true;
+     }else if (opType == 'updatezone'){
+        return true;
+     }
+     alert('No Changes done to perform Edit Operation');
+     return false;
+  }
+
+  function newZoneFormValidate(){
+    cleanUpFinalList();
+    finalRegionElem = getElement("finalregionlist");
+    finalZoneElem = getElement("finalzonelist");
+    finalHepSpecsElem = getElement("finalhepspecslist");
+    finalMemoryElem = getElement("finalmemorylist");
+    finalStorageElem = getElement("finalstoragelist");
+    finalBandwidthElem = getElement("finalbandwidthlist");
+    finalRtTypeElem = getElement("finalresourcestype");
+    countRtElem = getElement("countresourcestype");
+    zoneSel = false;
+    for(i=0; i<chboxsTotal; i++){
+        if (getElement("regionzoneoptions" + i).checked){
+            zoneSel = true;
+            break;
+        }
+    }
+    if (!zoneSel){
+        alert('No Zone is selected to add to the Top Level Allocation');
+        return false;
+    }
+    regionElem = getElement("region");
+    selRegionName = regionElem.options[regionElem.selectedIndex].value;
+    for(i=0; i<chboxsTotal; i++){
+        if (!getElement("regionzoneoptions" + i).checked){
+            continue;
+        }
+        zoneName = getElement("zonename" + i).value;
+        zoneKey = getElement("zonekey" + i).value;
+
+        rTypesElem = getElement("rtypes" + i);
+        rTypeSel = false;
+        for(k=0; k<rTypesElem.options.length; k++){
+           if (rTypesElem.options[k].selected){
+              rTypeSel = true;
+              break;
+           }
+        }
+        if (!rTypeSel){
+           alert('Select atleast one Resource Type for Zone ' + zoneName);
+           return false;
+        }
+
+        hepSpecs = zonesInfo[zoneKey].hepspecs;
+        memory = zonesInfo[zoneKey].memory;
+        storage = zonesInfo[zoneKey].storage;
+        bandwidth = zonesInfo[zoneKey].bandwidth;
+
+        currHepSpec = '';
+        currMemory = '';
+        currStorage = '';
+        currBandwidth = '';
+
+        if (hepSpecs == 0){
+           currHepSpec = 0;
+        }else if (hepSpecs > 0){
+           currHepSpecElem = getElement("hepspec" + i);
+           currHepSpec = trim(currHepSpecElem.value);
+        }
+
+        if (memory == 0){
+           currMemory = 0;
+        }else if (memory > 0){
+           currMemoryElem = getElement("memory" + i);
+           currMemory = trim(currMemoryElem.value);
+        }
+
+        if (storage == 0){
+           currStorage = 0;
+        }else if (storage > 0){
+           currStorageElem = getElement("storage" + i);
+           currStorage = trim(currStorageElem.value);
+        }
+
+        if (bandwidth == 0){
+           currBandwidth = 0;
+        }else if (bandwidth > 0){
+           currBandwidthElem = getElement("bandwidth" + i);
+           currBandwidth = trim(currBandwidthElem.value);
+        }
+
+        errorMessage = validateResourceParameters(currHepSpec, currMemory, currStorage, currBandwidth);
+        if (errorMessage != ''){
+          alert(errorMessage);
+          return false;
+        }
+
+        if (hepSpecs >= 0){
+          if (currHepSpec == ''){
+            currHepSpec = -1;
+          }else{ 
+            currHepSpec = round_float(currHepSpec, 3);
+          }
+        }else{
+          currHepSpec = -1;
+        }
+        if (memory >= 0){
+          if (currMemory == ''){
+            currMemory = -1;
+          }else{
+            currMemory = round_float(currMemory, 3);
+          }
+        }else{
+          memory = -1;
+        }
+        if (storage >= 0){
+          if (currStorage == ''){
+            currStorage = -1;
+          }else{
+            currStorage = round_float(currStorage, 3);
+          }
+        }else{
+          storage = -1;
+        }
+        if (bandwidth >= 0){
+          if (currBandwidth == ''){
+            currBandwidth = -1;
+          }else{
+            currBandwidth = round_float(currBandwidth, 3); 
+          }
+        }else{
+          currBandwidth = -1;
+        }
+
+        if (hepSpecs > 0){
+           hepSpecsFree = hepSpecs - zonesInfo[zoneKey].hepspecs_used;
+           if (currHepSpec > hepSpecsFree){
+             alert('For Zone ' + zoneName + ', The requested Hepspec value is greater than the free Hepspec');
+             return false;
+           }
+        }
+        if (memory > 0){
+           memoryFree = memory - zonesInfo[zoneKey].memory_used;
+           if (currMemory > memoryFree){
+             alert('For Zone ' + zoneName + ', The requested Memory value is greater than the free Memory');
+             return false;
+           }
+        }
+        if (storage > 0){
+           storageFree = storage - zonesInfo[zoneKey].storage_used;
+           if (currStorage > storageFree){
+             alert('For Zone ' + zoneName + ', The requested Storage value is greater than the free Storage');
+             return false;
+           }
+        }
+        if (bandwidth > 0){
+           bandwidthFree = bandwidth - zonesInfo[zoneKey].bandwidth_used;
+           if (currBandwidth > bandwidthFree){
+             alert('For Zone ' + zoneName + ', The requested Bandwidth value is greater than the free Bandwidth');
+             return false;
+           }
+        }
+
+        finalRegionElem.options[finalRegionElem.options.length] = new Option(selRegionName, selRegionName, true, true);
+        finalZoneElem.options[finalZoneElem.options.length] = new Option(zoneName, zoneName, true, true);
+        finalHepSpecsElem.options[finalHepSpecsElem.options.length] = new Option(currHepSpec, currHepSpec, true, true);
+        finalMemoryElem.options[finalMemoryElem.options.length] = new Option(currMemory, currMemory, true, true);
+        finalStorageElem.options[finalStorageElem.options.length] = new Option(currStorage, currStorage, true, true);
+        finalBandwidthElem.options[finalBandwidthElem.options.length] = new Option(currBandwidth, currBandwidth, true, true);
+
+        count = 0;
+        countRtElem        
+        for(k=0; k<rTypesElem.options.length; k++){
+           if (rTypesElem.options[k].selected){
+              finalRtTypeElem.options[finalRtTypeElem.options.length] = new Option(rTypesElem.options[k].value, rTypesElem.options[k].value, true, true);
+              count += 1;
+           }
+        }
+        countRtElem.options[countRtElem.options.length] = new Option(count, count, true, true);
+    }
+    return true;
+  }
+
+  function cleanUpFinalList(){
+    finalRegionElem = getElement("finalregionlist");
+    finalZoneElem = getElement("finalzonelist");
+    finalHepSpecsElem = getElement("finalhepspecslist");
+    finalMemoryElem = getElement("finalmemorylist");
+    finalStorageElem = getElement("finalstoragelist");
+    finalBandwidthElem = getElement("finalbandwidthlist");
+    finalRtTypeElem = getElement("finalresourcestype");
+    for(i=(finalRegionElem.options.length-1); i>=0; i--){
+        finalRegionElem.remove(i);
+    }
+    for(i=(finalZoneElem.options.length-1); i>=0; i--){
+        finalZoneElem.remove(i);
+    }
+    for(i=(finalHepSpecsElem.options.length-1); i>=0; i--){
+        finalHepSpecsElem.remove(i);
+    }
+    for(i=(finalMemoryElem.options.length-1); i>=0; i--){
+        finalMemoryElem.remove(i);
+    }
+    for(i=(finalStorageElem.options.length-1); i>=0; i--){
+        finalStorageElem.remove(i);
+    }
+    for(i=(finalBandwidthElem.options.length-1); i>=0; i--){
+        finalBandwidthElem.remove(i);
+    }
+    for(i=(finalRtTypeElem.options.length-1); i>=0; i--){
+        finalRtTypeElem.remove(i);
+    }
+  }
+
+  function showNameForm(){
+      currName = getElement("currname").value;
+      getElement("datadiv").innerHTML = '<dl>' +
+       '<dt> <label for="newname">Allocation Name</label>: </dt>' +
+       '<dd> <input id="newname" type="text" name="newname" maxlength="50" value="' + currName + '"/>'+
+        '<img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"' +
+            'onmouseover="return ShowToolTip(\'nameToolTip\');" onmouseout="return HideToolTip(\'nameToolTip\');" />' +
+        '<div id="nameToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">' +
+            'Enter Unique Name - Maximum of 50 Characters' +
+        '</div>'+
+       '</dd>' +
+       '</dl>'+
+		'<dl>' +
+       '<dt> <label for="comment">Comment</label>: </dt>' +
+       '<dd> <textarea id="comment" rows="5" cols="30" name="comment"  ></textarea>'+
+        '<img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"' +
+            'onmouseover="return ShowToolTip(\'commentToolTip\');" onmouseout="return HideToolTip(\'commentToolTip\');" />' +
+        '<div id="commentToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">' +
+            'Enter Comments about the Top Level allocation(Useful for Logging)- Maximum of 3000 Characters' +
+        '</div>'+
+       '</dd>' +
+       '</dl>';       
+      getElement("actiondiv").style.display = "block";
+      getElement("optype").value = "updatename";
+      getElement("newzonediv").innerHTML = "";
+      getElement("newzonediv").style.display="none";
+  }
+
+  function showZoneAllocForm(){
+      getElement("datadiv").innerHTML = '';
+      getElement("actiondiv").style.display = "none";
+      getElement("optype").value = "updatezone";
+      getElement("newzonediv").innerHTML = "";
+      getElement("newzonediv").style.display="none";
+
+      zoneNames.length = 0;
+      zoneInRegion.length = 0;
+      getElement("datadiv").innerHTML = '';
+      tpAllocName = getElement("currname").value;
+      csrftoken = getElement("updatetoplevelallocationform").csrfmiddlewaretoken.value;
+
+      $.ajax( {
+        type: 'post',
+        data: {'name': tpAllocName, 'csrfmiddlewaretoken': csrftoken},
+        url:  '/cloudman/toplevelallocation/getzonelist/',
+        success: function( result ) {
+           var obj = jQuery.parseJSON(result);
+           if (obj.length > 0){
+              for (i=0; i<obj.length; i++){
+                 modelName = obj[i].model;
+                 modelSplit = modelName.split(".");
+                 if (modelSplit[1] == "toplevelallocationbyzone"){
+                   //pk = obj[i].pk;
+                   regionName = obj[i].region;
+                   zoneName = obj[i].zone;
+                   zoneNames.push(zoneName);
+                   zoneInRegion.push(regionName);
+                 }
+              }
+           }
+           showUpdateZoneDiv();
+        }
+      } );
+  }
+
+  function checkUpdateZoneForm(){
+      hepSpecElem = getElement("newhepspec");
+      selHepSpecsUnitElem = getElement("selhepspecsunit");
+      selStorageUnitElem = getElement("selstorageunit");      
+      memoryElem = getElement("newmemory");
+      storageElem = getElement("newstorage");
+      bandwidthElem = getElement("newbandwidth");
+
+      hepspec = trim(hepSpecElem.value);
+      selHepSpecsUnitValue = trim(selHepSpecsUnitElem.value);
+      hepspec = convertCPUUnit(hepspec,selHepSpecsUnitValue)
+      selStorageUnitValue = trim(selStorageUnitElem.value);
+      
+      memory = trim(memoryElem.value);
+      storage = trim(storageElem.value);
+      storage = convertStorageUnit(storage,selStorageUnitValue)
+      
+      bandwidth = trim(bandwidthElem.value);
+
+      hepSpecElem.value = hepspec;
+      memoryElem.value = memory;
+      storageElem.value = storage;
+      bandwidthElem.value = bandwidth;
+
+      //validate parameters if there is any change to the existing values
+      errorMessage = validateResourceParameters(hepspec, memory, storage, bandwidth)
+      if (errorMessage != ''){
+         alert(errorMessage);
+         return false;
+      }
+
+      oldhepspec = round_float(parseFloat(getElement("zonehepspecshare").value), 3);
+      oldmemory = round_float(parseFloat(getElement("zonememoryshare").value), 3);
+      oldstorage = round_float(parseFloat(getElement("zonestorageshare").value), 3);
+      oldbandwidth = round_float(parseFloat(getElement("zonebandwidthshare").value), 3);
+
+      oldhepspec1 = '';
+      oldmemory1 = '';
+      oldstorage1 = '';
+      oldbandwidth1 = '';
+      if (oldhepspec != -1){
+         oldhepspec1 = oldhepspec;
+      }
+      if (oldmemory != -1){
+         oldmemory1 = oldmemory;
+      }
+      if (oldstorage != -1){
+         oldstorage1 = oldstorage;
+      }
+      if (oldbandwidth != -1){
+         oldbandwidth1 = oldbandwidth;
+      }
+      hepSpecChange = checkNumberParameterChange(oldhepspec1, hepspec);
+      memoryChange = checkNumberParameterChange(oldmemory1, memory);
+      storageChange = checkNumberParameterChange(oldstorage1, storage);
+      bandwidthChange = checkNumberParameterChange(oldbandwidth1, bandwidth);
+
+      if (!(hepSpecChange || memoryChange || storageChange || bandwidthChange)){
+         alert('No changes done for update');
+         return false;
+      }
+
+      if (oldhepspec == -1){
+         oldhepspec = 0;
+      }
+      if (oldmemory == -1){
+         oldmemory = 0;
+      }
+      if (oldstorage == -1){
+         oldstorage = 0;
+      }
+      if (oldbandwidth == -1){
+         oldbandwidth = 0;
+      }
+
+      zoneTotHepSpec = round_float(parseFloat(getElement("tothepspec").value), 3);
+      zoneTotMemory = round_float(parseFloat(getElement("totmemory").value), 3);
+      zoneTotStorage = round_float(parseFloat(getElement("totstorage").value), 3);
+      zoneTotBandwidth = round_float(parseFloat(getElement("totbandwidth").value), 3);
+
+      usedHepSpec = round_float(parseFloat(getElement("usedhepspec").value), 3);
+      usedMemory = round_float(parseFloat(getElement("usedmemory").value), 3);
+      usedStorage = round_float(parseFloat(getElement("usedstorage").value), 3);
+      usedBandwidth = round_float(parseFloat(getElement("usedbandwidth").value), 3);
+
+      if (hepspec != ''){
+         hepspec = round_float(parseFloat(hepspec), 3);
+         hepSpecElem.value = hepspec;
+         if (zoneTotHepSpec == -1){ 
+            alert('The Hepspec value is UNDEFINED for this zone and so only blank value is allowed');
+            return false;
+         }else{
+            if ( hepspec > (zoneTotHepSpec - usedHepSpec + oldhepspec) ){
+               alert('The requested Hepspec value is greater than the available Hepspec from the zone');
+               return false;
+            }
+         }
+      }
+   
+      if (memory != ''){
+         memory = round_float(parseFloat(memory), 3);
+         memoryElem.value = memory;
+         if (zoneTotMemory == -1){
+            alert('The Memory value is UNDEFINED for this zone and so only blank value is allowed');
+            return false;
+         }else{
+            if ( memory > (zoneTotMemory - usedMemory + oldmemory) ){
+               alert('The requested Memory value is greater than the available Memory from the zone');
+               return false;
+            }
+         }
+      }
+
+      if (storage != ''){
+         storage = round_float(parseFloat(storage), 3);
+         storageElem.value = storage;
+         if (zoneTotStorage == -1){
+            alert('The Storage value is UNDEFINED for this zone and so only blank value is allowed');
+            return false;
+         }else{
+            if ( storage > (zoneTotStorage - usedStorage + oldstorage) ){
+               alert('The requested Storage value is greater than the available Storage from the zone');
+               return false;
+            }
+         }
+      }
+
+      if (bandwidth != ''){
+         bandwidth = round_float(parseFloat(bandwidth), 3);
+         bandwidthElem.value = bandwidth;
+         if (zoneTotBandwidth == -1){
+            alert('The Bandwidth value is UNDEFINED for this zone and so only blank value is allowed');
+            return false;
+         }else{
+            if ( bandwidth > (zoneTotBandwidth - usedBandwidth + oldbandwidth) ){
+               alert('The requested Bandwidth value is greater than the available Bandwidth from the zone');
+               return false;
+            }
+         }
+      }
+      return true;
+  }
+
+  function updatezonealloc(selRegion, selZone){
+      getElement("datadiv").innerHTML = '';
+      getElement("optype").value = "updatezone";
+      getElement("selregionname").value = selRegion;
+      getElement("selzonename").value = selZone;
+      tpAllocName = getElement("currname").value;
+      $.ajax( {
+        type: 'post',
+        data: {'regionname': selRegion, 'zonename': selZone, 'name': tpAllocName, 'csrfmiddlewaretoken': csrftoken},
+        url:  '/cloudman/toplevelallocation/getzoneresourceinfo/',
+        success: function( result ) {
+          var obj = jQuery.parseJSON(result);
+          if (obj.length <= 0){
+            alert('No Information found for this Zone ' + selZone + ' of Region ' + selRegion);
+          }else{
+            hepSpecShare = -1;memoryShare = -1;storageShare = -1;bandwidthShare = -1;
+            hepSpecText = '';memoryText = '';storageText = '';bandwidthText = '';
+            zoneTotHepSpec = -1; zoneTotMemory = -1; zoneTotStorage = -1; zoneTotBandwidth = -1;
+            usedHepSpec = 0; usedMemory = 0; usedStorage = 0; usedBandwidth = 0;
+            for (i=0; i<obj.length; i++){
+               modelName = obj[i].model;
+               modelSplit = modelName.split(".");
+               if (modelSplit[1] == "toplevelallocationbyzone"){
+                  if (obj[i].fields.hepspec != null){
+                     hepSpecShare = obj[i].fields.hepspec;
+                     hepSpecText = hepSpecShare;
+                  }
+                  if (obj[i].fields.memory != null){
+                     memoryShare = obj[i].fields.memory;
+                     memoryText = memoryShare;
+                  }
+                  if (obj[i].fields.storage != null){
+                     storageShare = obj[i].fields.storage;
+                     storageText = storageShare;
+                  }
+                  if (obj[i].fields.bandwidth != null){
+                     bandwidthShare = obj[i].fields.bandwidth;
+                     bandwidthText = bandwidthShare;
+                  }
+               }else if (modelSplit[1] = "zoneallocinfo"){
+                  if (obj[i].fields.tothepspec != null){
+                     zoneTotHepSpec = obj[i].fields.tothepspec;
+                  }
+                  if (obj[i].fields.usedhepspec != null){
+                     usedHepSpec = obj[i].fields.usedhepspec;
+                  }
+                  if (obj[i].fields.totmemory != null){
+                     zoneTotMemory = obj[i].fields.totmemory;
+                  }
+                  if (obj[i].fields.usedmemory != null){
+                     usedMemory = obj[i].fields.usedmemory;
+                  }
+                  if (obj[i].fields.totstorage != null){
+                     zoneTotStorage = obj[i].fields.totstorage;
+                  }
+                  if (obj[i].fields.usedstorage != null){
+                     usedStorage = obj[i].fields.usedstorage;
+                  }
+                  if (obj[i].fields.totbandwidth != null){
+                     zoneTotBandwidth = obj[i].fields.totbandwidth;
+                  }
+                  if (obj[i].fields.usedbandwidth != null){
+                     usedBandwidth = obj[i].fields.usedbandwidth;
+                  }
+               }
+            } 
+            displayStr = '<dl>' +
+               '<dt> <label>Region Name</label>: </dt>' +
+    	       '<dd> ' + selRegion + '</dd>'+
+	       '</dl>';
+	    displayStr += '<dl>' +
+	       '<dt> <label>Zone Name</label>: </dt>' +
+	       '<dd> ' + selZone;
+       if (zoneTotHepSpec == -1)
+       		displayStr += " <br/>Capacity(HS06)  Total: {% displayUndefined%} ";
+       else
+       		displayStr += " <br/>Capacity(HS06)  Total: " + zoneTotHepSpec + " Used: " + usedHepSpec;            
+       if (zoneTotMemory == -1)
+            displayStr += " <br/>Memory(MB) Total: {% displayUndefined%} ";
+       else
+           displayStr += " <br/>Memory(MB) Total: " + zoneTotMemory + " Used: " + usedMemory;
+       if (zoneTotStorage == -1)
+           displayStr += " <br/>Storage(MB) Total: {% displayUndefined%} ";
+       else
+           displayStr += " <br/>Storage(MB) Total: " + zoneTotStorage + " Used: " + usedStorage ;
+       if (zoneTotBandwidth == -1)
+           displayStr += " <br/>Bandwidth(Mbps) Total: {% displayUndefined%} ";
+       else
+           displayStr += " <br/>Bandwidth(Mbps) Total: " + zoneTotBandwidth + " Used: " + usedBandwidth;
+
+	    displayStr += '</dd></dl>';
+	    displayStr += '<dl>' +
+	       '<dt> <label for="newhepspec">HepSpec</label>:</dt>' +
+	       '<dd> <input type="text" name="newhepspec" id="newhepspec" value="' + hepSpecText + '"/>{% displayHepSpecUnit %}<br/>' ;
+            displayStr += 'AutoScale:<input type="checkbox" name="scale" /></dd></dl>';
+	    displayStr += '<input type="hidden" name="zonehepspecshare" id="zonehepspecshare" value="' + hepSpecShare + '"/>';
+	    displayStr += '<input type="hidden" name="tothepspec" id="tothepspec" value="' + zoneTotHepSpec + '"/>';
+	    displayStr += '<input type="hidden" name="usedhepspec" id="usedhepspec" value="' + usedHepSpec + '"/>';
+	    displayStr += '<dl>' +
+	       '<dt> <label for="newmemory">Memory</label>:</dt>' +
+	       '<dd> <input type="text" name="newmemory" id="newmemory" value="' + memoryText + '"/>';
+            displayStr += '</dd></dl>';
+	    displayStr += '<input type="hidden" name="zonememoryshare" id="zonememoryshare" value="' + memoryShare + '"/>';
+            displayStr += '<input type="hidden" name="totmemory" id="totmemory" value="' + zoneTotMemory + '"/>';
+            displayStr += '<input type="hidden" name="usedmemory" id="usedmemory" value="' + usedMemory + '"/>';
+	    displayStr += '<dl>' +
+	       '<dt> <label for="newstorage">Storage</label>: </dt>' +
+	       '<dd> <input type="text" name="newstorage" id="newstorage" value="' + storageText + '"/>{% displayStorageUnit %}<br/>';
+            displayStr += 'AutoScale:<input type="checkbox" name="storagescale" /></dd></dl>';
+	    displayStr += '<input type="hidden" name="zonestorageshare" id="zonestorageshare" value="' + storageShare + '"/>';
+            displayStr += '<input type="hidden" name="totstorage" id="totstorage" value="' + zoneTotStorage + '"/>';
+            displayStr += '<input type="hidden" name="usedstorage" id="usedstorage" value="' + usedStorage + '"/>';
+	    displayStr += '<dl>' +
+	       '<dt> <label for="newbandwidth">Bandwidth</label>: </dt>' +
+	       '<dd> <input type="text" name="newbandwidth" id="newbandwidth" value="' + bandwidthText + '"/>';
+            displayStr += '</dd></dl>';
+	    displayStr += '<dl>' +
+	       '<dt> <label for="comment">Comment</label>: </dt>' +
+	       '<dd> <textarea id="comment" rows="5" cols="30" name="comment"  ></textarea>'+
+	       '<img height="9px" width="9px" src="/media/images/qmark.jpg" style="cursor:pointer"'+
+	       '  onmouseover="return ShowToolTip(\'commentToolTip\');" onmouseout="return HideToolTip(\'commentToolTip\');" />'+
+	       '<div id="commentToolTip" style="width:120px; position:absolute; display:none" class="boxcontent"> '+
+	       'Enter Comments about the project allocation(Useful for Logging)- Maximum of 3000 Characters'+
+	       '</div>';
+            displayStr += '</dd></dl>';
+
+	    displayStr += '<input type="hidden" name="zonebandwidthshare" id="zonebandwidthshare" value="' + bandwidthShare + '"/>';
+            displayStr += '<input type="hidden" name="totbandwidth" id="totbandwidth" value="' + zoneTotBandwidth + '"/>';
+            displayStr += '<input type="hidden" name="usedbandwidth" id="usedbandwidth" value="' + usedBandwidth + '"/>';
+	    displayStr += '<dl><dt></dt><dd><input type="button" name="default" value="Reset to Current Values" onClick="javascript:resetDefault();"/></dd></dl>';
+	    displayStr += '<dl><dt></dt><dd><input type="submit" name="update" value="Update" onClick="return checkUpdateZoneForm();"/></dd></dl>';
+            getElement("datadiv").innerHTML = displayStr;
+         }
+       }
+    });
+  }
+
+  function resetDefault(){
+    hepspecShare = getElement("zonehepspecshare").value;
+    memoryShare = getElement("zonememoryshare").value;
+    storageShare = getElement("zonestorageshare").value;
+    bandwidthShare = getElement("zonebandwidthshare").value;
+    if (hepspecShare == -1){
+       hepspecShare = '';
+    }
+    if (memoryShare == -1){
+       memoryShare = '';
+    }
+    if (storageShare == -1){
+       storageShare = '';
+    }
+    if (bandwidthShare == -1){
+       bandwidthShare = '';
+    }
+    getElement("newhepspec").value = hepspecShare;
+    getElement("newmemory").value = memoryShare;
+    getElement("newstorage").value = storageShare;
+    getElement("newbandwidth").value = bandwidthShare;
+  }
+
+  function deletezonealloc(selRegion, selZone){
+      getElement("optype").value = "deletezone";
+      getElement("selregionname").value = selRegion;
+      getElement("selzonename").value = selZone;
+      if (confirm("Are you really wan't to delete Zone " + selZone + " of Region " + selRegion + " from this Top Level Allocation")){
+      		 return true;      		 
+      }else{
+         return false;
+      }
+  }
+
+  function showUpdateZoneDiv(){
+      displayStr = "<br/><table class=\"autosort\" border=\"1\" align=\"center\" style=\"table-layout: fixed;width:650px;font-size:11px;text-overflow:ellipsis;\"><thead><tr><th style=\"overflow:hidden;\" title=\"Region\">Region Name</th><th style=\"overflow:hidden;\" title=\"Zone\">Zone Name</th><th style=\"overflow:hidden;\" title=\"Operation\">Operation</th></tr></thead>";
+      displayStr += "<tbody>";    
+      for(i=0; i<zoneNames.length; i++){
+         if (i%2 == 0){
+            displayStr += "<tr class=\"even\" text=\"wrap\">";
+         }else{
+            displayStr += "<tr class=\"odd\" text=\"wrap\">";
+         }
+         displayStr += "<td scope=\"row\" text=\"wrap\" style=\"overflow:hidden;text-align:left;\" title=\"" + zoneInRegion[i]+ "\">" + zoneInRegion[i] + "</td>";
+         displayStr += "<td scope=\"row\" text=\"wrap\" style=\"overflow:hidden;text-align:left;\" title=\"" + zoneNames[i]+ "\">" + zoneNames[i] + "</td>";
+         displayStr += "<td scope=\"row\" text=\"wrap\" style=\"overflow:hidden;text-align:left;\">";
+         displayStr += "<input type=\"button\" name=\"update\" value=\"Update\" onClick=\"updatezonealloc('" + zoneInRegion[i] + "', '" + zoneNames[i] + "');\"/> &nbsp; &nbsp; &nbsp; &nbsp;";
+         displayStr += "<input type=\"submit\" name=\"delete\" value=\"Delete\" onClick=\"return deletezonealloc('" + zoneInRegion[i] + "', '" + zoneNames[i] + "');\"/>";
+         displayStr += "</td></tr>"; 
+      } 
+      displayStr += "</tbody></table>";
+      getElement("datadiv").innerHTML = displayStr;
+  }
+
+  function showAddZoneForm(){
+      zoneNames.length = 0;
+      zoneInRegion.length = 0;
+      getElement("datadiv").innerHTML = '';
+      tpAllocName = getElement("currname").value;
+      csrftoken = getElement("updatetoplevelallocationform").csrfmiddlewaretoken.value;
+      
+      $.ajax( {
+        type: 'post',
+        data: {'name': tpAllocName, 'csrfmiddlewaretoken': csrftoken},
+        url:  '/cloudman/toplevelallocation/getzonelist/',
+        success: function( result ) {
+           var obj = jQuery.parseJSON(result);
+           if (obj.length > 0){
+              for (i=0; i<obj.length; i++){
+                 modelName = obj[i].model;
+                 modelSplit = modelName.split(".");
+                 if (modelSplit[1] == "toplevelallocationbyzone"){
+                   //pk = obj[i].pk;
+                   regionName = obj[i].region;
+                   zoneName = obj[i].zone;
+                   zoneNames.push(zoneName);
+                   zoneInRegion.push(regionName);
+                 }
+              }
+           }
+           divStr = '<dl>' +
+                    '<dt><label for="Regions">Select Region:</label></dt>' +
+                    '<dd>' +
+                    '<select size="1" name="region" id="region" style="width:150px;" onChange="onRegionChange();">' + 
+                    '<option value="--- Select ---" SELECTED>--- Select ---</option>';
+           regionsListElem = getElement("regionlist");
+           for(i=0; i<regionsListElem.options.length; i++){
+               divStr = divStr + '<option value="' + regionsListElem.options[i].value + '">' +
+                                regionsListElem.options[i].value + '</option>';
+           } 
+           divStr = divStr + '</select></dd></dl>';
+           divStr +='<dl>'+
+           			'<dt><label for="comment">Comment</label>:</dt>'+
+           			'<dd><textarea id="comment" rows="5" cols="30" name="comment"  ></textarea>'+
+           			'<img height="9px" width="9px" src="/media/images/qmark.jpg" style="cursor:pointer"'+
+           			'  onmouseover="return ShowToolTip(\'commentToolTip\');" onmouseout="return HideToolTip(\'commentToolTip\');" />'+
+           			'<div id="commentToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">'+
+           			'Enter Comments about the Top Level  allocation(Useful for Logging)- Maximum of 3000 Characters'+
+           			'</div></dd></dl>';
+           			
+           getElement('datadiv').innerHTML = divStr;
+        }
+      } );
+      getElement("actiondiv").style.display = "block";
+      getElement("optype").value = "newzone";
+  }
+
+  function onRegionChange(){
+      getElement("newzonediv").innerHTML = "";
+      getElement("newzonediv").style.display="none";
+      regionElem = getElement("region");
+      cleanZonesInfo(); 
+      if (regionElem.selectedIndex > 0){
+         csrftoken = getElement("updatetoplevelallocationform").csrfmiddlewaretoken.value;
+         regionName = regionElem.options[regionElem.selectedIndex].value;
+         regionElem.disabled = true;
+         $.ajax( {
+           type: 'post',
+           data: {'regionname': regionName, 'csrfmiddlewaretoken': csrftoken},
+           url:  '/cloudman/zone/getallocations/',
+           success: function( result ) {
+              regionElem.disabled = false;
+              var obj = jQuery.parseJSON(result);
+              if (obj.length <= 0){
+                alert('No Zones Defined in Region ' + regionName);
+              }else{
+                for (i=0; i<obj.length; i++){
+                   modelName = obj[i].model;
+                   modelSplit = modelName.split(".");
+                   if (modelSplit[1] == "zone"){
+                      pk = obj[i].pk;
+                      zonesPK.push(pk);
+                      zonesInfo[pk] = {};
+                      zonesInfo[pk].name = obj[i].fields.name;
+                      zonesInfo[pk].description = obj[i].fields.description;
+                      if (obj[i].fields.hepspecs == null){
+                         zonesInfo[pk].hepspecs = -1;
+                      }else{
+                         zonesInfo[pk].hepspecs = round_float((obj[i].fields.hepspecs * obj[i].fields.hepspec_overcommit), 3);
+                      }
+                      if (obj[i].fields.memory == null){
+                         zonesInfo[pk].memory = -1;
+                      }else{
+                         zonesInfo[pk].memory = round_float((obj[i].fields.memory * obj[i].fields.memory_overcommit), 3);
+                      }
+                      if (obj[i].fields.storage == null){
+                         zonesInfo[pk].storage = -1;
+                      }else{
+                         zonesInfo[pk].storage = obj[i].fields.storage;
+                      }
+                      if (obj[i].fields.bandwidth == null){
+                         zonesInfo[pk].bandwidth = -1;
+                      }else{
+                         zonesInfo[pk].bandwidth = obj[i].fields.bandwidth;
+                      }
+                      zonesInfo[pk].hepspec_overcommit = obj[i].fields.hepspec_overcommit;
+                      zonesInfo[pk].memory_overcommit = obj[i].fields.memory_overcommit;
+                      zonesInfo[pk].hepspecs_used = 0;
+                      zonesInfo[pk].memory_used = 0;
+                      zonesInfo[pk].storage_used = 0;
+                      zonesInfo[pk].bandwidth_used = 0;
+                   }else if (modelSplit[1] == "toplevelallocationbyzone"){
+                      pk = obj[i].pk;
+                      zonesUsagePK.push(pk);
+                      zonesUsageInfo[pk] = {};
+                      zone_id = obj[i].fields.zone;
+                      zonesUsageInfo[pk].zone = obj[i].fields.zone;
+
+                      zonesUsageInfo[pk].hepspec = obj[i].fields.hepspec;
+                      zonesUsageInfo[pk].memory = obj[i].fields.memory;
+                      zonesUsageInfo[pk].storage = obj[i].fields.storage;
+                      zonesUsageInfo[pk].bandwidth = obj[i].fields.bandwidth;
+                      if (obj[i].fields.hepspec != null){
+                         zonesInfo[zone_id].hepspecs_used += obj[i].fields.hepspec;
+                      }
+                      if (obj[i].fields.memory != null){
+                         zonesInfo[zone_id].memory_used += obj[i].fields.memory
+                      }
+                      if (obj[i].fields.storage != null){
+                         zonesInfo[zone_id].storage_used += obj[i].fields.storage
+                      }
+                      if (obj[i].fields.bandwidth != null){
+                         zonesInfo[zone_id].bandwidth_used += obj[i].fields.bandwidth;
+                      }
+                   }else if (modelSplit[1] == "zoneallowedresourcetype"){
+                      pk = obj[i].pk
+                      zonesResourcePK.push(pk);
+                      zonesResourceTypes[pk] = {};
+                      zonesResourceTypes[pk].zone = obj[i].fields.zone;
+                      zonesResourceTypes[pk].resource_type = obj[i].fields.resource_type;
+                   }else if (modelSplit[1] == "resourcetype"){
+                      pk = obj[i].pk;
+                      resourceTypesPK.push(pk);
+                      resourceTypes[pk] = {};
+                      resourceTypes[pk].name = obj[i].fields.name;
+                      resourceTypes[pk].resource_class = obj[i].fields.resource_class;
+                      resourceTypes[pk].hepspecs = obj[i].fields.hepspecs;
+                      resourceTypes[pk].memory = obj[i].fields.memory;
+                      resourceTypes[pk].storage = obj[i].fields.storage;
+                      resourceTypes[pk].bandwidth = obj[i].fields.bandwidth;
+                   }
+                }
+                fillCurrZones();                
+              }
+           }
+         });
+      }
+  }
+
+  function selectResourcesFromZone(pkey, chboxIndex){
+      chkBoxElem = getElement("regionzoneoptions" + chboxIndex);
+      hepSpecs = zonesInfo[pkey].hepspecs;
+      memory = zonesInfo[pkey].memory;
+      storage = zonesInfo[pkey].storage;
+      bandwidth = zonesInfo[pkey].bandwidth;
+      if (hepSpecs > 0){
+         getElement("hepspec" + chboxIndex).value = "";
+      }
+      if (memory > 0){
+         getElement("memory" + chboxIndex).value = "";
+      }
+      if (storage > 0){
+         getElement("storage" + chboxIndex).value = "";
+      }
+      if (bandwidth > 0){
+         getElement("bandwidth" + chboxIndex).value = "";
+      }
+      getElement("rtypes" + chboxIndex).selectedIndex = -1;
+      if (chkBoxElem.checked){
+         if (hepSpecs > 0){
+             getElement("hepspec" + chboxIndex).disabled = false;
+         }
+         if (memory > 0){
+             getElement("memory" + chboxIndex).disabled = false;
+         }
+         if (storage > 0){
+             getElement("storage" + chboxIndex).disabled = false;
+         }
+         if (bandwidth > 0){
+             getElement("bandwidth" + chboxIndex).disabled = false;
+         }
+         getElement("rtypes" + chboxIndex).disabled = false; 
+      }else{
+         if (hepSpecs > 0){
+             getElement("hepspec" + chboxIndex).disabled = true;
+         }
+         if (memory > 0){
+             getElement("memory" + chboxIndex).disabled = true;
+         }
+         if (storage > 0){
+             getElement("storage" + chboxIndex).disabled = true;
+         }
+         if (bandwidth > 0){
+             getElement("bandwidth" + chboxIndex).disabled = true;
+         }
+         getElement("rtypes" + chboxIndex).disabled = true;
+      }
+  }
+
+  function fillCurrZones(){
+      regionElem = getElement("region");
+      selRegionName = regionElem.options[regionElem.selectedIndex].value;
+      displayStr = "<table class=\"autosort\" border=\"1\" align=\"center\" style=\"table-layout: fixed;width:650px;font-size:11px;text-overflow:ellipsis;\"><thead><tr><th style=\"overflow:hidden; width:10px;\" title=\"select\">Sel</th><th width=\"120px;\" style=\"overflow:hidden;\" title=\"Name\">Name</th><th width=\"100px;\" style=\"overflow:hidden;\" title=\"Resource Types\">Resource Type</th><th width=\"340px;\" style=\"overflow:hidden;\"><table border=\"10\" width=\"95%\" class=\"normaltable\"><thead><th style=\"overflow:hidden;text-align:left;\" title=\"Resource\">Resource</th><th style=\"overflow:hidden;text-align:left;\" title=\"Total\">Total</th><th style=\"overflow:hidden;text-align:left;\" title=\"Used\">Used</th><th style=\"overflow:hidden;text-align:left;\" title=\"Allot\">Allot</th></thead></table></th></tr></thead>";
+      displayStr += "<tbody>";
+      
+      for(i=0; i<zonesPK.length; i++){
+         key = zonesPK[i];
+         if (i%2 == 0){
+            displayStr += "<tr class=\"even\" text=\"wrap\">";
+         }else{
+            displayStr += "<tr class=\"odd\" text=\"wrap\">";
+         }
+         alreadyPresent = false;
+         for(k=0; k<zoneNames.length; k++){
+            zoneName = zoneNames[k];
+            regionName = zoneInRegion[k];
+            if ((zoneName == zonesInfo[key].name) && (regionName == selRegionName)){
+                alreadyPresent = true;
+                break;
+            }
+         }
+
+         resourceTypeIds = new Array();
+         for (var key1 in zonesResourceTypes){
+             if (zonesResourceTypes[key1].zone == key){
+                resourceTypeIds.push(zonesResourceTypes[key1].resource_type);
+             }
+         }
+         if (alreadyPresent){
+             displayStr += "<td scope=\"row\" colspan=\"2\" text=\"wrap\" style=\"overflow:hidden;width:130px;margin:0;padding:0;\" title=\"" + zonesInfo[key].name + "\">" + zonesInfo[key].name + " (Already Present) </td>";
+             displayStr += "<td scope=\"row\" text=\"wrap\" style=\"overflow:hidden;width:100px;margin:0;padding:0;\">";
+             displayStr += "<select size=\"3\" DISABLED>";
+             for(k=0; k<resourceTypeIds.length; k++){
+                currName =  resourceTypes[resourceTypeIds[k]].name;
+                displayStr += "<option value=\"" + currName + "\" title=\"" + currName + "\">" + currName + "</option>";
+             }
+             displayStr += "</select></td>";
+         }else{
+             displayStr += "<td scope=\"row\" text=\"wrap\" style=\"overflow:hidden;width:10px;margin:0;padding:0;\"> <input type=\"checkbox\" id=\"regionzoneoptions" + chboxsTotal + "\" NAME=\"regionzoneoptions\" VALUE=\"" + key + "\" onClick=\"selectResourcesFromZone(" + key + ", " + chboxsTotal + ")\"/>" + "</td>";
+             displayStr += "<td scope=\"row\" text=\"wrap\" width=\"120px;\" style=\"overflow:hidden;\" title=\"" + zonesInfo[key].name + "\">" + zonesInfo[key].name + "</td>";
+             displayStr += "<td scope=\"row\" text=\"wrap\" style=\"overflow:hidden;width:100px;margin:0;padding:0;\">";
+             displayStr += "<select SIZE=\"3\" id=\"rtypes" + chboxsTotal + "\" name=\"rtypes" + chboxsTotal + "\" DISABLED>";
+             for(k=0; k<resourceTypeIds.length; k++){
+                currName =  resourceTypes[resourceTypeIds[k]].name;
+                displayStr += "<option value=\"" + currName + "\" title=\"" + currName + "\">" + currName + "</option>";
+             }
+             displayStr += "</select></td>";
+             displayStr += "<input type=\"hidden\" name=\"zonename" + chboxsTotal + "\" id=\"zonename" + chboxsTotal + "\" value=\"" + zonesInfo[key].name + "\"/>";
+             displayStr += "<input type=\"hidden\" name=\"zonekey" + chboxsTotal + "\" id=\"zonekey" + chboxsTotal + "\" value=\"" + key + "\"/>";
+         }      
+         if (zonesInfo[key].hepspecs == -1){
+            displayStr += "<td width=\"340px;\" scope=\"row\" text=\"wrap\" style=\"overflow:hidden\"><table width=\"95%\" border=\"10\" class=\"normaltable\"><tbody><tr title=\"Total: UNDEFINED\"><td scope=\"row\" text=\"wrap\" style=\"overflow:hidden;text-align:left;\">Hepspec</td><td colspan=\"3\" style=\"text-align:left;\">UNDEFINED</td></tr>";
+         }else if (zonesInfo[key].hepspecs == 0){
+            displayStr += "<td width=\"340px;\" scope=\"row\" text=\"wrap\" style=\"overflow:hidden\"><table width=\"95%\" border=\"10\" class=\"normaltable\"><tbody><tr title=\"Total: 0\"><td scope=\"row\" text=\"wrap\" style=\"overflow:hidden;text-align:left;\">Hepspec</td><td colspan=\"3\" style=\"text-align:left;\">0</td></tr>";
+         }else{
+            displayStr += "<td width=\"340px;\" scope=\"row\" text=\"wrap\" style=\"overflow:hidden\"><table width=\"95%\" border=\"10\" class=\"normaltable\"><tbody><tr title=\"Total: " + zonesInfo[key].hepspecs + "\"><td scope=\"row\" text=\"wrap\" style=\"overflow:hidden;text-align:left;\">Hepspec</td><td style=\"text-align:left;\">" + zonesInfo[key].hepspecs + "</td><td style=\"text-align:left;\">" + zonesInfo[key].hepspecs_used + "</td>";
+            if (alreadyPresent){
+               displayStr += "<td></td></tr>";
+            }else{
+               displayStr += "<td style=\"text-align:left;\"><input type=\"text\" name=\"hepspec" + chboxsTotal + "\" id=\"hepspec" + chboxsTotal + "\" value=\"\" size=\"10px\" DISABLED/></td></tr>";
+            }
+         }
+         if (zonesInfo[key].memory == -1){
+            displayStr += "<tr title=\"Total: UNDEFINED\"><td scope=\"row\" text=\"wrap\" style=\"overflow:hidden;text-align:left;\">Memory</td><td colspan=\"3\" style=\"text-align:left;\">UNDEFINED</td></tr>";
+         }else if (zonesInfo[key].memory == 0){
+            displayStr += "<tr title=\"Total: 0\"><td scope=\"row\" text=\"wrap\" style=\"overflow:hidden;text-align:left;\">Memory</td><td colspan=\"3\" style=\"text-align:left;\">0</td></tr>";
+         }else{
+            displayStr += "<tr title=\"Total: " + zonesInfo[key].memory + "\"><td scope=\"row\" text=\"wrap\" style=\"overflow:hidden;text-align:left;\">Memory</td><td style=\"text-align:left;\">" + zonesInfo[key].memory + "</td><td style=\"text-align:left;\">" + zonesInfo[key].memory_used + "</td>";
+            if (alreadyPresent){
+               displayStr += "<td></td></tr>";
+            }else{
+               displayStr += "<td style=\"text-align:left;\"><input type=\"text\" name=\"memory" + chboxsTotal + "\" id=\"memory" + chboxsTotal + "\" value=\"\" size=\"10px\" DISABLED/></td></tr>";
+            }
+         }
+         if (zonesInfo[key].storage == -1){
+           displayStr += "<tr title=\"Total: UNDEFINED\"><td scope=\"row\" text=\"wrap\" style=\"overflow:hidden;text-align:left;\">Storage</td><td colspan=\"3\" style=\"text-align:left;\">UNDEFINED</td></tr>";
+         }else if (zonesInfo[key].storage == 0){
+           displayStr += "<tr title=\"Total: 0\"><td scope=\"row\" text=\"wrap\" style=\"overflow:hidden;text-align:left;\">Storage</td><td colspan=\"3\" style=\"text-align:left;\">0</td></tr>";
+         }else{
+           displayStr += "<tr title=\"Total: " + zonesInfo[key].storage + "\"><td scope=\"row\" text=\"wrap\" style=\"overflow:hidden;text-align:left;\">Storage</td><td style=\"text-align:left;\">" + zonesInfo[key].storage + "</td><td style=\"text-align:left;\">" + zonesInfo[key].storage_used + "</td>";
+           if (alreadyPresent){
+               displayStr += "<td></td></tr>";
+           }else{
+               displayStr += "<td style=\"text-align:left;\"><input type=\"text\" name=\"storage" + chboxsTotal + "\" id=\"storage" + chboxsTotal + "\" value=\"\" size=\"10px\" DISABLED/></td></tr>";
+           }
+         }
+         if (zonesInfo[key].bandwidth == -1){
+            displayStr += "<tr title=\"Total: UNDEFINED\"><td scope=\"row\" text=\"wrap\" style=\"overflow:hidden;text-align:left;\">Bandwidth</td><td colspan=\"3\" style=\"text-align:left;\">UNDEFINED</td></tr>";
+         }else if (zonesInfo[key].bandwidth == 0){
+            displayStr += "<tr title=\"Total: 0\"><td scope=\"row\" text=\"wrap\" style=\"overflow:hidden;text-align:left;\">Bandwidth</td><td colspan=\"3\" style=\"text-align:left;\">0</td></tr>";
+         }else{
+            displayStr += "<tr title=\"Total: " + zonesInfo[key].bandwidth + "\"><td scope=\"row\" text=\"wrap\" style=\"overflow:hidden;text-align:left;\">Bandwidth</td><td style=\"text-align:left;\">" + zonesInfo[key].bandwidth + "</td><td style=\"text-align:left;\">" + zonesInfo[key].bandwidth_used + "</td>";
+            if (alreadyPresent){
+               displayStr += "<td></td></tr>";
+            }else{
+               displayStr += "<td style=\"text-align:left;\"><input type=\"text\" name=\"bandwidth" + chboxsTotal + "\" id=\"bandwidth" + chboxsTotal + "\" value=\"\" size=\"10px\" DISABLED/></td></tr>";
+            }
+         }
+         if (!alreadyPresent){
+            chboxsTotal++;
+         }
+         displayStr += "</tbody></table></td></tr>";
+      }
+      displayStr += "</tbody></table>";
+      getElement("newzonediv").style.display="block";
+      getElement("newzonediv").innerHTML = displayStr;
+  }
+
+</script>
+</head>
+<body><div id="container">
+{% include "base/deleteForm.html" %}
+<form name="updatetoplevelallocationform" id="updatetoplevelallocationform" action="/cloudman/toplevelallocation/update/" method="post" class="niceform" onSubmit="return formValid();">{% csrf_token %}
+  <fieldset><legend> Edit Top Level Allocation {{tpAllocName}}</legend>   
+   <input type ="button" id="editname" name="editname" title="Edit Name" value="Change Name" style="padding: 5px 5px 5px 5px;" onClick="showNameForm();"/> &nbsp; &nbsp; &nbsp; &nbsp;
+
+   <input type ="button" id="editzone" name="editzone" title="Edit Zone Allocation" value="Change Zone Allocation" style="padding: 5px 5px 5px 5px;" onClick="showZoneAllocForm();"/> &nbsp; &nbsp; &nbsp; &nbsp;
+
+   <input type ="button" id="addzone" name="addzone" title="Add Zone" value="Add Zone" style="padding: 5px 5px 5px 5px;" onClick="showAddZoneForm();"/>
+
+   <input type="hidden" name="currname" id="currname" value="{{tpAllocObject.name}}">
+   <input type="hidden" name="name" id="name" value="{{tpAllocObject.name}}">
+   <input type="hidden" name="optype" id="optype" value="">
+   <input type='hidden' name='comment' id='id_comment' value="">
+
+   <div id="datadiv" name="datadiv">
+       <br/>
+       Click any of the buttons above for updating this top level allocation
+   </div>
+  <div id='infodiv' name='infodiv' style='display:none;'>
+    <select id='regionlist' name='regionlist'>
+    {% for regionName in regionsList %}
+       <option value="{{regionName}}">{{regionName}}</option>
+    {% endfor %}
+    </select>
+  </div>
+  <br/> 
+  <dl><dt>
+  <div id='newzonediv' name='newzonediv' style='display:none;'>
+  </div>
+  </dt><dd></dd></dl>
+  </fieldset>
+  <br/>
+  <div id='actiondiv' name='actiondiv' style='display:none;'>  
+  <fieldset class="action">
+    <input type ="submit" id="submit" name="submit" title="Save" value="Save" style="padding: 5px 5px 5px 5px;" />
+  </fieldset>    
+  </div>
+  <div id="finalresourceallocation" name="finalresourceallocation" style="display:none;">
+    <select id="finalregionlist" name="finalregionlist" SIZE="5" MULTIPLE></select>
+    <select id="finalzonelist" name="finalzonelist" SIZE="5" MULTIPLE></select>
+    <select id="finalhepspecslist" name="finalhepspecslist" SIZE="5" MULTIPLE></select>
+    <select id="finalmemorylist" name="finalmemorylist" SIZE="5" MULTIPLE></select>
+    <select id="finalstoragelist" name="finalstoragelist" SIZE="5" MULTIPLE></select>
+    <select id="finalbandwidthlist" name="finalbandwidthlist" SIZE="5" MULTIPLE></select>
+    <select id="finalresourcestype" name="finalresourcestype" SIZE="5" MULTIPLE></select>
+    <select id="countresourcestype" name="countresourcestype" SIZE="5" MULTIPLE></select>
+  </div>
+  <input type="hidden" name="selzonename" id="selzonename" value=""/>
+  <input type="hidden" name="selregionname" id="selregionname" value=""/>
+</form>
+</div></body>
+</html>
+

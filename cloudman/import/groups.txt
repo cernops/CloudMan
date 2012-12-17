@@ -1,0 +1,174 @@
+AC IT:for retired staff 
+AD HR:HR Department 
+AP HR-SA:Staff Association 
+AW IT-DB:For users from MISS systems 
+BI IT:
+BS IT:Engineers etc
+C1 IT:IT division administration 
+C3 IT:Physics services
+C4 IT:IT Dept / industry collaborations
+C9 IT:Cern Liason (empty - close)
+CF IT-GD:
+CG IT:LHC Computing Grid Project
+CI IT-DES:Database Support 
+CP IT:Vendor Support 
+CR PH-SFT:Program Library 
+CS IT-CS:Networks 
+CT IT:
+CW IT:APPLICATIONS 
+D9 IT:VM Collaboration (empty - close) 
+DE IT-DB:Database Services 
+DG DG:DG office 
+DJ IT-DES:IT-DES service accounts 
+DR EN-STI:Emerging Energy Technology 
+DS IT:Desktop support contract 
+DW GS:DSU Unit - ex SIS 
+EA GS-AIS:External users of AIS applications 
+ED PH:EU project detectors for ILC 
+EM EMI:
+EO GS-AIS:GS-AIS group
+ET IT:
+FB FP:FI general accounts
+FD GS-SEM:
+FI Purchasing and Logistics
+G4 IT:Grid and GEANT collaboration with Castor 
+GA DG:people in multiple Departments 
+GD PF:Pension Fund 
+GE IT:Grid Generic applications 
+GL IT:For EELA GRID-USER 
+GM IT:Grid Middleware for EGEE Project 
+GR EGEE:EGEE Project 
+GS GS:asked for By Christophe Delamare 
+HC DGS:Safety Commission 
+HR DGS-RP:
+IC IT-LCG:Requested by Ian Bird 10 Dec 09 
+IT IT:General users 
+IZ IT:
+JG PH:GPMIMD project
+JI PH:PH Department general accounts
+JJ EN-ICE:IT-CO Group
+JP IT:IT PT GROUP 
+JT PH:Finite Element Modelling by EP GE Group 
+KA EN:EN Department, ex TS, ex ST 
+LC BE:Linear Collider Research 
+LE CALICE:
+LH IT:
+LI IT:AFS access control for LHC++ licences 
+LS LHeC:
+LZ EN:Euclid accounts
+ME IT:
+MF IT:
+MH IT:
+MO IT:
+MS EN-ICE:ADSM Service accounts
+NS IT:Unix Security Group 
+OB IT:
+OR IT-DES:DataBase Software
+PA RE3:Pierre Auger Observatory
+PG PH:Particle Data Group
+PP PH:PH Department general accounts
+PZ BE:AB Department, ex PS
+QD IT:Desy Computer Centre 
+QS IT:Institutions
+RL IT:Handling Group (empty - close) 
+RM IT:Rome Interuniversity Computer Centre
+RW IT:
+S1 PH-SFT:lcgaa hypernews
+S2 PH-SFT:ATLAS Hypernews
+S3 PH-SFT:ALICE Hypernews
+S4 PH-SFT:CMS Hypernews
+S5 PH-SFT:LHCB Hypernews
+S6 PH-SFT:TOTEM Hypernews
+SA TE:AT Department
+SC IT:
+SD IT:
+SF PH-SFT:PH-SFT Group
+SI BE:AB Department, ex SL
+SM EN:TS Department, ex EST
+ST IT:CORE Stager System - critical accounts 
+SV IT-PES-DI:Code for grouping all SVN librarian accounts
+T3 PH-TH:PH-TH unit
+T4 PH-TH:Chiral QCD
+TS IT-CF:IT-CF Group
+TT DG:DSU Unit - ex TT
+UH PS214:PS Experiment
+UI RE11:RE11 experiment
+UN IT:collaboration with UNOPS
+UO PH-AGS-UO:CERN Users Office
+US IT-UDS:IT-UDS Group
+UX PH-UO:CERN Users Office External Accounts
+V5 WA59:Neutrino Oscillations
+V7 IT:
+VA RE1:Alpha Magnetic Spectrometer
+VB PH:H1, DESY
+VC RE7:GLAST
+VD AD-5:Antihydrogen Laser PHysics Apparatus 
+VE PS201:LEAR/Obelix Antinucleon Annihilations 
+VF PS205:HELIUMTRAP 
+VG AD-3:Anti-Atom Spectroscopy (AD-3) 
+VH CAST:Solar Axion Search 
+VI PS202:Lear internal gas jet target 
+VJ RE2B:Silicon Calorimeter 
+VK PS212:Low energy QCD 
+VL NA48/2:CP Violation 
+VM PH:LAA Bologna-Frascati-CERN Group 
+VN RD51:R and D Collaboration RD-51 
+VO CNGS1:CNGS experiment 
+VP NA49:IONS/TPC-HADRONS 
+VQ RE11:Muon Cooling at RAL (Recognised expt) 
+VR PH:GRP 
+VT NA59:Circular Polarization 
+VV PS195:PS195, CP Violation 
+VX CNGS2:CNGS experiment 
+VY NA58:Compass Experiment VZ RD50:Radiation hard devices
+W2 PH:Technical Assistance
+WA PH:PH administration
+WB PH:Electronics Development
+WF NA60:Heavy Ions
+WG PH:Electronics POOL ADMIN.
+WH RD-20:Silicon Strip Detectors
+WJ NA61:
+WK WA6:Oscillations
+WN RE9:Underwater muon detector
+WS OPAL:LEP experiment
+WT PH:Detector Development
+WW PH:Medical Accelerator
+WX PH:Test beam calibration
+XC IT:
+XD PH:Common LEP Archive
+XG PH:Pi and K yields from 450 Gev Protons (NA56) 
+XH WA96:NOMAD, Neutrino Oscillations 
+XI WA97:Baryon anti Baryon studies in lead-lead interactions 
+XJ WA91:WA91+WA102 Non-qq meson production in Omega pp coll.
+XM NA44:Focussing Spectrometer for one and two particles 
+XN IT:
+XT ATLAS:Neutrino Oscillations Proposal 
+XU ALEPH:LEP Experiment 
+XV L3:LEP Experiment 
+XX DELPHI:LEP Experiment 
+XZ AD-2:ATRAP Collaboration
+Y2 WA89:Hyperon Beam Experiment and CHEOPS
+Y3 RD30:DRDC P30
+YA WA98:WA93+WA98,Light Universal Detector in heavy ion coll.
+YR NA12:Pi-P interactions with neutral final states (completed) 
+YS RE19:following request CT706013 by Alexander Malinin 
+YT NA45/2:Electron pair prodn in hadrons/nuclear Interactions 
+YU NA47:Spin Muon Collaboration
+Z2 ALICE:LHC Heavy Ions Collaboration
+Z4 IT:
+Z5 LHCB:LHC Experiment
+Z6 ISOLDE:ISOLDE
+Z7 PH:Detector Development
+Z8 H8-RD22:Crystal Channeling test beam 
+ZA PS:NTOF Experiments 
+ZB PH-SFT:GEANT4 
+ZC LHCF:
+ZD PS197:Crystal Barrel, Meson Spectroscopy 
+ZE RE6:RE6 Experiment 
+ZF CTF3:Linear Collider Detector 
+ZG IT:Persistent Object Manager 
+ZH CMS:LHC Collaboration 
+ZJ TOTEM:LHC Collaboration 
+ZP ATLAS:LHC ATLAS Collaboration 
+ZQ RD-14:Liquid Xenon 
+ZZ RD31:DRDC P36

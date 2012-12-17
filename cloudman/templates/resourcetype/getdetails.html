@@ -1,0 +1,76 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Resource Type Detailed Information</title>
+  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}stylesheet/listTable.css" />
+  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}stylesheet/common.css" />
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/general.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/table_sort_filter.js"></script>
+</head>
+<body id="databody">
+{% load filters%}
+<form name="dataForm" id="dataForm">
+  <pre style="white-space:normal:text-align:center;"> <center>Detailed Information of Resource Type <br/> Name: {{ resourceTypeName }} &nbsp; &nbsp; &nbsp; Resource Class: {{ resourceTypeInfo.resource_class }} &nbsp; &nbsp; &nbsp; Hepspec(HS06): {{resourceTypeInfo.hepspecs|displayNone}} 
+Memory(MB): {{ resourceTypeInfo.memory|displayNone }} &nbsp; &nbsp; &nbsp; Storage(MB): {{ resourceTypeInfo.storage|displayNone }} &nbsp; &nbsp; &nbsp; Bandwidth(Mbps): {{ resourceTypeInfo.bandwidth|displayNone }}</center> </pre>
+
+  <pre style="white-space:normal;text-align:center;"> Used as Allowed Resource Type for Zone </pre>
+   <center>
+   {% if zoneNames|length == 0 %}
+      None
+   {% endif %}
+   {% for oneRow in zoneNames %}
+   {% if forloop.counter == zoneNames|length %}
+     <a class="links" href="/cloudman/zone/getdetails?regionname={{ oneRow.1 }}&zonename={{ oneRow.0 }}" style="cursor:pointer;"> {{ oneRow.0 }} </a> <a class="links" href="/cloudman/region/getdetails?name={{oneRow.1}}" style="cursor:pointer;"> (Region: {{ oneRow.1 }})</a> &nbsp;
+   {% else %}
+     <a class="links" href="/cloudman/zone/getdetails?regionname={{ oneRow.1 }}&zonename={{ oneRow.0 }}" style="cursor:pointer;"> {{ oneRow.0 }} </a> <a class="links" href="/cloudman/region/getdetails?name={{oneRow.1}}" style="cursor:pointer;"> (Region: {{ oneRow.1 }})</a>, &nbsp;
+   {% endif %}
+   {% endfor %}
+   </center>
+  <br/>
+  <pre style="white-space:normal;text-align:center;"> Used as Allowed Resource Type for Top Allocation </pre>
+   <center>
+   {% if tpAllocNames|length == 0 %}
+      None
+   {% endif %}
+   {% for oneRow in tpAllocNames %}
+   {% if forloop.counter == tpAllocNames|length %}
+     <a class="links" href="/cloudman/toplevelallocation/getdetails?name={{ oneRow }}" style="cursor:pointer;"> {{ oneRow }} </a> &nbsp; 
+   {% else %}
+     <a class="links" href="/cloudman/toplevelallocation/getdetails?name={{ oneRow }}" style="cursor:pointer;"> {{ oneRow }}</a>, &nbsp;
+   {% endif %}
+   {% endfor %}
+   </center>
+  <br/>
+  <pre style="white-space:normal;text-align:center;"> Used as Allowed Resource Type for Project Allocation </pre>
+   <center>
+   {% if prAllocNames|length == 0 %}
+      None
+   {% endif %}
+   {% for oneRow in prAllocNames %}
+   {% if forloop.counter == prAllocNames|length %}
+     <a class="links" href="/cloudman/projectallocation/getdetails?name={{ oneRow }}" style="cursor:pointer;"> {{ oneRow }} </a> &nbsp;
+   {% else %}
+     <a class="links" href="/cloudman/projectallocation/getdetails?name={{ oneRow }}" style="cursor:pointer;"> {{ oneRow }} </a>, &nbsp;
+   {% endif %}
+   {% endfor %}
+   </center>
+  <br/>
+  <pre style="white-space:normal;text-align:center;"> Used as Allowed Resource Type for Group Allocation </pre>
+   <center>
+   {% if grAllocNames|length == 0 %}
+      None
+   {% endif %}
+   {% for oneRow in grAllocNames %}
+   {% if forloop.counter == grAllocNames|length %}
+     <a class="links" href="/cloudman/groupallocation/getdetails?name={{ oneRow }}" style="cursor:pointer;">{{ oneRow }}</a> &nbsp;
+   {% else %}
+     <a class="links" href="/cloudman/groupallocation/getdetails?name={{ oneRow }}" style="cursor:pointer;">{{ oneRow }}</a>, &nbsp;
+   {% endif %}
+   {% endfor %}
+   </center> 
+   {% include "log/logshow.html"%}  
+   
+</form>
+</body>
+</html>

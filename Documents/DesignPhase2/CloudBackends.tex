@@ -1,0 +1,33 @@
+In this section ideas to configure a small cloud infrastructure are discussed. More complex environments will require a more detailed discussion. What is proposed here is meant to be a proof of concept. 
+
+When designing cloud driver backends for CloudMan, two different aspects of resource management need to be respected. 
+
+\begin{enumerate}
+\item Setting quotas and ACLs for a the cloud infrastructure within projects or tenants
+\item Moving resources between different projects
+\end{enumerate}
+
+The first case only deals with quotas and user groups inside an IaaS cloud.
+
+The second case can only work if all projects share the same resources. The example use case is a small infrastructure which provides resources for a public cloud interface and a virtual batch farm which run on the same resources. 
+
+
+\subsubsection{A possible model}
+For the prototype driver we only consider 2 cases: a public batch farm and a EC2 based self-service.
+
+The model to be implemented looks like this:
+\begin{enumerate}
+\item The Cloudman adminstrator defines a top level allocation per user group, and defines the administrator e-group for this allocation. This allocation is the total resource allocation (in HS06) for the user community. For CERN, user communities are ATLAS, CMS, SFT, IT, ...
+\item The CloudMan administrator defines a new project (eg IaaS Self-Service). 
+\item Initially, all resources are allocated to batch
+\end{enumerate}
+
+\subsubsection{Self-service configuration}
+Group administrators can sign up to the IaaS Self-service by doing a project allocation from their top level allocation. In order to do so, they  need to reduce the batch capacity. The group administrator can then create group and subgroup allocations for the EC2 access resulting in a tree like structure as he needs it.
+Egroups are to be resolved on the CloudMan Frontend.
+The backend can then consume the leaves of this tree, which contain lists of users. It will use these user lists to create groups of users. The resource allocations for these user groups are used to setup group quotas. 
+
+\subsubsection{Conversion of units}
+In CloudMan CPU resource allocations are done in HS06 (or equivalent) while quotas on cloud infrastructures are typically done in number of machines, virtual CPUs or 
+the like. Zones will usually consist of hypervisors with different HS06 ratings. The conversion of HS06 quotas into a quota on the number of virtual machines adds a bit of complexity to the backend. Further discussion on this is required. 
+

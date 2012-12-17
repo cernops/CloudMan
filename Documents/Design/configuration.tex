@@ -1,0 +1,14 @@
+Static configuration data can be stored in configuration files on the 
+server(s) but should be avoided, in order to keep the service stateless. 
+Instead, such configuration data should be entered in the GUI and 
+stored in the database. 
+
+In case such a file is needed anyway, the format must be plain text, 
+so that it can be easily manipulated by configuration components
+ eg from Quattor (or Puppet). The development of such 
+components is NOT part of this project. The format must be key-value pairs, 
+following the python config parser format {\it FIXME: add reference}
+ 
+ 
+
+

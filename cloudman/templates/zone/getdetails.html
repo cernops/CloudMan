@@ -1,0 +1,152 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Zone Detailed Information</title>
+  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}stylesheet/listTable.css" />
+  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}stylesheet/common.css" />
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/general.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/table_sort_filter.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/jquery-1.7.1.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/highcharts.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/gray.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/piechart.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/selectmultiple.js"></script>
+  <script type="text/javascript">
+   $(document).ready(function() {
+     totalAllocHepSpecs = round_float(getElement("totalAllocHepSpecs").value, 3);
+     totalZoneHepSpecs = round_float(getElement("totalZoneHepSpecs").value, 3);
+     allotedPer = 0
+     if (totalZoneHepSpecs > 0){
+        allotedPer = (totalAllocHepSpecs/totalZoneHepSpecs) * 100
+     }
+     freePer = 100 - allotedPer    
+     title = 'Hepspec Allocation - Zone - ' + getElement("zonename").value + '<br/> Region: ' + getElement("regionname").value + '\(Total: ' + totalZoneHepSpecs + ' HS06\)';
+     hepspecs_piechart = initPieChart('zonehepspecspie', title);
+     hepspecs_piechart.addSeries({
+        type: 'pie',
+        name: 'zone',
+        data: [
+              ['Free', freePer],
+              ['Allocated', allotedPer]
+        ],
+        labels: {
+              formatter: function() {
+                 return Highcharts.numberFormat(this.value, 3);
+              }
+        },
+        cursor:'pointer',
+        events: {
+              //click: function(event) {
+              //   openNewWinLinkUrl('/cloudman/listonlyregionsname');
+              //}
+        },
+        showInLegend: false,
+        allowPointSelect: true,
+        legendItemClick: false
+      }, true);
+  });
+  </script>
+</head>
+{% load filters %}
+{% include "base/search.html" %}
+<body id="databody">
+<form name="dataForm" id="dataForm">
+  <pre style="white-space:normal:text-align:center;"> <p align="center">Detailed Information of Zone <br/> Name: {{ zoneName }} &nbsp; &nbsp; &nbsp; Region Name: <a class="links" href="/cloudman/region/getdetails?name={{ regionName }}" style="cursor:pointer;">{{ regionName }}</a> &nbsp; &nbsp; &nbsp; Description: {{ zoneInfo.description }} &nbsp;&nbsp;&nbsp;
+  Capacity(HS06): {{ zoneInfo.hepspecs|displayNone }}  &nbsp; &nbsp; &nbsp; Memory(MB): {{ zoneInfo.memory|displayNone }}  &nbsp; &nbsp; &nbsp; Storage(MB):{{ zoneInfo.storage|displayNone }} &nbsp; &nbsp; &nbsp; Bandwidth(Mbps):{{ zoneInfo.bandwidth|displayNone }}&nbsp;&nbsp;&nbsp;
+  Hepspec Over Commit: {{ zoneInfo.hepspec_overcommit }} &nbsp; &nbsp; &nbsp; Memory Over Commit: {{ zoneInfo.memory_overcommit }}</p> </pre>
+  <pre style="white-space:normal;text-align:center;"> Allowed Resource Types (Total : {{ allowedResourceTypesList|length }}) </pre>
+  <table class="autosort" border="1" id='rttable' align="center" style="table-layout: auto;">
+  <thead>
+   <tr>
+    <th name="tcol0" id="tcol0" class="table-sortable:ignorecase">No</th>
+    <th name="tcol1" id="tcol1" class="table-sortable:ignorecase">Name</th>
+    <th name="tcol2" id="tcol2" class="table-sortable:ignorecase">Resource Class</th>
+    <th name="tcol3" id="tcol3" class="table-sortable:numeric">Capacity (HS06)</th>
+    <th name="tcol4" id="tcol4" class="table-sortable:numeric">Memory (MB)</th>
+    <th name="tcol5" id="tcol5" class="table-sortable:numeric">Storage (MB)</th>
+    <th name="tcol6" id="tcol6" class="table-sortable:numeric">Bandwidth (Mbps)</th>
+   </tr>
+  </thead>
+  <tbody>
+   {% for oneRow in allowedResourceTypesList %}
+   {% if  forloop.counter|divisibleby:"2" %}
+    <tr class="odd" text="wrap">
+   {% else %}
+    <tr class="even" text="wrap">
+   {% endif %}
+    <td name="tcol0" id="tcol0" scope="row" text="wrap">{{ forloop.counter }}</td>
+    <td name="tcol1" id="tcol1" scope="row" text="wrap"><a class="links" href="/cloudman/resourcetype/getdetails?name={{ oneRow.resource_type.name }}" style="cursor:pointer;">{{ oneRow.resource_type.name }}</a></td>
+    <td name="tcol2" id="tcol2" scope="row" text="wrap">{{ oneRow.resource_type.resource_class }}</td>
+    <td name="tcol3" id="tcol3" scope="row" text="wrap">{{ oneRow.resource_type.hepspecs|displayNone }}</td>
+    <td name="tcol4" id="tcol4" scope="row" text="wrap">{{ oneRow.resource_type.memory|displayNone }}</td>
+    <td name="tcol5" id="tcol5" scope="row" text="wrap">{{ oneRow.resource_type.storage|displayNone }}</td>
+    <td name="tcol6" id="tcol6" scope="row" text="wrap">{{ oneRow.resource_type.bandwidth|displayNone }}</td>
+    </tr>
+   {% endfor %}
+  </tbody>
+  </table>
+  <br/>
+  
+  <pre style="white-space:normal;text-align:center;"> Top Level Allocation from this Zone (Total : {{ topLevelAllocationByZoneList|length }}) </pre>
+  <table class="autosort" border="1" align="center" id='topalloctable' style="table-layout: auto;">
+  <thead>
+   <tr>
+    <th name="tcol0" id="tcol0" class="table-sortable:ignorecase">No</th>
+    <th name="tcol1" id="tcol1" class="table-sortable:ignorecase">Name</th>
+    <th name="tcol2" id="tcol2" class="table-sortable:ignorecase">Group</th>
+    <th name="tcol3" id="tcol3" class="table-sortable:numeric">Capacity(HS06) <br/> Share <br/> (%)</th>
+    <th name="tcol4" id="tcol4" class="table-sortable:numeric">Memory (MB) <br/> Share <br/> (%)</th>
+    <th name="tcol5" id="tcol5" class="table-sortable:numeric">Storage (MB) <br/> Share <br/> (%)</th>
+    <th name="tcol6" id="tcol6" class="table-sortable:numeric">Bandwidth (Mbps) <br/> Share <br/> (%) </th>
+   </tr>
+  </thead>
+  <tbody>
+   {% for oneRow in topLevelAllocationByZoneList %}
+   {% if  forloop.counter|divisibleby:"2" %}
+    <tr class="odd" text="wrap">
+   {% else %}
+    <tr class="even" text="wrap">
+   {% endif %}
+    <td name="tcol0" id="tcol0" scope="row" text="wrap">{{ forloop.counter }}</td>
+    <td name="tcol1" id="tcol1" scope="row" text="wrap"><a class="links" href="/cloudman/toplevelallocation/getdetails?name={{ oneRow.top_level_allocation.name }}" style="cursor:pointer;">{{ oneRow.top_level_allocation.name }}</a></td>
+    <td name="tcol2" id="tcol2" scope="row" text="wrap"><a class="links" href="/cloudman/group/getdetails?name={{ oneRow.top_level_allocation.group.name }}" style="cursor:pointer;"> {{ oneRow.top_level_allocation.group.name }} </a></td>
+    {% if oneRow.hepspec == None or oneRow.zone.hepspecs == None %}
+    <td name="tcol3" id="tcol3" scope="row" text="wrap">{% displayUndefined %}</td>
+    {% else %}
+    <td name="tcol3" id="tcol3" scope="row" text="wrap">{{ oneRow.hepspec }} ({{ oneRow.hepspec_fraction }})</td>
+    {% endif %}
+    {% if oneRow.memory == None or oneRow.zone.memory == None %}
+    <td name="tcol4" id="tcol4" scope="row" text="wrap">{% displayUndefined %}</td>
+    {% else %}
+    <td name="tcol4" id="tcol4" scope="row" text="wrap">{{ oneRow.memory }} ({{ oneRow.memory_fraction }})</td>
+    {% endif %}
+    {% if oneRow.storage == None or oneRow.zone.storage == None %}
+    <td name="tcol5" id="tcol5" scope="row" text="wrap">{% displayUndefined %}</td>
+    {% else %}
+    <td name="tcol5" id="tcol5" scope="row" text="wrap">{{ oneRow.storage }} ({{ oneRow.storage_fraction }})</td>
+    {% endif %}
+    {% if oneRow.bandwidth == None or oneRow.zone.bandwidth == None %}
+    <td name="tcol6" id="tcol6" scope="row" text="wrap">{% displayUndefined %}</td>
+    {% else %}
+    <td name="tcol6" id="tcol6" scope="row" text="wrap">{{ oneRow.bandwidth }} ({{ oneRow.bandwidth_fraction }})</td>
+    {% endif %}
+    </tr>
+   {% endfor %}
+  </tbody>
+  </table>
+  <input type="hidden" name="regionname" id="regionname" value="{{regionName}}">
+  <input type="hidden" name="zonename" id="zonename" value="{{zoneName}}">
+  <input type="hidden" name="totalAllocHepSpecs" id="totalAllocHepSpecs" value="{{totalAllocHepSpecs}}">
+  <input type="hidden" name="totalZoneHepSpecs" id="totalZoneHepSpecs" value="{{totalZoneHepSpecs}}">
+  <br/>
+  <!--<pre style="white-space:normal;text-align:center;"> Zone Allocation </pre><p align="center">
+  <img src="/cloudman/zone/gethepspecpiechart?regionname={{ regionName }}&zonename={{ zoneName }}" alt="hepspecs pie chart" width="360" height="300" />
+  </p>-->
+  <div style="align:center;height:320px;"><pre style="white-space:normal;text-align:left;">Zone Allocation</pre>
+  <div id="zonehepspecspie" class="image" style="overflow:auto;float:center;width:360px;height:300px;" ></div>
+  </div>
+</form>   
+   {% include "log/logshow.html"%}
+</body>
+</html>

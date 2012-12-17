@@ -1,0 +1,60 @@
+The aim of first phase of the project is the implementation of 
+\begin{itemize}
+\item The graphical user interface 
+\begin{itemize}
+  \item the GUI itself is stateless
+  \item all data is kept in a database backend (mysql,oracle)
+  \item the GUI is accessible behind a (load balanced or round robin) alias. For example, at CERN one instance can be run at Meyrin, the second at SafeHost, thus providing redundancy.
+  \item the application should be implemented in Django\cite{Django} framework, running on an Apache web server with Shibboleth for implemeting SingleSignOn   
+  \item access is secured via SSL. For the CERN instance, CERN will provide a certificate signed by the CERN CA.
+  \item Low-level data export is visible inside CERN without any Authentication.
+\end{itemize}
+\item The database backend
+\begin{itemize}
+  \item Oracle is preferred, as it is supported at CERN, and provides fail-over mechanisms. 
+  \item the database access should be abstracted using the Django Object Relational Model (ORM)\cite{ORM}; writing direct SQL statements should be avoided \footnote{MySQL or similar (eg SQLite) can be used during development}
+  \item the backend database should have transaction support to insure data integrity when doing multiple updatesDjango Object Relational Model (ORM)\cite{ORM} transaction support can be used.
+\end{itemize}
+\item Authentication
+\begin{itemize}
+\item It must be possible to use CERN SSO~\cite{CernSSO} to authenticate users. The CERN instance will only use this mechanism for authentication
+\item Access will stay in SSL secured after login
+\end{itemize}
+\item Authorization
+\begin{itemize}
+\item Users can belong to one or more VOs, and can have different roles inside these VOs. The VO membership is determined by the Unix group IDs of the person which is retrieved from LDAP.
+\item multiple VO memberships are mapped to multiple (secondary) Unix group IDs 
+\item There is one and only one resource manager role. The list of these users is retrieved from LDAP. The unix group ID of these users is irrelevant.
+\item Ordinary users only have access to information which belongs to the VO(s) they belong to, determined by their unix group IDs
+\item The role of a user inside his VO is determined by the egroups~\cite{CernEgroups} he belongs to
+\item the use of egroups~\cite{CernEgroups} allows to move much of the complexity due to the hierarchi of roles into this existing service.
+\item the egroups used for mapping users to roles must be configurable via the GUI, respecting ACLs and hierarchies
+\item in case egroups is not available (eg outside CERN), simple lists of users can be supported as well but are discouraged.  
+\end{itemize}
+\item data export level
+\begin{itemize}
+\item the backends will pull the information required to configure themselves from the low level data export layer which is fed by the GUI. 
+\item in the second project phase the backend will report back on the  current resource consumption which can be polled by the GUI. The data exchange model is identical.
+\item if the exported data contains fields which are not supported by a backend, the backend can ignore this data
+\item if Django is used, each backend will be served by a distinct URL providing only the information required for this specific backend
+\item the data export is done in a machine readable way, eg via a XML,JSON,yaml format. 
+\item the data export is SSL secured 
+\item in the first phase of the project a check of the authentication of the backends is not required. This will change in the second phase, when the authenticity of the reported data by the backends has to be checked
+\item all changes done in the front end must be traceable, including information about 
+\begin{itemize}
+ \item what has been changed 
+ \item what operation has been done 
+ \item when it has been changed
+ \item who applied the change
+\end{itemize}
+\end{itemize}
+\item backends which are part of the project
+\begin{itemize}
+\item a sample backend to configure OpenStack
+\item a sample backend to configure OpenNebula
+\item a sample backend to configure batch resources 
+\item a sample backend to configure CASTOR 
+\end{itemize}
+\end{itemize}
+All backends must support a no-action mode, as well as different logging levels (info, error, debug), ideally through syslog.
+

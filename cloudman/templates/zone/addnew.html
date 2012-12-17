@@ -1,0 +1,236 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Adding a Zone</title>
+  <link rel="stylesheet" type="text/css" media="all" href="{{ MEDIA_URL }}stylesheet/niceforms.css" />
+  <link rel="stylesheet" type="text/css" media="all" href="{{ MEDIA_URL }}stylesheet/listTable.css" />
+  <link rel="stylesheet" type="text/css" media="all" href="{{ MEDIA_URL }}stylesheet/bluecurve.css" />
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/general.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/cloudman.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/range.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/timer.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/slider.js"></script>
+  <script type="text/javascript">
+     function checkForm(){
+        // Check first that a region has been selected and name has been provided for the zone
+        regionElem = getElement("id_region");
+        nameElem = getElement("id_name");
+        name = trim(nameElem.value);
+        nameElem.value = name;
+        if (regionElem.selectedIndex <= 0){
+	    alert('Select a Region from the list');
+            return false;
+        }
+        if (name == ''){
+            alert('Please provide a Name to the Zone');
+            return false;
+        }
+
+        // get the resource parameters elements
+        hepSpecsElem = getElement("id_hepspecs");
+        memoryElem = getElement("id_memory");
+        storageElem = getElement("id_storage");
+        bandwidthElem = getElement("id_bandwidth");
+        hepSpecOverCommitElem = getElement("id_hepspec_overcommit");
+        memoryOverCommitElem = getElement("id_memory_overcommit");
+
+        hepSpecs = trim(hepSpecsElem.value);
+        memory = trim(memoryElem.value);
+        storage = trim(storageElem.value);
+        bandwidth = trim(bandwidthElem.value);
+        hepSpecOverCommit = trim(hepSpecOverCommitElem.value);
+        memoryOverCommit = trim(memoryOverCommitElem.value);
+
+        // validate the hepspec, memory, storage and bandwidth value
+        errorMessage = validateResourceParameters(hepSpecs, memory, storage, bandwidth)
+        if (errorMessage != ''){
+           alert(errorMessage);
+           return false;
+        }
+      
+        // validate hepspec over commit and memory over commit values
+        if (!is_positive_float(hepSpecOverCommit)){
+           alert('Hepspec Over Commit value can be only a positive float value (greater than or equal to 1)');
+           return false;
+        }else{
+           if (parseFloat(hepSpecOverCommit, 10) < 1){
+              alert('Hepspec Over Commit value can be only a positive float value (greater than or equal to 1)');
+              return false;
+           }
+        }
+
+        if (!is_positive_float(memoryOverCommit)){
+           alert('Memory Over Commit value can be only a positive float value (greater than or equal to 1)');
+           return false;
+        }else{
+           if (parseFloat(memoryOverCommit, 10) < 1){
+              alert('Memory Over Commit value can be only a positive float value (greater than or equal to 1)');
+              return false;
+           }
+        }
+
+        // check atleast one resource type is selected
+	totalResourceTypes = getElement("totalresourcetypes").value;
+	if (totalResourceTypes <= 0){
+            alert('No Defined Resource Types Available.Hence Zone Addition is not possible right now');
+	    return false;
+	}
+	atleastOneRTsel = false;
+        for(i=1; i<=totalResourceTypes; i++){
+            if (getElement("resourcetype"+i).checked){
+		atleastOneRTsel = true;
+		break;
+	    }         
+	}
+	if (!atleastOneRTsel){
+            alert('Select at least one Resource Type Allowed for the Zone');
+	    return false;
+	}
+
+        hepSpecsElem.value = hepSpecs;
+        memoryElem.value = memory;
+        storageElem.value = storage;
+        bandwidthElem.value = bandwidth;
+        hepSpecOverCommitElem.value = hepSpecOverCommit;
+        memoryOverCommitElem.value = memoryOverCommit;
+
+        getElement("id_region").disabled = false;
+	return true;
+     }  
+
+     function updateRegion(){
+        regionExists = getElement("regionalreadyselected");
+        if (regionExists.value == "1"){
+         selRegionName = getElement("regionname").value;
+         regionElem = getElement("id_region");
+         for(i=(regionElem.options.length-1); i>0; i--){
+           regionElem.remove(i);
+         }
+         regionElem.options[1] = new Option(selRegionName, selRegionName, true, true);
+         regionElem.disabled = true;
+        }
+     }
+  </script>
+</head>
+<body onLoad="updateRegion();">
+<div id="container">
+{% load filters%}
+<form action="/cloudman/zone/add/" method="post" class="niceform" onSubmit="return checkForm();">{% csrf_token %}
+  <fieldset><legend> Add a Zone (Allowed Only for Regions for which you have rights) </legend>
+  {% for field in formWithInputs %}
+    <input type="hidden" name="inputvalue{{ field.label }}" id="inputvalue{{ field.label }}" value="{{ field.data }}"/>
+      {% for error in field.errors %}
+       <h3> {{ field.label }} : {{ error }} </h3>
+      {% endfor %}
+    {% endfor %}
+    {% for field in form %}
+     <dl>
+      <dt> {{ field.label_tag }}: </dt>
+      <dd> {{ field }}
+        <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+            onmouseover="return ShowToolTip('{{ field.name }}ToolTip');" onmouseout="return HideToolTip('{{ field.name }}ToolTip');" />
+        <div id="{{ field.name }}ToolTip" style="width:120px; position:absolute; z-index:20; display:none" class="boxcontent">
+           {{ field.help_text }}
+        </div>
+      </dd>
+     </dl>
+    {% endfor %}
+    <col style="width: 40px" />
+    <col style="" />
+    <col style="width: 10px" />
+    <col style="width: 50px" />
+    <dl>
+      <dt> <label for="id_hepspec_overcommit">Hepspec Over Commit</label>: </dt>
+      <dd> <div class="slider" style="width:211px;" id="hepspec_overcommit-slider" tabIndex="1">
+             <input class="slider-input" id="hepspec_overcommit-input" />
+           </div>
+           <input type="text" readonly="true" id="id_hepspec_overcommit" name="hepspec_overcommit" style="width:60px;" tabIndex="2" value="0"/>
+           <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+            onmouseover="return ShowToolTip('hepspec_overcommitToolTip');" onmouseout="return HideToolTip('hepspec_overcommitToolTip');" />
+           <div id="hepspec_overcommitToolTip" style="width:120px; position:absolute;z-index:20; display:none" class="boxcontent">
+             Drag the bar to select the percentage of hepspec over commit to be allowed
+           </div>
+      </dd>
+     </dl>
+     <dl>
+      <dt> <label for="id_memory_overcommit">Memory Over Commit</label>: </dt>
+      <dd> <div class="slider" style="width:211px;" id="memory_overcommit-slider" tabIndex="1">
+             <input class="slider-input" id="memory_overcommit-input" />
+           </div>
+           <input type="text" readonly="true" id="id_memory_overcommit" name="memory_overcommit" style="width:60px;" tabIndex="2" value="0"/>
+           <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+            onmouseover="return ShowToolTip('memory_overcommitToolTip');" onmouseout="return HideToolTip('memory_overcommitToolTip');" />
+           <div id="memory_overcommitToolTip" style="width:120px; position:absolute; z-index:20;display:none" class="boxcontent">
+             Drag the bar to select the percentage of memory over commit to be allowed
+           </div>
+      </dd>
+     </dl>
+  </fieldset>
+  {% if selRegionName == "" %}
+    <input type="hidden" name="regionalreadyselected" id="regionalreadyselected" value="0"/>
+  {% endif %}
+  {% if selRegionName != "" %}
+    <input type="hidden" name="regionalreadyselected" id="regionalreadyselected" value="1"/> 
+  {% endif %}
+  <input type="hidden" name="regionname" id="regionname" value="{{selRegionName}}"/> 
+  <br/> <fieldset><legend> Select Allowed Resource Types in the Zone </legend>
+  <table class="autosort" border="1" align="center" style="table-layout: auto;font-size:12px;">
+  <thead>
+  <tr>
+   <th> Select </th>
+   <th> Resource Type Name </th>
+   <th> Capacity <br/> (HS06) </th>
+   <th> Memory <br/> (MB) </th> 
+   <th> Storage <br/> (MB) </th> 
+   <th> Bandwidth <br/> (Mbps) </th>
+  </tr> 
+  </thead>
+  <tbody>
+    {% for field in resourceType %}
+       {% if  forloop.counter|divisibleby:"2" %}
+        <tr class="odd" text="wrap">
+       {% else %}
+        <tr class="even" text="wrap">
+       {% endif %}
+        <td> <input type="checkbox" name="resourcetype{{ forloop.counter }}" id="resourcetype{{ forloop.counter }}" value="{{ field.name }}"/></td>
+	<td> {{ field.name }} </td>
+        <td> {{ field.hepspecs|displayNone }} </td>
+        <td> {{ field.memory|displayNone }} </td>
+        <td> {{ field.storage|displayNone }} </td>
+        <td> {{ field.bandwidth|displayNone }} </td>
+       </tr>
+    {% endfor %} 
+  </tbody>
+  </table>
+  <input type="hidden" name="totalresourcetypes" id="totalresourcetypes" value="{{ resourceType|length }}"/>
+ </fieldset>
+ <fieldset class="action">
+  <input type ="submit" id="submit" name="submit" title="Add" value="Add" style="padding: 5px 5px 5px 5px;" />
+ </fieldset>
+</form>
+<script type="text/javascript">
+   var r = new Slider(document.getElementById("hepspec_overcommit-slider"), document.getElementById("hepspec_overcommit-input"));
+   var m = new Slider(document.getElementById("memory_overcommit-slider"), document.getElementById("memory_overcommit-input"));
+   r.setMaximum(10);
+   m.setMaximum(10);
+   var ri = document.getElementById("id_hepspec_overcommit");
+   var mi = document.getElementById("id_memory_overcommit");
+   ri.onchange = function () {
+	r.setValue(parseInt(this.value));
+   };
+   mi.onchange = function () {
+        m.setValue(parseInt(this.value));
+   };
+   r.onchange = function () {
+        ri.value = r.getValue();
+   }; 
+   m.onchange = function () {
+        mi.value = m.getValue();
+   };
+   r.setValue(1);
+   m.setValue(1);
+</script>
+</div>
+</body>
+</html>

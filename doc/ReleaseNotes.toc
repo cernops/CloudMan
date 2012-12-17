@@ -1,0 +1,19 @@
+\contentsline {section}{\numberline {1}Implementation status and changes with respect to the original design}{2}
+\contentsline {subsection}{\numberline {1.1}Aldebaran implementation, general description}{2}
+\contentsline {subsection}{\numberline {1.2}Authentication and authorization}{2}
+\contentsline {subsection}{\numberline {1.3}Roles}{2}
+\contentsline {subsection}{\numberline {1.4}Low level data export level}{3}
+\contentsline {subsection}{\numberline {1.5}Backends}{3}
+\contentsline {subsection}{\numberline {1.6}Resource pools}{3}
+\contentsline {section}{\numberline {2}Installation instructions}{4}
+\contentsline {subsection}{\numberline {2.1}Getting the sources}{4}
+\contentsline {subsection}{\numberline {2.2}Building from source}{4}
+\contentsline {subsection}{\numberline {2.3}Rebuilding the source rpm}{5}
+\contentsline {subsection}{\numberline {2.4}Rebuilding the package from the source rpm}{5}
+\contentsline {subsection}{\numberline {2.5}Building an rpm from source}{5}
+\contentsline {subsection}{\numberline {2.6}Installation and Configuration}{5}
+\contentsline {subsubsection}{\numberline {2.6.1}Installation}{6}
+\contentsline {subsubsection}{\numberline {2.6.2}Configuration}{6}
+\contentsline {subsubsection}{\numberline {2.6.3}Post Installation tasks}{6}
+\contentsline {section}{\numberline {3}Documentation}{6}
+\contentsline {section}{\numberline {4}Known issues}{6}

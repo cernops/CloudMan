@@ -1,0 +1,60 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Project Detailed Information</title>
+  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}stylesheet/listTable.css" />
+  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}stylesheet/common.css" />
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/general.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/table_sort_filter.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/jquery-1.7.1.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/selectmultiple.js"></script>
+
+</head>
+<body id="databody">
+<form name="dataForm" id="dataForm">
+  <pre style="white-space:normal:text-align:center;"> <p align="center">Detailed Information of Project <br/> Name: {{ projectName }} &nbsp; &nbsp; &nbsp; Description: {{ projectInfo.description }} &nbsp; &nbsp; &nbsp; Admin E-Group: {{ projectInfo.admin_group }}</p> </pre>
+
+  <pre style="white-space:normal;text-align:center;"> Project Attribute for this Project </pre>
+     <center>
+        {% if prMetadata|length == 0 %}
+              None
+        {% else %}
+        <table class="autosort" border="1" align="center" style="table-layout: auto;">
+          <thead>
+             <tr>
+                 <th name="tcol0" id="tcol0" class="table-sortable:numeric">Attribute Name</th>
+                 <th name="tcol1" id="tcol1" class="table-sortable:ignorecase">Attribute Value</th>
+             </tr>
+           </thead>
+        {% for oneRow in prMetadata %}
+   		  {% if  forloop.counter|divisibleby:"2" %}
+       	    <tr class="odd" text="wrap">
+          {% else %}
+            <tr class="even" text="wrap">
+          {% endif %}
+              <td>{{ oneRow.attribute }} </td>
+              <td>{{ oneRow.value }} </td>
+            </tr>	   	
+        {% endfor %}
+        </table>
+        {% endif %}
+     </center>
+
+  <pre style="white-space:normal;text-align:center;"> Project Allocations for this Project </pre>
+   <center>
+   {% if prAllocNames|length == 0 %}
+      None
+   {% endif %}
+   {% for oneRow in prAllocNames %}
+   {% if forloop.counter == prAllocNames|length %}
+     <a class="links" href="/cloudman/projectallocation/getdetails?name={{ oneRow }}" style="cursor:pointer;"> {{ oneRow }} </a> &nbsp;
+   {% else %}
+     <a class="links" href="/cloudman/projectallocation/getdetails?name={{ oneRow }}" style="cursor:pointer;"> {{ oneRow }} </a>, &nbsp;
+   {% endif %}
+   {% endfor %}
+   </center>
+   {% include "log/logshow.html"%}
+</form>
+</body>
+</html>

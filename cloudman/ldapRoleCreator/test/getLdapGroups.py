@@ -1,0 +1,5 @@
+
+
+def getLDAPGroups(username):
+   return 
+

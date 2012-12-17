@@ -1,0 +1,41 @@
+{% load markup %}
+
+<html>
+    <head><title>Welcome to Cloudman Resource Manager</title></head>
+    <link rel="stylesheet" href="{{ MEDIA_URL }}style.css" type="text/css" />
+    <body>
+        <div class="top_bg">
+        <div class="logo_heading">Cloudman</div>
+        <a id="cern_logo_img" href="http://www.cern.ch"><img src="{{ MEDIA_URL }}CERNLogo.png" alt="CERN Logo" /></a>
+        <a href='https://login.cern.ch/adfs/ls/?wa=wsignout1.0' alt="Logout from CERN SSO">Logout</a>
+
+        <h3>User Details {{ MICROSOFT_SSO }}</h3>
+        <!--Welcome...ADFS Name...  {{ request.META.ADFS_FULLNAME }}
+        Welcome...user...  {{ request.users }}
+        Welcome...userName from views...  {{ userName }} -->
+        All items are as follows %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        {{ values }}
+        Full name after loop is {{ fullName }}
+        Request user values.... {{ request.user }}
+        <!--Welcome...home institute...  {{ request.ADFS_HOMEINSTITUTE }}
+        Welcome request_meta...{{ request.META }}
+        Welcome {{ userName }} -->
+        <!-- Welcome...FullName...  {{ request }}
+        Welcome...ADFS Name...  {{ request.META }}
+        -->
+        <div id="userInfo">
+            <table>
+                {% if request.META.ADFS_FULLNAME %}
+                <tr>
+                    <td>Welcome .{{ request.META.ADFS_FULLNAME }} . </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td>Welcome -{{ request.user.first_name }}-</td>
+                </tr>
+                {% endif %}
+            </table>
+        </div>
+        </div>
+    </body>
+</html>

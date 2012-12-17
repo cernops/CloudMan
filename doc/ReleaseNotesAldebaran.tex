@@ -1,0 +1,213 @@
+\documentclass[12pt]{article}
+\usepackage{epsfig,a4}
+%\usepackage{draftcopy}
+\begin{document}
+\thispagestyle{empty}
+\title{Cloudman Version 0.12 "Aldebaran" Release notes}
+\author{CERN IT-DEP/PES-PS}
+%\version{0.0.1}
+\date{\today}
+\maketitle 
+
+\begin{abstract}
+This is the first release of CloudMan, named "Aldebaran", a generic resource management tool. This document gives a summary over the first phase of the project, including applied changes with respect to the original design. 
+\end{abstract}
+%
+% contents
+%
+\tableofcontents
+%\listoffigures 
+
+\section{Implementation status and changes with respect to the original design}
+
+\subsection{Aldebaran implementation, general description}
+Aldebaran provides a stateless GUI, in the sense described in the design 
+document. All dynamic data is stored in a database. The current setup at CERN 
+uses mysql rather than Oracle because for the time being no failover mechanism 
+is required. Database access is abstracted as required using Django. 
+
+It implements a GUI front end which is based on python Django and a backend which 
+supports different kinds of export mechanism, including XML and JSON. 
+The tool is fully integrated with CERN's SSO for the front end. 
+The CERN deployment uses two virtual servers: one listening to port 443 (SSL secured) for the GUI front end, which requires authentication through Shibboleth. The
+backend export is done through a different virtual server listening on port 8443. 
+This is read-only, and no authentication is required.
+
+\subsection{Authentication and authorization}
+ Authentication to the GUI is done using CERN SSO, following the original 
+requirement. 
+
+An identification of the VO to which the user belongs by identifying the users 
+unix group id is not necessary, because Aldebaran does not hard code the concept
+of virtual organizations. Instead, egroups (or LDAP) are used throughout the 
+product to group user. This approach is a generalization of the original approach,
+and it is more flexible and more portable than the original idea. 
+
+Aldebaran allows to manage user groups, if needed, directly from CloudMan as well.
+This feature will be used during the migration from LSFweb to CloudMan for defining shares in the LSF batch system. The previous product, LSFweb, was designed before egroups were invented, and defines therefore a large number of user groups which need to be mapped subsequently to egroups. 
+
+\subsection{Roles}
+There is one hard coded role in CloudMan, the CloudMan administrator role. The group of people with this role is
+defined in the cloudman configuration file. People in this list can change everything.
+Additional roles are defined implicitly through the hierarchy in which user groups are defined and used in Aldebaran.
+
+\subsection{Low level data export level}
+The data export layer supports all kind of output formats by using the 
+python-Django-piston module. 
+
+It was decided that only one export URL for all consumer backends is enough if different views are offered for the export which allow the backends to filter all
+data for the relevant parts for them in an easy way. 
+
+\subsection{Backends}
+Backends are designed as plugins to CloudMan. They can be shipped as separate RPMs. 
+The Aldebaran release itself ships with one backend script, which allows to create batch system 
+configuration files for the LSF batch scheduler. It can be viewed as a sample implementation. 
+
+In addition, this release contains as well tools to migrate existing data from LSFWeb and 
+import it into CloudMan. The migration and production release is forseen for 
+the end of data taking in 2012, at which point CloudMan will enter production 
+mode at CERN for configuring batch resources. 
+
+The OpenNebula driven cloud test infrastructure {\it lxcloud} at CERN will be 
+decommissioned during 2012. It is planned to absorbe the functionality in a new 
+project based on OpenStack, therefore development on the both the old 
+infrastructure, as well as the backend for CloudMan, has been put on hold.
+However, since BARC is using OpenNebula, a prototype backend may be made available 
+as a plugin for this release later on. 
+
+A prototype implementation of a backend for OpenStack was suggested in the 
+inital design goals for Aldebaran. However, OpenStack is a very young project, and changing 
+on a daily basis. This is not only true for the code but also for definitions 
+and concepts which can very drastically between the releases. 
+ 
+Specifically, the quota system is being redone, and new concepts 
+(like tenants) are coming up. Concequently, the CERN test OpenStack test instance 
+is currently subject to so many changes that it is hard to design a backend for it.
+Therefore, Aldebaran will not ship with a backend for OpenStack. 
+As in the case of OpenNebula, an Aldebaran backend script for CloudMan can be made available later.
+Due to upcoming changes in OpenStack, this is likely to be based on the 
+next OpenStack release, called {\it Folsom}.
+
+Possible storage backends are currently under investigation. The best candidate is currently AFS 
+project space which seems to match nicely the functionality of CloudMan. 
+
+\subsection{Resource pools}
+Resource pools are implemented as Regions and Zones in Aldebaran. The CloudMan administrator can define one or more Region, and assign group of people to each region who are allowed to administer these regions. 
+
+In turn, each regions can have several zones. The zone administrators can define
+resource types which are allowed in this zone.
+
+When doing a top level allocation, the CloudMan administrator needs to select the zone for which this top level allocation is valid. This allows to confine the 
+resource types which each user group (or VO) is allowed to use. 
+
+
+\section{Installation instructions}
+The package can be build from source or installed as an rpm. 
+
+\subsection{Getting the sources}
+You can retrieve the sources from git at CERN:
+\begin{verbatim}
+git clone ssh://gitgw.cern.ch:10022/cloudman
+cd cloudman
+git checkout -b Aldebaran
+\end{verbatim}
+
+\subsection{Building from source}
+Before trying to rebuild the package make sure that you have the following packages available:
+\begin{itemize}
+\item autoconf and automake
+\item tetex
+\item texlive-latex
+\item ghostscript
+\end{itemize}
+
+After retrieving the source tree do 
+\begin{verbatim}
+cd cloudman
+./autogen.sh
+./configure --prefix=/path/to/apache/directory 
+make 
+sudo make install
+\end{verbatim}
+
+\subsection{Rebuilding the source rpm}
+To rebuild the source rpm, checkout the source from git first, then do
+\begin{verbatim}
+cd cloudman
+./autogen.sh
+./configure
+make sources
+\end{verbatim}
+
+\subsection{Rebuilding the package from the source rpm}
+To rebuild the package from the source rpm, simply do 
+\begin{verbatim}
+rpmbuild --rebuild cloudman-0.1.2-1.ai6.src.rpm
+\end{verbatim}
+
+\subsection{Building an rpm from source}
+To directly build the package and the source rpm do this
+\begin{verbatim}
+cd cloudman
+./autogen.sh
+./configure
+make rpm
+\end{verbatim}
+
+\subsection{Installation and Configuration}
+The configuration instructions will refer to the installation from rpm.
+Prerequisits are : 
+
+\begin{itemize}
+ \item RHES6.2, SL(C)6.2 or newer 
+ \item An apache web server with SSO enable, listening on port 443, directory /var/www/cloudman
+ \item Apache listening on an alternate port (eg 8443) for the export, no SSO, directory /var/www/export
+ \item django-piston and python-django-debug-toolbar are currently required
+ \item shibboleth configured and shibd started
+\end{itemize}
+
+\subsubsection{Installation}
+To install the cloudman rpm you need administrative privileges on your server. If {\it sudo} is used, you can install it
+via
+\begin{verbatim}
+sudo rpm -U http://lxsoft06.cern.ch/mash/ai6/x86_64/os/Packages/\
+cloudman-0.1.1-7.ai6.noarch.rpm
+\end{verbatim}
+As of writing this document, this URL is only visible inside CERN. The rpm can be made available though on request. 
+
+\subsubsection{Configuration}
+
+Edit /etc/cloudman/config to match your configuration. Follow the instructions 
+given in this file. 
+
+\subsubsection{Post Installation tasks}
+If this is the first installation, you can use the script 
+\begin{verbatim}
+/usr/sbin/create\_cloudman\_ddb 
+\end{verbatim}
+to initialize the cloudman database. Then restart httpd and shibd (if necessary). 
+
+\section{Documentation}
+After installation of the rpm, the project description and design documents as well as these release notes can be found in 
+\begin{verbatim}
+/usr/share/doc/cloudman/Aldebaran/ReleaseNotes.pdf
+/usr/share/doc/cloudman/Aldebaran/design.pdf
+/usr/share/doc/cloudman/Aldebaran/project.pdf
+\end{verbatim}
+
+End-user documentation can be found in~\cite{ref:UserManual}
+
+\section{Known issues}
+The following issues have been identified during a first testing of the prototype of Aldebaran. They will be addressed in the next release.
+\begin{itemize}
+\item  The concept of groups adds an unnecessary complication for sites which use egroups or ldap. 
+  For an egroup site a group in Cloudman is just a pointer to an egroup which must be edited outside Cloudman. The concept is likely to be dropped for the "Betelgeuze" release
+\item  The concept of "Resoure types" is to be reviewed. The initial idea was to enable the super users to allow only certain resource types per zone.
+  However, "CPU resources", "Disk resources" etc are resource types as well. Thus these should be unified for the sake of simplicity
+\end{itemize}
+
+\begin{thebibliography}{99}
+\bibitem{ref:UserManual} https://twiki.cern.ch/twiki/bin/view/CloudServices/ProjectCloudManUserManual
+\end{thebibliography}
+\end{document}
+

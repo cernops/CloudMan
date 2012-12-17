@@ -1,0 +1,116 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Group Allocation Detailed Information</title>
+  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}stylesheet/listTable.css" />
+  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}stylesheet/common.css" />
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/jquery-1.7.1.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/general.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/table_sort_filter.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/selectmultiple.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/selectmultiple.js"></script>
+
+</head>
+<body id="databody">
+{% include "base/search.html" %}
+{% load filters%}
+<form name="dataForm" id="dataForm">
+  <pre style="white-space:normal:text-align:center"> <center>Detailed Information of Group Allocation <br/> Name: {{ allocName }} &nbsp; &nbsp; &nbsp; Group: <a class="links" href="/cloudman/group/getdetails?name={{ allocInfo.group.name }}" style="cursor:pointer;"> {{ allocInfo.group.name }} </a> 
+{% if allocInfo.project_allocation.name %}Project Allocation : <a class="links" href="/cloudman/projectallocation/getdetails?name={{allocInfo.project_allocation.name}}" style="cursor:pointer;"> {{ allocInfo.project_allocation.name }}</a> &nbsp; &nbsp; &nbsp;{% else %}Project Allocation : {{ allocInfo.project_allocation.name }} &nbsp; &nbsp; &nbsp;{% endif %}{% if oneRow.parent_group_allocation.name %} Parent Group Allocation : <a class="links" href="/cloudman/groupallocation/getdetails?name={{allocInfo.parent_group_allocation.name}}" style="cursor:pointer;"> {{ allocInfo.parent_group_allocation.name }}</a> &nbsp; &nbsp; &nbsp;{% else %}Parent Group Allocation : {{ allocInfo.parent_group_allocation.name }} &nbsp; &nbsp; &nbsp;{% endif %}
+Capacity(HS06): {{allocInfo.hepspec|displayNone }} &nbsp; &nbsp; &nbsp; Memory(MB): {{ allocInfo.memory|displayNone }}&nbsp; &nbsp; &nbsp; Storage(MB): {{ allocInfo.storage|displayNone }}&nbsp; &nbsp; &nbsp; Bandwidth(Mbps): {{allocInfo.bandwidth|displayNone }}</center> </pre>
+
+  <pre style="white-space:normal;text-align:center;"> Allocation : {{ allocName }} Allowed Resource Types (Total : {{ allowedResourceTypesList|length }}) </pre>
+  <table class="autosort" border="1" id='rttable' align="center" style="table-layout: auto;">
+  <thead>
+   <tr>
+    <th name="tcol0" id="tcol0" class="table-sortable:ignorecase">No</th>
+    <th name="tcol1" id="tcol1" class="table-sortable:ignorecase">Name</th>
+    <th name="tcol2" id="tcol2" class="table-sortable:ignorecase">Resource Class</th>
+    <th name="tcol3" id="tcol3" class="table-sortable:numeric">Capacity (HS06)</th>
+    <th name="tcol4" id="tcol4" class="table-sortable:numeric">Memory (MB)</th>
+    <th name="tcol5" id="tcol5" class="table-sortable:numeric">Storage (MB)</th>
+    <th name="tcol6" id="tcol6" class="table-sortable:numeric">Bandwidth (Mbps)</th>
+   </tr>
+  </thead>
+  <tbody>
+   {% for oneRow in allowedResourceTypesList %}
+   {% if  forloop.counter|divisibleby:"2" %}
+    <tr class="odd" text="wrap">
+   {% else %}
+    <tr class="even" text="wrap">
+   {% endif %}
+    <td name="tcol0" id="tcol0" scope="row" text="wrap">{{ forloop.counter }}</td>
+    <td name="tcol1" id="tcol1" scope="row" text="wrap"><a class="links" href="/cloudman/resourcetype/getdetails?name={{ oneRow.resource_type.name }}" style="cursor:pointer;">{{ oneRow.resource_type.name }}</a></td>
+    <td name="tcol2" id="tcol2" scope="row" text="wrap">{{ oneRow.resource_type.resource_class }}</td>
+    <td name="tcol3" id="tcol3" scope="row" text="wrap">{{ oneRow.resource_type.hepspecs|displayNone }}</td>
+    <td name="tcol4" id="tcol4" scope="row" text="wrap">{{ oneRow.resource_type.memory|displayNone }}</td>
+    <td name="tcol5" id="tcol5" scope="row" text="wrap">{{ oneRow.resource_type.storage|displayNone }}</td>
+    <td name="tcol6" id="tcol6" scope="row" text="wrap">{{ oneRow.resource_type.bandwidth|displayNone }}</td>
+    </tr>
+   {% endfor %}
+  </tbody>
+  </table>
+  <br/>
+
+  <pre style="white-space:normal;text-align:center;"> List of Group Allocations Using this as Parent Allocation (Total : {{ groupAllocationsInfo|length }}) </pre>
+  <table class="autosort" border="1" id='grpalloctable' align="center" style="table-layout: auto;">
+  <thead>
+   <tr>
+    <th name="tcol0" id="tcol0" class="table-sortable:numeric">No</th>
+    <th name="tcol1" id="tcol1" class="table-sortable:ignorecase">Name</th>
+    <th name="tcol2" id="tcol2" class="table-sortable:ignorecase">Group</th>
+    <th name="tcol5" id="tcol5" class="table-sortable:numeric">Capacity (HS06)</th>
+    <th name="tcol6" id="tcol6" class="table-sortable:numeric">Memory (MB)</th>
+    <th name="tcol7" id="tcol7" class="table-sortable:numeric">Storage (MB)</th>
+    <th name="tcol8" id="tcol8" class="table-sortable:numeric">Bandwidth (Mbps)</th>
+   </tr>
+  </thead>
+  <tbody>
+   {% for oneRow in groupAllocationsInfo %}
+   {% if  forloop.counter|divisibleby:"2" %}
+    <tr class="odd" text="wrap">
+   {% else %}
+    <tr class="even" text="wrap">
+   {% endif %}
+    <td name="tcol0" id="tcol0" scope="row" text="wrap">{{ forloop.counter }}</td>
+    <td name="tcol1" id="tcol1" scope="row" text="wrap"><a class="links" href="/cloudman/groupallocation/getdetails?name={{ oneRow.name }}" style="cursor:pointer;">{{ oneRow.name }}</a></td>
+    <td name="tcol2" id="tcol2" scope="row" text="wrap"><a class="links" href="/cloudman/group/getdetails?name={{ oneRow.group.name }}" style="cursor:pointer;">{{ oneRow.group.name }}</a></td>
+    <td name="tcol5" id="tcol5" scope="row" text="wrap">{{ oneRow.hepspec|displayNone }}</td>
+    <td name="tcol6" id="tcol6" scope="row" text="wrap">{{ oneRow.memory|displayNone }}</td>
+    <td name="tcol7" id="tcol7" scope="row" text="wrap">{{ oneRow.storage|displayNone }}</td>
+    <td name="tcol8" id="tcol8" scope="row" text="wrap">{{ oneRow.bandwidth|displayNone }}</td>
+    </tr>
+   {% endfor %}
+  </tbody>
+  </table>
+	<pre style="white-space:normal;text-align:center;"> Attribute for this Group Allocation  </pre>
+    <center>
+    	{% if grAllocMetadata|length == 0 %}
+                   None
+        {% else %}
+        <table class="autosort" border="1" align="center" style="table-layout: auto;">
+          <thead>
+        	<tr>
+                <th name="tcol0" id="tcol0" class="table-sortable:numeric">Attribute Name</th>
+                <th name="tcol1" id="tcol1" class="table-sortable:ignorecase">Attribute Value</th>
+            </tr>
+          </thead>
+          {% for oneRow in grAllocMetadata %}
+             {% if  forloop.counter|divisibleby:"2" %}
+               <tr class="odd" text="wrap">
+             {% else %}
+               <tr class="even" text="wrap">
+             {% endif %}
+               <td>{{ oneRow.attribute }} </td>
+               <td>{{ oneRow.value }} </td>
+            </tr>
+          {% endfor %}
+        </table>
+        {% endif %}
+     </center>
+
+</form>
+{% include "log/logshow.html"%}
+</body>
+</html>

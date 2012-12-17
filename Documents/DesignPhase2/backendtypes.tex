@@ -1,0 +1,55 @@
+\section{Backend types}
+Backends are plugins to CloudMan which can and should be shipped separately from the CloudMan interface itself. Backends are in general expected to be site specific. The base distribution of CloudMan should provide a framework for developing backends. Optionally, it  can ship sample implementations to document how to use the framework.
+
+We distinguish two different classes of backends:
+
+\begin{itemize}
+\item {\it Project backends} are project specific scripts which consume only the data specific to the project they belong to. 
+\item A {\it Mover} is responsible for resource sharing between different backends. 
+\end{itemize}
+
+\subsection{Project backends}
+For each project there will be one and only one project backend. The project backend consumes data related to the project for which it has been designed. The CloudMan frontend must be able to query the current status of the configuration. This will allow the administrators to watch the status of any change requests done, and verify the integrity of the data which has been entered. 
+
+State data is published in a simplistic way, either a file on a shared file system, or a URL. 
+
+Adding support for project backends results in the following requirements:
+\begin{itemize}
+ \item when allocating a new project the backend has to be specified along with the source of the state data 
+ \item a cron job on the CloudMan front end regulary reads  the state data for all project backends and put it into a database table to record historical information
+ \item when a user queries state data from the GUI the information is taken from the state data source, not from the database
+ \item the CloudMan front end needs to offer a way to display the current state data per project
+ \item the CloudMan front end needs to offer a way to display the historical evolution of the state per project 
+ \item all project backends must publish their state data in a common and agreed format
+ \item project backends need to provide an interface which allows automatic shrinking of resources
+\end{itemize}
+
+\subsection{Mover backend}
+In a full CloudMan installation there should be one mover backend. It is responsible to shift resources between different projects. Therefore, it has to match the following requirements:
+
+\begin{itemize}
+ \item the mover backend needs to have access to the state data of each project between which it is supposed to shift resources
+ \item the mover backend reads the list of projects along with the project state data from the CloudMan export layer
+% \item where to define the mover backend in CloudMan
+% \item try to have only one mover
+% \item name and source of state info defined in configuration file of CloudMan ?
+% \item for some projects a plugin will be needed to manage resources, eg draining of nodes, or claiming back VMs
+\end{itemize}
+The mover can be implemented as a scheduler on the CloudMan front end which triggeres actions on Project backends. 
+
+%Possible backends include 
+%\begin{itemize}
+%\item One or more plugins to configure batch system shares, one per batch system in use (eg LSF, SLURM, ...)
+%\item One or more plugins to configure an OpenNebula instance
+%\item One or more plugins to configure an OpenStack instance
+%\end{itemize}
+%Plugins are expected to be project driven but they don't have to be. This is specifically true for plugins which talk to
+%an internal cloud setup: A site may choose to have one plugin for each tenant in an OpenStack instance, or rather use
+%only one plugin which will configure the whole cloud instance. 
+
+
+%\section{Benefits, assumptions, risks/issues}
+%Writing backends for Cloud controllers like OpenStack and Opennebula bears some risk as the concepts and definitions used by those young projects are still changing rapidly. In addition, the backends for these systems will be very model dependent, in the sense that each site who deploys them will configure them differently. 
+
+ 
+

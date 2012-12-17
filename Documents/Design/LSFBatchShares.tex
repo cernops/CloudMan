@@ -1,0 +1,20 @@
+CloudMan should support the definition of shares for a batch processing project. 
+Such a backend is particularly interesting for CERN because there is already an
+existing application ({\it LSFweb}) which has been designed before SSO and 
+egroups were introduced at CERN. The new backend will allow to replace this old 
+tool. 
+
+When determining resources for a batch farm, there are two aspects which need
+to be considered:
+
+\begin{enumerate}
+\item the batch processing resources: The batch farm itself has a certain size, that is a number of worker nodes providing job slots, which are available for the users to process their data. In the simplest case all worker nodes are organized in a single public partition which can be accessed by all registered users. At CERN, the situation is more complicated though. Although all CPU resources belong to the same batch instances, there are additional partitions providing dedicated resources to some user groups. 
+The bulk of computing resources at CERN consist of physical worker nodes. The configuration of these resources is currently done using the Quattor tool kit. At the long term there are plans to virtualize more and more of these resources, and provide them through an internal cloud. It should be possible to use CloudMan to manage such resources, for example through a batch resource project. 
+ 
+\item the user shares: Some of the batch partitions implement fair share. At CERN, batch shares are currently managed through a graphical user interface called
+LSFweb. It should be possible to manage LSF shares through a batch project from CloudMan, allowing to replace the old LSFweb tool.
+\end{enumerate}
+
+CloudMan shall offer a way to configure both batch resources and batch user shares from a single interface. 
+
+The goal for the first design phase is to develop a prototype of a backend for the second use cases. Ideally, some tools should be provided which allow to migrate from LSFweb to CloudMan in an easy way.

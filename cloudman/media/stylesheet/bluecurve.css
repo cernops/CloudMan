@@ -1,0 +1,103 @@
+/*
+	back:	rgb(230,230,230)
+	dark:	rgb(90,97,90)
+	medium	rgb(189,190,189)
+	*/
+.color-picker {
+	background:	transparent;
+	width:		571px;
+	height:		100%;
+}
+
+.color-picker td {
+	padding:	1px;
+}
+
+.color-picker input {
+	text-align:	right;
+	width:		30px;
+}
+.color-picker td,
+.color-picker input {
+	font:	Message-Box;
+	font:	MessageBox;
+}
+
+.dynamic-slider-control {
+	position:			relative;
+	background-color:	rgb(230,230,230);
+	-moz-user-focus:	normal;
+	-moz-user-select:	none;
+	cursor:				default;
+        width:		auto;
+	height:		20px;
+	margin:		0;
+}
+
+.horizontal {
+	width:				200px;
+	height:				27px;
+}
+
+.vertical {
+	width:				29px;
+	height:				200px;
+}
+
+.dynamic-slider-control input {
+	display:	none;
+}
+
+.dynamic-slider-control .handle {
+	position:			absolute;	
+	font-size:			1px;
+	overflow:			hidden;
+	-moz-user-select:	none;
+	cursor:				default;
+}
+
+.dynamic-slider-control.horizontal .handle {
+	width:				31px;
+	height:				14px;
+	background-image:	url("../images/handle.horizontal.png");
+}
+
+.dynamic-slider-control.horizontal .handle div {}
+.dynamic-slider-control.horizontal .handle.hover {}
+
+.dynamic-slider-control.vertical .handle {
+	width:				15px;
+	height:				31px;
+	background-image:	url("../images/handle.vertical.png");
+}
+
+.dynamic-slider-control.vertical .handle.hover {}
+
+.dynamic-slider-control .line {
+	position:			absolute;
+	font-size:			0.01mm;
+	overflow:			hidden;
+	border:				1px solid rgb(90,97,90);
+	background:			rgb(189,190,189);
+	
+	behavior:			url("css/boxsizing.htc"); /* ie path bug */
+	box-sizing:			content-box;
+	-moz-box-sizing:	content-box;
+}
+.dynamic-slider-control.vertical .line {
+	width:				3px;
+}
+
+.dynamic-slider-control.horizontal .line {
+	height:				3px;
+}
+
+.dynamic-slider-control .line div {
+	width:		1px;
+	height:		1px;
+	
+	border:				1px solid;
+	border-color:		rgb(230,230,230) rgb(189,190,189)
+						rgb(189,190,189) rgb(230,230,230);
+}
+

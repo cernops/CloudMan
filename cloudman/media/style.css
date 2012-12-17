@@ -1,0 +1,116 @@
+
+body {
+        background: url(/cloudman/media/bg.png) 0px 0px repeat;
+        font-family: arial, sans-serif;
+        color: #333;
+        margin: 15px 0;
+        text-align: left;
+        z-index: 1;
+}
+
+.logo_heading {
+        font-family: arial, sans-serif;
+        text-align: center;
+        font-size: 40px;
+        font-weight: bold;
+}
+
+div#actionsmenu {
+        position: absolute;
+        width: 100px;
+        top: 105px;
+        right: 0;
+        background: #CCC url(/cloudman/media/headbg.png) repeat-x center top;
+}
+
+.groupname {
+        text-align: left;
+        font-family: arial, sans-serif;
+        color: white;
+}
+
+div#groupslisttable {
+        position: absolute;
+        top: 150px;
+        left: 0;
+        height: auto;
+        width: auto;
+}
+
+div#nameactions {
+        position: absolute;
+        width: 100%;
+        height:   27px;
+        background: #CCC url(/cloudman/media/headbg.png) repeat-x center top;
+        z-index: 2;
+        left: 0;
+        top: 80px;
+}
+
+div#nameactionstext {
+       position: relative;
+       height: auto;
+       width: auto;
+       font-weight: bold;
+       top: 0;
+}
+
+div#nameactionsbutton {
+         position: absolute;
+         width: 80px;
+         height: 78px;
+         border: 0;
+         /*background: #CCC url(/cloudman/media/CERNLogo.png);*/
+         top: 80px;
+         right: 0;
+         z-index: 3;
+}
+
+div#topheading {
+        position: absolute;
+        width: 100%;
+        height: 78px;
+        top: 0;
+        left: 0;
+        background: #CCC url(/cloudman/media/headbg.png) repeat-x center top;
+        z-index: 2;
+}
+
+div#topheadingtext {
+       position: relative;
+       text-align: center;
+       height: auto;
+       width: auto;
+       font-family: arial, sans-serif;
+       font-size: 40px;
+       font-weight: bold;
+       top: 20px;
+}
+
+.DAELogo {
+         position: absolute;
+         border: 0;
+         width: 80px;
+         height: 78px;
+         /*background: #CCC url(/cloudman/media/DAELogo.png);*/
+         top: 0;
+         left: 0;
+         z-index: 3;
+}
+
+
+.CERNLogo {
+         position: absolute;
+         width: 80px;
+         height: 78px;
+         border: 0;
+         /*background: #CCC url(/cloudman/media/CERNLogo.png);*/
+         top: 0;
+         right: 0;
+         z-index: 3;
+}
+
+div#bottomtext {
+         
+         
+}

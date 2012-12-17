@@ -1,0 +1,13 @@
+#databody{
+        //background:#f3f9ff url(../images/background.jpg);
+        //color: #202020;
+        background-color: #d6e8ff;
+}
+
+p.currdata{
+	color:blue;
+}
+
+p.olddata{
+	color:red;
+}

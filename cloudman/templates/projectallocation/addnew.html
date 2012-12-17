@@ -1,0 +1,687 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Creation of Project Allocation</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" media="all" href="{{ MEDIA_URL }}stylesheet/niceforms.css" />
+<link rel="stylesheet" type="text/css" media="all" href="{{ MEDIA_URL }}stylesheet/listTable.css" />
+<script type="text/javascript" src="{{ MEDIA_URL }}javascript/general.js"></script>
+<script type="text/javascript" src="{{ MEDIA_URL }}javascript/cloudman.js"></script>
+<script type="text/javascript" src="{{ MEDIA_URL }}javascript/jquery-1.7.1.js"></script>
+{% load filters%}
+{% include "base/convert_unit.html" %}
+<script type="text/javascript">
+   $(function() {
+     $("#id_top_level_allocation").change(onTopLevelAllocationChange);
+   });
+   
+   $(function() {
+     $("#id_project").change(onProjectChange);
+   });
+   
+   
+   var onProjectChange = function(){
+       projectElem = getElement("id_project");
+       if (projectElem.selectedIndex > 0)
+       {
+          csrftoken = getElement("projectallocationform").csrfmiddlewaretoken.value;
+          projectName = projectElem.options[projectElem.selectedIndex].value;
+          projectElem.disabled = true;
+          $.ajax( {
+             type: 'post',
+               data: {'name': projectName, 'csrfmiddlewaretoken': csrftoken},
+               url:  '/cloudman/project/getattrinfo/',
+               success: function( result ) 
+               {
+               		projectElem.disabled = false;
+                 	var obj = jQuery.parseJSON(result);                 
+                 	var str = ''
+                 	if (obj.length <= 0)
+                 	{
+                    	//alert('No attribute set for the Project'+ projectName);
+                 	}
+                 	else
+                 	{                    		  		
+		    			for (index=0; index<obj.length; index++)
+		    			{                       		                       		
+                       		attribute = obj[index].attribute;
+                       		value = obj[index].value;                       		
+                       		str += "<dl><dd>Attribute Name:<input type=text name='attribute_name' readonly='readonly' value='" + attribute + "'></dd>";                       		
+                       		if(value.replace(/\s/g,"") != "")
+                       		{
+                       			var value_list = value.split(' ');                       		
+                       			var option_str = '';                       		                       		                       		                       		
+                       			for(var i=0;i<value_list.length;i++)
+                       			{
+                       				option_str += "<option value='"+value_list[i]+"'>"+value_list[i]+"</option>";
+                       			} 
+                       			str += "<dd>Value:<select name='attribute_value'>"+option_str+"</select></dd></dl>";
+                       		}
+                       		else
+                       		{
+                       			str += "<dd>Value:<input type=text name='attribute_value' value=''></dd></dl>";
+                       		}                      		                       		                       		
+                    	}                    	
+                 	}
+                 	document.getElementById("projectattribute").innerHTML = str;                 	
+               }
+          } );
+       }
+       else
+       {
+       		document.getElementById("projectattribute").innerHTML = '';
+       }
+       
+   };
+   
+   
+   
+   
+   
+   var resourceTypesPK = [];
+   var resourceTypes = new Object(); // model = cloudman.resourcetype 
+   totHepSpecs = -1;
+   totMemory = -1;
+   totStorage = -1;
+   totBandwidth = -1;
+   freeHepSpecs = 0;
+   freeMemory = 0;
+   freeStorage = 0;
+   freeBandwidth = 0;
+   fractionHepSpecs = 0;
+   fractionMemory = 0;
+   fractionStorage = 0;
+   fracationBandwidth = 0;
+
+   var onTopLevelAllocationChange = function(){
+       topLevelAllocationElem = getElement("id_top_level_allocation");
+       for (i=0; i<resourceTypesPK.length; i++){
+           delete resourceTypes[resourceTypesPK[i]];
+       }
+       resourceTypesPK.length = 0;
+       totHepSpecs = -1;
+       totMemory = -1;
+       totStorage = -1;
+       totBandwidth = -1;
+       freeHepSpecs = 0;
+       freeMemory = 0;
+       freeStorage = 0;
+       freeBandwidth = 0;
+       fractionHepSpecs = 0;
+       fractionMemory = 0;
+       fractionStorage = 0;
+       fracationBandwidth = 0;
+ 
+       if (topLevelAllocationElem.selectedIndex > 0){
+          csrftoken = getElement("projectallocationform").csrfmiddlewaretoken.value;
+          topLevelAllocationName = topLevelAllocationElem.options[topLevelAllocationElem.selectedIndex].value;
+          topLevelAllocationElem.disabled = true;
+          $.ajax( {
+             type: 'post',
+               data: {'name': topLevelAllocationName, 'csrfmiddlewaretoken': csrftoken},
+               url:  '/cloudman/toplevelallocation/getresourceinfo/',
+               success: function( result ) {
+                 topLevelAllocationElem.disabled = false;
+                 var obj = jQuery.parseJSON(result);
+                 if (obj.length <= 0){
+                    alert('No Information Available for Top Level Allocation ' + topLevelAllocationName);
+                 }else{
+		    for (i=0; i<obj.length; i++){
+                       modelName = obj[i].model;
+                       modelSplit = modelName.split(".");
+                       if (modelSplit[1] == "toplevelallocationinfo"){
+                           if (obj[i].fields.tothepspecs != null){
+ 		              totHepSpecs = round_float(obj[i].fields.tothepspecs, 3);
+                           }
+                           if (obj[i].fields.totmemory != null){
+			      totMemory = round_float(obj[i].fields.totmemory, 3);
+                           }
+                           if (obj[i].fields.totstorage != null){
+			       totStorage = round_float(obj[i].fields.totstorage, 3);
+                           }
+                           if (obj[i].fields.totbandwidth != null){
+			       totBandwidth = round_float(obj[i].fields.totbandwidth, 3);
+                           }
+                       }else if (modelSplit[1] == "toplevelallocationfreeinfo"){
+                           if (obj[i].fields.hepspecsfree != null){
+			       freeHepSpecs = round_float(obj[i].fields.hepspecsfree, 3);
+                           }
+                           if (obj[i].fields.memoryfree != null){
+			       freeMemory = round_float(obj[i].fields.memoryfree, 3);
+                           }
+                           if (obj[i].fields.storagefree != null){
+			       freeStorage = round_float(obj[i].fields.storagefree, 3);
+                           }
+                           if (obj[i].fields.bandwidthfree != null){
+		               freeBandwidth = round_float(obj[i].fields.bandwidthfree, 3);
+                           }
+		       }else if (modelSplit[1] == "toplevelallocationusedinfoper"){
+                           if (obj[i].fields.hepspecsfraction != null){
+			       fractionHepSpecs = round_float(obj[i].fields.hepspecsfraction, 3);
+                           }
+                           if (obj[i].fields.memoryfraction != null){
+			       fractionMemory = round_float(obj[i].fields.memoryfraction, 3);
+                           }
+                           if (obj[i].fields.storagefraction != null){
+			       fractionStorage = round_float(obj[i].fields.storagefraction, 3);
+                           }
+			   if (obj[i].fields.bandwidthfraction != null){
+			       fractionBandwidth = round_float(obj[i].fields.bandwidthfraction, 3);
+                           }
+		       }else if (modelSplit[1] == "resourcetype"){
+			   pk = obj[i].pk;
+			   resourceTypesPK.push(pk);
+                           resourceTypes[pk] = {};
+                           resourceTypes[pk].name = obj[i].fields.name;
+                           resourceTypes[pk].resource_class = obj[i].fields.resource_class;
+                           resourceTypes[pk].hepspecs = obj[i].fields.hepspecs;
+                           resourceTypes[pk].memory = obj[i].fields.memory;
+                           resourceTypes[pk].storage = obj[i].fields.storage;
+                           resourceTypes[pk].bandwidth = obj[i].fields.bandwidth;
+		       }
+                    }
+                 }
+                 fillTopLevelAllocation();
+               }
+          } );
+       }else{
+          getElement("seltoplevelallocation").innerHTML = "";
+	  
+       }
+   };
+
+   function fillTopLevelAllocation(){
+       hepspecs_bar_width = Math.ceil((60 * fractionHepSpecs)/100);
+       memory_bar_width = Math.ceil((60 * fractionMemory)/100);
+       storage_bar_width = Math.ceil((60 * fractionStorage)/100);
+       bandwidth_bar_width = Math.ceil((60 * fractionBandwidth)/100);
+    
+       displayStr = "<table class=\"autosort\" border=\"1\" align=\"center\" style=\"table-layout: fixed;width:650px;font-size:11px;text-overflow:ellipsis;\"><thead><tr><th width=\"200px;\" style=\"overflow:hidden;\" title=\"Resource Types\">Resource Types</th><th width=\"350px;\" style=\"overflow:hidden;\"><table width=\"95%\" class=\"normaltable\"><thead><th style=\"overflow:hidden;\" title=\"Resource\">Resource</th><th style=\"overflow:hidden;\" title=\"Used\">Used</th></thead></table></th></thead>";
+       displayStr += "<tbody><tr class=\"even\" text=\"wrap\">";
+
+       displayStr += "<td scope=\"row\" text=\"wrap\" rowspan=\"4\" style=\"overflow:hidden;width:200px;margin:0;padding:0;\"><select id=\"selresourcetype\" name=\"selresourcetype\" SIZE=\"3\" style=\"width: 180px;\" MULTIPLE>";
+       matchedRTs = new Array();
+       for(i=0; i<resourceTypesPK.length; i++){
+          alreadyExists = false;
+          for(k=0; k<matchedRTs.length; k++){
+              if (matchedRTs[k] == resourceTypesPK[i]){
+                  alreadyExists = true;
+                  break;
+              }
+          }
+          if(!alreadyExists){ 
+             currTitle =  "Resource Class: " + resourceTypes[resourceTypesPK[i]].resource_class + "  ";
+             if (resourceTypes[resourceTypesPK[i]].hepspecs == null){
+                currTitle += "Capacity(HS06): {% displayUndefined %}  ";
+             }else{
+                currTitle += "Capacity(HS06): " + resourceTypes[resourceTypesPK[i]].hepspecs + "  ";
+             }
+             if (resourceTypes[resourceTypesPK[i]].memory == null){
+                currTitle += "Memory(MB): {% displayUndefined %}  ";
+             }else{
+                currTitle += "Memory(MB): " + resourceTypes[resourceTypesPK[i]].memory + "  ";
+             }
+             if (resourceTypes[resourceTypesPK[i]].storage == null){
+                currTitle += "Storage(MB): {% displayUndefined %}  ";
+             }else{
+                currTitle += "Storage(MB): " + resourceTypes[resourceTypesPK[i]].storage + "  ";
+             }
+             if (resourceTypes[resourceTypesPK[i]].bandwidth == null){
+                currTitle += "Bandwidth(Mbps): {% displayUndefined %}  ";
+             }else{
+                currTitle += "Bandwidth(Mbps): " + resourceTypes[resourceTypesPK[i]].bandwidth;
+             }
+             displayStr += "<option value=\"" + resourceTypes[resourceTypesPK[i]].name + "\" title=\"" + currTitle + "\">" + resourceTypes[resourceTypesPK[i]].name + "</option>" ;
+             matchedRTs.push(resourceTypesPK[i]);
+          }
+             
+       }
+       displayStr += "</select></td>";
+
+       if (totHepSpecs == -1){
+          displayStr += "<td scope=\"row\" text=\"wrap\" style=\"overflow:hidden\"><table width=\"95%\" class=\"normaltable\"><tbody><tr title=\"Available: UNDEFINED\"><td scope=\"row\" text=\"wrap\" style=\"overflow:hidden;\">Capacity(HS06)</td><td style=\"text-align:left;\">{% displayUndefined%}</td></tr>";
+       }else if (totHepSpecs == 0){
+          displayStr += "<td scope=\"row\" text=\"wrap\" style=\"overflow:hidden\"><table width=\"95%\" class=\"normaltable\"><tbody><tr title=\"Available: 0\"><td scope=\"row\" text=\"wrap\" style=\"overflow:hidden;\">Capacity(HS06)</td><td style=\"text-align:left;\">0</td></tr>";
+       }else{
+          displayStr += "<td scope=\"row\" text=\"wrap\" style=\"overflow:hidden\"><table width=\"95%\" class=\"normaltable\"><tbody><tr title=\"Available: " + totHepSpecs + " (Used: " + (totHepSpecs - freeHepSpecs) + ")" + "\"><td scope=\"row\" text=\"wrap\" style=\"overflow:hidden;\">Capacity(HS06)</td>";
+          displayStr += "<td><div style=\"width:60px;border:1px solid black;height:12px;\"><div id='hepspec_used' style='height:12px; text-align:center;width:" + hepspecs_bar_width + "px; background-color:green;'/><span style='position:relative;bottom:2px;'>" + fractionHepSpecs + "%</span></div></div> Total: " + totHepSpecs + " (Used: " + (totHepSpecs - freeHepSpecs) + ")</td></tr>"; 
+       }
+
+       if (totMemory == -1){
+          displayStr += "<tr title=\"Available: {% displayUndefined %}\"><td scope=\"row\" text=\"wrap\" style=\"overflow:hidden;\">Memory(MB)</td><td style=\"text-align:left;\">{% displayUndefined%}</td></tr>";
+       }else if (totMemory == 0){
+          displayStr += "<tr title=\"Available: 0\"><td scope=\"row\" text=\"wrap\" style=\"overflow:hidden;\">Memory(MB)</td><td style=\"text-align:left;\">0</td></tr>";
+       }else{
+          displayStr += "<tr title=\"Available: " + totMemory + " (Used: " + (totMemory - freeMemory) + ")" + "\"><td scope=\"row\" text=\"wrap\" style=\"overflow:hidden;\">Memory(MB)</td>";
+          displayStr += "<td><div style=\"width:60px;border:1px solid black;height:12px;\"><div id='memory_used' style='height:12px; text-align:center;width:" + memory_bar_width + "px; background-color:green;'/><span style='position:relative;bottom:2px;'>" + fractionMemory + "%</span></div></div> Total: " + totMemory + " (Used: " + (totMemory - freeMemory) + ")</td></tr>"; 
+       }
+
+       if (totStorage == -1){
+          displayStr += "<tr title=\"Available: {% displayUndefined %}\"><td scope=\"row\" text=\"wrap\" style=\"overflow:hidden;\">Storage(MB)</td><td style=\"text-align:left;\">{% displayUndefined%}</td></tr>";
+       }else if (totStorage == 0){
+          displayStr += "<tr title=\"Available: 0\"><td scope=\"row\" text=\"wrap\" style=\"overflow:hidden;\">Storage(MB)</td><td style=\"text-align:left;\">0</td></tr>";
+       }else{
+          displayStr += "<tr title=\"Available: " + totStorage + " (Used: " + (totStorage - freeStorage) + ")" + "\"><td scope=\"row\" text=\"wrap\" style=\"overflow:hidden;\">Storage(MB)</td>";
+          displayStr += "<td><div style=\"width:60px;border:1px solid black;height:12px;\"><div id='storage_used' style='height:12px; text-align:center;width:" + storage_bar_width + "px; background-color:green;'/><span style='position:relative;bottom:2px;'>" + fractionStorage + "%</span></div></div> Total: " + totStorage + " (Used: " + (totStorage - freeStorage) + ")</td></tr>";           
+       }
+
+       if (totBandwidth == -1){
+          displayStr += "<tr title=\"Available: {% displayUndefined %}\"><td scope=\"row\" text=\"wrap\" style=\"overflow:hidden;\">Bandwidth(Mbps)</td><td style=\"text-align:left;\">{% displayUndefined%}</td></tr>";
+       }else if (totBandwidth == 0){
+          displayStr += "<tr title=\"Available: 0\"><td scope=\"row\" text=\"wrap\" style=\"overflow:hidden;\">Bandwidth(Mbps)</td><td style=\"text-align:left;\">0</td></tr>";
+       }else{
+          displayStr += "<tr title=\"Available: " + totBandwidth + " (Used: " + (totBandwidth - freeBandwidth) + ")" + "\"><td scope=\"row\" text=\"wrap\" style=\"overflow:hidden;\">Bandwidth</td>";
+          displayStr += "<td><div style=\"width:60px;border:1px solid black;height:12px;\"><div id='bandwidth_used' style='height:12px; text-align:center;width:" + bandwidth_bar_width + "px; background-color:green;'/><span style='position:relative;bottom:2px;'>" + fractionBandwidth + "%</span></div></div> Total: " + totBandwidth + " (Used: " + (totBandwidth - freeBandwidth) + ")</td></tr>";      
+       }
+
+       displayStr += "</tbody></table></td></tr>";
+       displayStr += "</tbody></table><br/>";
+       getElement("seltoplevelallocation").innerHTML = displayStr;
+   }
+
+   function changeValueType(valueType){
+       if (valueType == 'absolute'){
+          getElement("percentagevaluesdiv").style.display = "none";
+          getElement("absolutevaluesdiv").style.display = "block";
+       }else if (valueType == 'percentage'){
+          getElement("absolutevaluesdiv").style.display = "none";
+          getElement("percentagevaluesdiv").style.display = "block";
+       }
+       getElement("id_hepspecs").value = '';
+       getElement("id_memory").value = '';
+       getElement("id_storage").value = '';
+       getElement("id_bandwidth").value = '';
+       getElement("id_hepspecs_per").value = '';
+       getElement("id_memory_per").value = '';
+       getElement("id_storage_per").value = '';
+       getElement("id_bandwidth_per").value = '';
+   }
+
+   function formValid(){       
+       allocNameElem = getElement("id_name");
+       topLevelAllocationElem = getElement("id_top_level_allocation");
+       projectElem = getElement("id_project");
+       groupElem = getElement("id_group");
+       hepSpecsElem = getElement("id_hepspecs");
+       selHepSpecsUnitElem = getElement("selhepspecsunit");
+       selHepSpecsUnitValue = trim(selHepSpecsUnitElem.value);
+       
+       selStorageUnitElem = getElement("selstorageunit");
+       selStorageUnitValue = trim(selStorageUnitElem.value);
+       
+       memoryElem = getElement("id_memory");
+       storageElem = getElement("id_storage");
+       bandwidthElem = getElement("id_bandwidth");
+       resourceTypeElem = getElement("selresourcetype");
+
+       hepSpecsPerElem = getElement("id_hepspecs_per");
+       memoryPerElem = getElement("id_memory_per");
+       storagePerElem = getElement("id_storage_per");
+       bandwidthPerElem = getElement("id_bandwidth_per");
+       
+       allocName = trim(allocNameElem.value);
+       allocNameElem.value = allocName;
+       if (allocName == ''){
+	     alert('Give some name to the Allocation');
+	     return false;
+       }
+  
+       if (topLevelAllocationElem.selectedIndex <= 0){
+	  alert('Select a Top Level Allocation from the drop down list');
+          return false;
+       }
+
+       if (projectElem.selectedIndex <= 0){
+	  alert('Select a Project Name from the drop down list');
+          return false;
+       }
+ 
+       if (groupElem.selectedIndex <= 0){
+	  alert('Select a Group Name from the drop down list');
+	  return false;
+       }
+
+       if (resourceTypeElem.selectedIndex < 0){
+          alert('Select atleast one Resource Type from the available list below (under Top Level Allocation Heading)');
+          return false;
+       }
+
+       hepSpecs = trim(hepSpecsElem.value);
+       hepSpecs = convertCPUUnit(hepSpecs,selHepSpecsUnitValue)
+       memory = trim(memoryElem.value);
+       storage = trim(storageElem.value);
+       storage = convertStorageUnit(storage,selStorageUnitValue)
+       bandwidth = trim(bandwidthElem.value);
+
+       hepSpecsPer = trim(hepSpecsPerElem.value);
+       memoryPer = trim(memoryPerElem.value);
+       storagePer = trim(storagePerElem.value);
+       bandwidthPer = trim(bandwidthPerElem.value);
+
+       valueType = '';      
+       for (var i = 0; i < document.projectallocationform.valuetype.length; i++) {
+          if (document.projectallocationform.valuetype[i].checked) { 
+            valueType = document.projectallocationform.valuetype[i].value;
+            break;
+          }
+       }
+       errorMessage = '';
+       if (valueType == 'absolute'){ 
+         errorMessage = validateResourceParameters(hepSpecs, memory, storage, bandwidth)
+       }else if (valueType == 'percentage'){ 
+         errorMessage = validateResourceParameters(hepSpecsPer, memoryPer, storagePer, bandwidthPer)
+       }
+       if (errorMessage != ''){
+         alert(errorMessage);
+         return false;
+       }
+
+       if (valueType == 'percentage'){
+         if (hepSpecsPer != ''){
+           hepSpecsPer= round_float(hepSpecsPer, 3);
+           hepSpecsPerElem.value = hepSpecsPer;
+           if (totHepSpecs == -1){
+              alert('Hepspec for Top Level Allocation is Undefined and so Hepspec for Project Allocation needs to be blank');
+              return false;
+           }
+           hepSpecs = round_float(((hepSpecsPer/100) * totHepSpecs), 3);
+         }else{
+           hepSpecs = '';
+         }
+
+         if (memoryPer != ''){
+           memoryPer= round_float(memoryPer, 3);
+           memoryPerElem.value = memoryPer;
+           if (totMemory == -1){
+              alert('Memory for Top Level Allocation is Undefined and so Memory for Project Allocation needs to be blank');
+              return false;
+           }
+           memory = round_float(((memoryPer/100) * totMemory), 3);
+         }else{
+           memory = '';
+         }
+
+         if (storagePer != ''){
+           storagePer= round_float(storagePer, 3);
+           storagePerElem.value = storagePer;
+           if (totStorage == -1){
+              alert('Storage for Top Level Allocation is Undefined and so Storage for Project Allocation needs to be blank');
+              return false;
+           }
+           storage = round_float(((storagePer/100) * totStorage), 3);
+         }else{
+           storage = '';
+         }
+
+         if (bandwidthPer != ''){
+           bandwidthPer= round_float(bandwidthPer, 3);
+           bandwidthPerElem.value = bandwidthPer;
+           if (totBandwidth == -1){
+              alert('Bandwidth for Top Level Allocation is Undefined and so Bandwidth for Project Allocation needs to be blank');
+              return false;
+           }
+           storage = round_float(((bandwidthPer/100) * totBandwidth), 3);
+         }else{
+           bandwidth = '';
+         }
+
+       } 
+       
+      if (hepSpecs != ''){
+          hepSpecs = round_float(hepSpecs, 3);
+          hepSpecsElem.value = hepSpecs;
+	  if (totHepSpecs == -1){
+	      alert('Hepspec for Top Level Allocation is Undefined and so Hepspec for Project Allocation needs to be blank');
+	      return false;
+	  }else{
+              if (hepSpecs > freeHepSpecs){
+	         alert('The Requested Hepspec ' + hepSpecs + ' is greater than the available Hepspec ' + freeHepSpecs);
+                 return false;
+              }
+	  }	  
+       }
+
+       if (memory != ''){
+          memory = round_float(memory, 3);
+          memoryElem.value = memory;
+          if (totMemory == -1){
+              alert('Memory for Top Level Allocation is Undefined and so Memory for Project Allocation needs to be blank');
+              return false;
+          }else{
+              if (memory > freeMemory){
+                 alert('The Requested Memory ' + memory + ' is greater than the available Memory ' + freeMemory);
+                 return false;
+              }
+          }
+       }
+
+       if (storage != ''){
+          storage = round_float(storage, 3);
+          storageElem.value = storage;
+          if (totStorage == -1){
+              alert('Storage for Top Level Allocation is Undefined and so Storage for Project Allocation needs to be blank');
+              return false;
+          }else{
+              if (storage > freeStorage){
+                 alert('The Requested Storage ' + storage + ' is greater than the available Storage ' + freeStorage);
+                 return false;
+              }
+          }
+       }
+
+       if (bandwidth != ''){
+          bandwidth = round_float(bandwidth, 3);
+          bandwidthElem.value = bandwidth;
+          if (totBandwidth == -1){
+              alert('Bandwidth for Top Level Allocation is Undefined and so Bandwidth for Project Allocation needs to be blank');
+              return false;
+          }else{
+              if (bandwidth > freeBandwidth){
+                 alert('The Requested Bandwidth ' + bandwidth + ' is greater than the available Bandwidth ' + freeBandwidth);
+                 return false;
+              }
+          }
+       }
+
+       hepSpecsElem.value = hepSpecs;
+       memoryElem.value = memory;
+       storageElem.value = storage;
+       bandwidthElem.value = bandwidth;
+       return true;
+
+   }
+       
+</script>
+</head>
+<body ><div id="container">
+<form name="projectallocationform" id="projectallocationform" action="/cloudman/projectallocation/add/" method="post" class="niceform" onSubmit="return formValid();">{% csrf_token %}
+    <fieldset>
+      <legend>New Project Allocation</legend>
+         <dl>
+       	    <dt><label for="id_name">Allocation Name</label>:</dt>
+            <dd><input id="id_name" type="text" name="name" maxlength="50" />
+              <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+                onmouseover="return ShowToolTip('nameToolTip');" onmouseout="return HideToolTip('nameToolTip');" />
+              <div id="nameToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+                Enter Unique Name - Maximum of 50 Characters
+              </div>
+            </dd>
+        </dl>
+
+        <dl>
+       	    <dt><label for="id_top_level_allocation">Top level allocation</label>:</dt>
+            <dd><select id="id_top_level_allocation" class="selector" name="top_level_allocation">
+            <option value="" selected="selected">---------</option>
+            {% for tpName in tpAllocNames %} 
+              <option value="{{tpName}}">{{tpName}}</option>
+            {% endfor %}
+            </select>
+              <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+                onmouseover="return ShowToolTip('top_level_allocationToolTip');" onmouseout="return HideToolTip('top_level_allocationToolTip');" />
+              <div id="top_level_allocationToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+                Select the Top Level Allocation from which this allocation needs to be drawn
+              </div>
+            </dd>
+        </dl>
+
+        <dl>
+           <dt><label for="id_project">Project</label>:</dt>
+           <dd><select id="id_project" class="selector" name="project">
+             <option value="" selected="selected">---------</option>
+            {% for prName in projectNames %}
+             <option value="{{prName}}">{{prName}}</option>
+            {% endfor %}
+             </select>
+             <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer" onmouseover="return ShowToolTip('projectToolTip');" onmouseout="return HideToolTip('projectToolTip');" />
+                <div id="projectToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+                  Select the Project Name from the list
+                </div>
+            </dd>
+        </dl>
+
+        <dl>
+       	    <dt><label for="id_group">Group</label>:</dt>
+            <dd><select id="id_group" class="selector" name="group">
+                 <option value="" selected="selected">---------</option>
+               {% for grName in groupNames %}
+                 <option value="{{grName}}">{{grName}}</option>
+               {% endfor %}
+               </select>
+              <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+                onmouseover="return ShowToolTip('groupToolTip');" onmouseout="return HideToolTip('groupToolTip');" />
+              <div id="groupToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+                Select the Group Name from the list
+              </div>
+            </dd>
+        </dl>
+
+        <dl>
+           <dt><input type="radio" id="valuetype1" name="valuetype" value="absolute" CHECKED onClick="changeValueType('absolute')"/>
+             Absolute Values 
+           </dt>
+           <dd><input type="radio" id="valuetype2" name="valuetype" value="percentage" onClick="changeValueType('percentage')"/>
+             Percentage Values
+           </dd>
+        </dl>
+
+      <div name="absolutevaluesdiv" id="absolutevaluesdiv" style="display:block;">
+        <dl>
+       	    <dt><label for="id_hepspecs">Capacity </label>:</dt>
+            <dd><input type="text" name="hepspecs" id="id_hepspecs" />{% displayHepSpecUnit%}
+              <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+                onmouseover="return ShowToolTip('hepspecsToolTip');" onmouseout="return HideToolTip('hepspecsToolTip');" />
+              <div id="hepspecsToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+                Total Allocated CPU Resources in HS06
+              </div>
+            </dd>
+        </dl>
+
+        <dl>
+       	    <dt><label for="id_memory">Memory (MB)</label>:</dt>
+            <dd><input type="text" name="memory" id="id_memory" />
+              <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+                onmouseover="return ShowToolTip('memoryToolTip');" onmouseout="return HideToolTip('memoryToolTip');" />
+              <div id="memoryToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+                Total Allocated Memory in MB
+              </div>
+            </dd>
+        </dl>
+
+        <dl>
+       	    <dt><label for="id_storage">Storage </label>:</dt>
+            <dd><input type="text" name="storage" id="id_storage" />{%displayStorageUnit%}
+              <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+                onmouseover="return ShowToolTip('storageToolTip');" onmouseout="return HideToolTip('storageToolTip');" />
+              <div id="storageToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+                Total Allocated Storage in MB
+              </div>
+            </dd>
+        </dl>
+
+        <dl>
+       	    <dt><label for="id_bandwidth">Bandwidth (Mbps)</label>:</dt>
+            <dd><input type="text" name="bandwidth" id="id_bandwidth" />
+              <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+                onmouseover="return ShowToolTip('bandwidthToolTip');" onmouseout="return HideToolTip('bandwidthToolTip');" />
+              <div id="bandwidthToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+                Total Allocated Bandwidth in Mbps
+              </div>
+            </dd>
+        </dl>
+      </div>
+
+      <div name="percentagevaluesdiv" id="percentagevaluesdiv" style="display:none;">
+        <dl>
+            <dt><label for="id_hepspecs_per">Capacity (%)</label>:</dt>
+            <dd><input type="text" name="hepspecs_per" id="id_hepspecs_per" />
+              <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+                onmouseover="return ShowToolTip('hepspecsToolTipPer');" onmouseout="return HideToolTip('hepspecsToolTipPer');" />
+              <div id="hepspecsToolTipPer" style="width:120px; position:absolute; display:none" class="boxcontent">
+                Total Allocated CPU Resources (HS06) in Percentage to the Total Available
+              </div>
+            </dd>
+        </dl>
+
+        <dl>
+            <dt><label for="id_memory_per">Memory (%)</label>:</dt>
+            <dd><input type="text" name="memory_per" id="id_memory_per" />
+              <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+                onmouseover="return ShowToolTip('memoryToolTipPer');" onmouseout="return HideToolTip('memoryToolTipPer');" />
+              <div id="memoryToolTipPer" style="width:120px; position:absolute; display:none" class="boxcontent">
+                Total Allocated Memory (MB) in Percentage to the Total Available
+              </div>
+            </dd>
+        </dl>
+
+        <dl>
+            <dt><label for="id_storage_per">Storage (%)</label>:</dt>
+            <dd><input type="text" name="storage_per" id="id_storage_per" />
+              <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+                onmouseover="return ShowToolTip('storageToolTipPer');" onmouseout="return HideToolTip('storageToolTipPer');" />
+              <div id="storageToolTipPer" style="width:120px; position:absolute; display:none" class="boxcontent">
+                Total Allocated Storage (MB) in Percentage to the Total Available
+              </div>
+            </dd>
+        </dl>
+
+        <dl>
+            <dt><label for="id_bandwidth_per">Bandwidth (%)</label>:</dt>
+            <dd><input type="text" name="bandwidth_per" id="id_bandwidth_per" />
+              <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+                onmouseover="return ShowToolTip('bandwidthToolTipPer');" onmouseout="return HideToolTip('bandwidthToolTipPer');" />
+              <div id="bandwidthToolTipPer" style="width:120px; position:absolute; display:none" class="boxcontent">
+                Total Allocated Bandwidth (Mbps) in Percentage to the Total Available
+              </div>
+            </dd>
+        </dl>
+     <dl>
+       </div>
+     <dl>
+     	<dt><label for="comment">Comment</label>:</dt>
+        <dd><textarea id="comment" rows="5" cols="30" name="comment"  ></textarea>
+            <img height="9px" width="9px" src="/media/images/qmark.jpg" style="cursor:pointer"
+               onmouseover="return ShowToolTip('commentToolTip');" onmouseout="return HideToolTip('commentToolTip');" />
+             <div id="commentToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+               Enter Comments about the Project Allocation(Useful for Logging)- Maximum of 3000 Characters
+             </div>
+        </dd>
+     </dl>               
+    </fieldset>
+    <fieldset>
+          <legend>Project Attribute</legend>
+      	  <div id="projectattribute" name="seltoplevelallocation" style="width:650px; overflow:auto; overflow-x:hidden;"></div>
+    </fieldset> 
+    <br/>
+    <fieldset>
+      <legend>Top Level Allocation</legend>
+      <div id="seltoplevelallocation" name="seltoplevelallocation" style="width:650px; overflow:auto; overflow-x:hidden;"></div>
+    </fieldset>
+    <br/>
+    <fieldset class="action">
+    	<input type="submit" name="submit" id="submit" value="Add" style="padding: 5px 5px 5px 5px;" />
+    </fieldset>
+    
+</form>
+</div></body>
+</html>
+

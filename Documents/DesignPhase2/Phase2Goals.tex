@@ -1,0 +1,64 @@
+\section{Implementation goals}
+The aim of this design phase of the project is the implementation of 
+\begin{itemize}
+\item The graphical user interface 
+\begin{itemize}
+  \item the GUI itself is stateless
+  \item all data is kept in a database backend (mysql,oracle)
+  \item the GUI is accessible behind a (load balanced or round robin) alias. For example, at CERN one instance can be run at Meyrin, the second at SafeHost, thus providing redundancy.
+  \item the application is implemented in Django\cite{Django} framework, running on an Apache web server with Shibboleth for implemeting SingleSignOn   
+  \item access is secured via SSL. For the CERN instance, CERN provides a certificate signed by the CERN CA.
+  \item Low-level data export is visible inside CERN without authentication.
+  \item projects are associated to a project backend which consumes the data and provides state data. When allocating the project it is mandatory to provide the location for the state data. The state data format is fixed
+  \item a cron job on the CloudMan server regularly reads the state data for all projects and records it in the database
+  \item the GUI provides a way to present current state data per project
+  \item the GUI provides a way to present historical state data per project, including configuration errors or problems 
+\end{itemize}
+\item The database backend
+\begin{itemize}
+  \item Oracle or Mysql are preferred
+  \item the database access is abstracted using the Django Object Relational Model (ORM)\cite{ORM}; writing direct SQL statements is to be avoided
+  \item the backend database should have transaction support to insure data integrity when doing multiple updates. Django Object Relational Model (ORM)\cite{ORM} transaction support can be used.
+\end{itemize}
+\item Authentication
+\begin{itemize}
+\item It must be possible to use CERN SSO~\cite{CernSSO} to authenticate users. The CERN instance will only use this mechanism for authentication
+\item Access will stay in SSL secured after login
+\end{itemize}
+\item Authorization
+\begin{itemize}
+\item cloudMan does not use Unix group IDs, and relies only on e-groups or user name lists
+\item there is one and only one resource manager role
+\item the name of the resource manager group is defined in the CloudMan configuration file and is therefore a configuration option 
+\item ordinary users only have access to information within their hierarchy. 
+\item the role of a user is determined by the e-groups~\cite{CernEgroups} he belongs to
+\item the use of e-groups~\cite{CernEgroups} allows to move much of the complexity due to the hierarchy of roles into this existing service
+\item the e-groups used for mapping users to roles must be configurable via the GUI, respecting ACLs and hierarchies
+\item in case e-groups is not available (eg outside CERN), simple lists of users can be supported
+\end{itemize}
+\item data export level
+\begin{itemize}
+\item the backends will pull the information required to configure themselves from the low level data export layer which is fed by the GUI. 
+\item the backend will report back on the  current resource consumption as well as possible configuration problems. The data is provided on a shared file system or a URL. The location of the state data is defined for each project
+\item the location of the state data for each project can be changed by the CloudMan administrators. 
+\item if the exported data contains fields which are not supported by a backend, the backend can ignore this data
+\item the data export is done in a machine readable way, eg via a XML,JSON,yaml format. 
+\item the data export is SSL secured 
+\item all changes done in the front end must be traceable, including information about 
+\begin{itemize}
+ \item what has been changed 
+ \item what operation has been done 
+ \item when it has been changed
+ \item who applied the change
+\end{itemize}
+\end{itemize}
+\item if time allows sample backends for the following possible projects should be provided
+\begin{itemize}
+\item a sample backend to configure OpenStack
+\item a sample backend to configure OpenNebula
+\item a sample backend to configure batch resources 
+\item a sample backend to configure storage (AFS, EOS or CASTOR) 
+\end{itemize}
+\end{itemize}
+All backends must support a no-action mode, as well as different logging levels (info, error, debug), ideally through syslog.
+

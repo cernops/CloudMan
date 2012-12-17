@@ -1,0 +1,34 @@
+<script type="text/javascript">
+	function deleteItem(action,param,alertstring)
+	{
+		if (confirm(alertstring))
+		{
+			var comment = prompt('Write comment','deleting item')
+			if(comment !=''  && comment !=null)
+			{
+				var param_array = param.split('&');
+				numParam= param_array.length;
+				var form = document.getElementById('deleteForm');
+				for(var index=0;index < numParam; index++)
+				{
+					var tmp_array = param_array[index].split('=');//get the param value by splitting
+					param_name = tmp_array[0]; //get the param name
+					param_value = tmp_array[1]; //get the param value
+					var element = document.createElement('input');
+					element.setAttribute("type", 'hidden');
+    				element.setAttribute("value", param_value);
+    				element.setAttribute("name", param_name);
+    				form.appendChild(element);
+				}
+				document.getElementById('comment').value = comment;
+				document.deleteForm.action = action;
+				document.deleteForm.submit();
+			}
+		}
+	}
+</script>
+
+<form name="deleteForm" id="deleteForm"   method="post" class="niceform">{% csrf_token %}
+	<input type='hidden' name='name' id='name'>
+	<input type='hidden' name='comment' id='comment'>
+</form>

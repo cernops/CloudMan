@@ -1,0 +1,76 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Adding a Resource Type</title>
+  <link rel="stylesheet" type="text/css" media="all" href="{{ MEDIA_URL }}stylesheet/niceforms.css" />
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/general.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/cloudman.js"></script>
+  <script type="text/javascript">
+    function formValid(){
+       nameElem = getElement("id_name");
+       nameValue = trim(nameElem.value);
+       if (nameValue == ''){
+          alert('Please provide a Name to the Resource Type');
+          return false;
+       }
+       nameElem.value = nameValue;
+       hepSpecsElem = getElement("id_hepspec");
+       memoryElem = getElement("id_memory");
+       storageElem = getElement("id_storage");
+       bandwidthElem = getElement("id_bandwidth");
+       hepSpecs = trim(hepSpecsElem.value);
+       memory = trim(memoryElem.value);
+       storage = trim(storageElem.value);
+       bandwidth = trim(bandwidthElem.value);
+       hepSpecsElem.value = hepSpecs
+       memoryElem.value = memory
+       storageElem.value = storage
+       bandwidthElem.value = bandwidth
+       errorMessage = validateResourceParameters(hepSpecs, memory, storage, bandwidth)
+       if (errorMessage != ''){
+          alert(errorMessage);
+          return false;
+       }
+       return true;
+    }
+    function initialize(){
+/*       getElement("id_hepspec").value = '';
+       getElement("id_memory").value = '';
+       getElement("id_storage").value = '';
+       getElement("id_bandwidth").value = '';
+       getElement("id_name").value = '';
+       getElement("id_resource_class").selectedIndex = 0;
+*/
+    }
+  </script>  
+</head>
+<body onLoad="initialize();">
+	<div id="container">
+		<form action="/cloudman/resourcetype/add/" method="post" class="niceform" onSubmit="return formValid();">{% csrf_token %}
+  			<fieldset><legend> Add a Resource Type </legend>
+  				{% for field in form %}
+    				{% for error in field.errors %}
+       					<h3> {{ field.label }} : {{ error }} </h3>
+    				{% endfor %}
+  				{% endfor %}
+    			{% for field in form %}
+     			<dl>
+        			<dt> {{ field.label_tag }}: </dt>
+ 					<dd> {{ field }}
+          				<img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+                			onmouseover="return ShowToolTip('{{ field.name }}ToolTip');" onmouseout="return HideToolTip('{{ field.name }}ToolTip');" />
+          				<div id="{{ field.name }}ToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+               				{{ field.help_text }}
+          				</div>
+        			</dd>
+      			</dl>
+    			{% endfor %}
+  			</fieldset>
+  			<fieldset class="action">
+    			<input type ="submit" id="submit" name="submit" title="Add" value="Add" style="padding: 5px 5px 5px 5px;" />
+  			</fieldset>
+		</form>
+	</div>
+</body>
+</html>

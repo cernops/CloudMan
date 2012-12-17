@@ -1,0 +1,139 @@
+{% load markup %}
+
+<html>
+    <head><title>Welcome to Cloudman Resource Manager</title></head>
+    <link rel="stylesheet" href="{{ MEDIA_URL }}style.css" type="text/css" />
+    <script type="text/javascript">
+        function initialize() {
+            document.getElementById("actionsmenu").style.display = 'block';
+        }
+
+        function showhidemenu() {
+            if (document.getElementById("actionsmenu").style.display == 'block')  {
+                 document.getElementById("actionsmenu").style.display = 'none';
+            } else {
+                 document.getElementById("actionsmenu").style.display = 'block';
+            }
+        }
+ 
+        function highlight() {
+            document.getElementById("nameactionstext").style.border = "1px solid white";
+        }
+
+        function removehighlight() {
+            document.getElementById("nameactionstext").style.border = "0px solid white";
+            document.getElementById("actionsmenu").style.display = 'block';
+        }
+
+    </script>
+    <body onload="initialize()">
+        <table>
+        <tr>
+            <td>
+                    <div>
+           	    <a href="http://www.dae.gov.in"><img class="DAELogo" src = "{{ MEDIA_URL }}DAELogo.png" alt="Department of Atomic Energy, India" /></a>
+                    <div id="topheading"><div id="topheadingtext">Cloudman Resource Manager </div></div>
+            	    <a href="http://www.cern.ch"><img class="CERNLogo" src = "{{ MEDIA_URL }}CERNLogo.png" alt="CERN"/></a>
+                    </div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <div id="nameactions">
+                    <table id="nameactionstext" align="right">
+                        <tr onmouseover="highlight()" onmouseout="removehighlight()" onclick="showhidemenu()">
+                            <td>Welcome {{ fullName }} </td>
+                            <td><img src="{{ MEDIA_URL }}triangle.gif"/></td>
+                        </tr>
+                    </table>
+                </div>
+            </td>
+         </tr>
+         <tr>
+            <td>
+                <div id="actionsmenu" display='block'>
+                    <table align="right"  onclick="showhidemenu()" onmouseout="removehighlight()">
+                        <tr><td><a href="/cloudman/">Home</a></td></tr>
+                        {% if userIsSuperUser %}
+                        <tr><td><a href="/cloudman/managecloudman/">Manage Cloudman</a></td></tr>
+                        {% endif %}
+                        <tr><td><a href="https://twiki.cern.ch/twiki/bin/view/CloudServices/ProjectCloudManUserManual">Read more</a></td></tr>
+                        <tr><td><a href="mailto://cloudman-support@cern.ch">Contact</a></td></tr>
+                        <tr><td><a href="https://login.cern.ch/adfs/ls/?wa=wsignout1.0">SignOut</a></td></tr>
+                   </table>
+                </div>
+           </td>
+        </tr>
+        </table>
+        <!--<div id="groupslisttable1"><p class="groupname">You are part of the following e-groups:</p><table>
+            {% for item in groupsList %}
+                <tr><td class="groupname">{{ item }}</td></tr>
+            {% endfor %}
+        </table></div>-->
+        <!--<div id="groupslisttable"><p class="groupname">Roles list for cloudman:</p><table>
+            {% for oneRole in rolesList %} 
+                <tr><td class="groupname">Cloudman role...{{ oneRole }}</td></tr>
+            {% endfor %}
+        </table></div> -->
+        <div id="groupslisttable"><p class="groupname"><p class="groupname">
+        {% if anyRolePresent %}
+        </p><table>
+        {% if regionManagerRolePresent %} 
+        <tr>
+            <td class="groupname">Regions managed by you:
+            </td>
+            <td class="groupName">{% for oneRegion in regionManagerRoles %}
+                                  <a href="/region?name={{ oneRegion}}">{{ oneRegion }}</a>
+                                  {% endfor %}
+            </td>
+        </tr> 
+        {% endif %}
+ 
+        {% if projectManagerRolePresent %} 
+        <tr>
+            <td class="groupname">Projects managed by you:</td>
+            <td class="groupName">{% for oneProject in projectManagerRoles %}
+                                  <a href="/project?name={{ oneProject }}">{{ oneProject }}</a>
+                                  {% endfor %}
+            </td>
+        </tr>
+        {% endif %}
+        {% if groupManagerRolePresent %} 
+        <tr>
+            <td class="groupname">Groups managed by you:</td>
+            <td class="groupName">{% for oneGroup in groupManagerRoles %}
+                                  <a href="/group?role=manager&name={{ oneGroup }}">{{ oneGroup }}</a>
+                                  {% endfor %}
+            </td>
+        </tr>
+        {% endif %}
+        {% if groupUserRolePresent %} 
+        <tr>
+            <td class="groupname">Groups you are member of:</td>
+            <td class="groupName">{% for oneGroup in groupUserRoles %}
+                                  <a href="/group?role=user&name={{ oneGroup }}">{{ oneGroup }}</a>
+                                  {% endfor %}
+            </td>
+        </tr>
+        {% endif %}
+        <!--<tr>
+        <td class="groupName">{{ usersGroupsSet }}</td>
+        <td class="groupName">{{ SUSet }}</td>
+        </tr>
+        <tr>
+        <td class="groupName">{{ intersectionValue }}</td>
+        <td class="groupName">{{ intersectionSet }} ... {{ userIsSuperUser }}</td>
+        </tr> -->
+        </table>
+        {% else %}
+        Sorry, you do not have any privileges currently.</p>
+        {% endif %}
+        <!--<table>
+           <tr>
+               <td>Add a new region</td>
+               <td><a href=""><img src="{{ MEDIA_URL }}addnew.jpg"/></a></td>
+           </tr> 
+        </table>-->
+        </div>
+    </body>
+</html>

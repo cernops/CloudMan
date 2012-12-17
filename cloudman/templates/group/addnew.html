@@ -1,0 +1,42 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<title>Adding a Group</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link rel="stylesheet" type="text/css" media="all" href="{{ MEDIA_URL }}stylesheet/niceforms.css" />
+    <link rel="stylesheet" type="text/css" media="all" href="{{ MEDIA_URL }}stylesheet/jquery-ui.css" />
+	<script type="text/javascript" src="{{ MEDIA_URL }}javascript/general.js"></script>
+    <script type="text/javascript" src='{{ MEDIA_URL }}javascript/jquery-1.7.1.js'></script>
+    <script type="text/javascript" src='{{ MEDIA_URL }}javascript/jquery-ui.min.js'></script>
+{% include "base/autocomplete.html"%}
+</head>
+<body>
+	<div id="container">
+		<form action="/cloudman/group/add/" method="post" class="niceform">{% csrf_token %}
+    		<fieldset>
+      			<legend>Create a Group</legend>
+        		{% for field in form %}
+	    			{% for error in field.errors %}
+       					<h3> {{ field.label }} : {{ error }} </h3>
+	    			{% endfor %}
+				{% endfor %}
+        		{% for field in form %}
+        		<dl>
+       	    		<dt>{{ field.label_tag }}:</dt>
+            		<dd>{{ field }}
+              			<img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+                			onmouseover="return ShowToolTip('{{ field.name }}ToolTip');" onmouseout="return HideToolTip('{{ field.name }}ToolTip');" />
+              			<div id="{{ field.name }}ToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+                			{{ field.help_text }}
+              			</div>
+            		</dd>
+        		</dl>
+        		{% endfor %}
+    		</fieldset>
+	        <fieldset class="action">
+	    		<input type="submit" name="submit" id="submit" value="Add" style="padding: 5px 5px 5px 5px;" />
+	    	</fieldset>
+		</form>
+	</div>
+</body>
+</html>

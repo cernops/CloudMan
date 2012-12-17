@@ -1,0 +1,10 @@
+On EOS each experiment has dedicated resources. Unlike castor, eos has quota and it manage the quota
+in a kind of tree structure. In the eos case we have the same admins as in castor and they can assign quota to
+a particular tree and to a particular user/group or e-groups, decide the file replication level and other attributes.
+All the space/file quota and the access/ACLs are done by these few admin which use the eos shell.
+
+For the procedure to shift resources from CASTOR to EOS (or viceversa) is done by hand just draining and reinstalling the diskserver in the correct cluster.
+In general we base our diskserver allocation on the 2012 pledge of the experiment and then we decide in a meeting with them were to allocate the new resources (which castor svclass or EOS) according with their needs.
+
+
+Potential benefit we can gain from CloudMan is a graphic interface to eos (we probably need to check with the few admin if they do this by hand or via some script), for castor could only be useful for setting up the permission on the svclass. On the other hand I think CloudMan would be very helpful for having a general view on the experiment resources (where the space is allocated) but this raw information (like AFS) should be retrieved direcly from castor or eos.

@@ -1,0 +1,546 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Edit Group Allocation</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" media="all" href="{{ MEDIA_URL }}stylesheet/niceforms.css" />
+<script type="text/javascript" src="{{ MEDIA_URL }}javascript/general.js"></script>
+<script type="text/javascript" src="{{ MEDIA_URL }}javascript/attribute.js"></script>
+<script type="text/javascript" src="{{ MEDIA_URL }}javascript/cloudman.js"></script>
+{% include "base/convert_unit.html" %}
+{% include "base/resetattribute.html" %}
+{% load filters %}
+<script type="text/javascript">
+
+  function restoreResourceTypes(){
+     currGrAllocRtElem = getElement("currgrallocrt");
+     grAllocRtElem = getElement("grallocallowedrt");
+     for(i=(grAllocRtElem.options.length-1); i>=0; i--){
+         grAllocRtElem.remove(i);
+     }
+     for(i=0; i<currGrAllocRtElem.options.length; i++){
+         grAllocRtElem.options[i] = new Option(currGrAllocRtElem.options[i].value, currGrAllocRtElem.options[i].value, true, true);
+     }
+  }
+
+  function changeValueType(valueType){
+     if (valueType == 'absolute'){
+       getElement("percentagevaluesdiv").style.display = "none";
+       getElement("absolutevaluesdiv").style.display = "block";
+     }else if (valueType == 'percentage'){
+       getElement("absolutevaluesdiv").style.display = "none";
+       getElement("percentagevaluesdiv").style.display = "block";
+     }
+     getElement("hepspec").value = getElement("currhepspec").value;
+     getElement("memory").value = getElement("currmemory").value;
+     getElement("storage").value = getElement("currstorage").value;
+     getElement("bandwidth").value = getElement("currbandwidth").value;
+     getElement("hepspec_per").value = getElement("currhepspec_per").value;
+     getElement("memory_per").value = getElement("currmemory_per").value;
+     getElement("storage_per").value = getElement("currstorage_per").value;
+     getElement("bandwidth_per").value = getElement("currbandwidth_per").value;
+  }
+
+  function formValid(){
+     currName = getElement("currname").value;
+     currHepSpec = getElement("currhepspec").value;
+     currMemory = getElement("currmemory").value;
+     currStorage = getElement("currstorage").value;
+     currBandwidth = getElement("currbandwidth").value;
+     currGrAllocRtElem = getElement("currgrallocrt");
+
+     nameElem = getElement("newname");
+
+     hepSpecElem = getElement("hepspec");
+     selHepSpecsUnitElem = getElement("selhepspecsunit");
+   	 selStorageUnitElem = getElement("selstorageunit");        
+     selHepSpecsUnitValue = trim(selHepSpecsUnitElem.value);
+     selStorageUnitValue = trim(selStorageUnitElem.value);
+     
+     memoryElem = getElement("memory");
+     storageElem = getElement("storage");
+     bandwidthElem = getElement("bandwidth");
+
+     hepSpecPerElem = getElement("hepspec_per");
+     memoryPerElem = getElement("memory_per");
+     storagePerElem = getElement("storage_per");
+     bandwidthPerElem = getElement("bandwidth_per");
+
+     grAllocRtElem = getElement("grallocallowedrt");
+    
+     name = trim(nameElem.value); 
+     nameElem.value = name;
+     hepSpec = trim(hepSpecElem.value);
+     hepSpec = convertCPUUnit(hepSpec,selHepSpecsUnitValue)
+     hepSpecElem.value = hepSpec;
+     memory = trim(memoryElem.value);
+     memoryElem.value = memory;
+     storage = trim(storageElem.value);
+     storage = convertStorageUnit(storage,selStorageUnitValue)
+     storageElem.value = storage;
+     bandwidth = trim(bandwidthElem.value);
+     bandwidthElem.value = bandwidth;
+
+     hepSpecPer = trim(hepSpecPerElem.value);
+     hepSpecPerElem.value = hepSpecPer;
+     memoryPer = trim(memoryPerElem.value);
+     memoryPerElem.value = memoryPer;
+     storagePer = trim(storagePerElem.value);
+     storagePerElem.value = storagePer;
+     bandwidthPer = trim(bandwidthPerElem.value);
+     bandwidthPerElem.value = bandwidthPer;
+
+     updateSel = false;
+     if (currName != name){
+        if (name == ''){
+           alert('Provide a name to the Group Allocation');
+           return false;
+        }
+        updateSel = true;
+     }
+
+     valueType = '';
+     for (var i = 0; i < document.updategroupallocationform.valuetype.length; i++) {
+        if (document.updategroupallocationform.valuetype[i].checked) {
+           valueType = document.updategroupallocationform.valuetype[i].value;
+           break;
+        }
+     }
+     errorMessage = '';
+     if (valueType == 'absolute'){
+        errorMessage = validateResourceParameters(hepSpec, memory, storage, bandwidth)
+     }else if (valueType == 'percentage'){
+        errorMessage = validateResourceParameters(hepSpecPer, memoryPer, storagePer, bandwidthPer)
+     }
+     if (errorMessage != ''){
+        alert(errorMessage);
+        return false;
+     } 
+	
+/*     hepSpecChange = checkNumberParameterChange(currHepSpec, hepSpec);
+     memoryChange = checkNumberParameterChange(currMemory, memory);
+     storageChange = checkNumberParameterChange(currStorage, storage);
+     bandwidthChange = checkNumberParameterChange(currBandwidth, bandwidth);
+
+     if (hepSpecChange || memoryChange || storageChange || bandwidthChange){
+        updateSel = true;
+     }
+*/	   
+
+     if (valueType == 'percentage'){
+        if (hepSpecPer != ''){
+           hepSpecPer= round_float(hepSpecPer, 3);
+           hepSpecPerElem.value = hepSpecPer;
+           if (getElement("totalhepspec").value == ''){
+              alert('Hepspec for Top Level Allocation is Undefined and so Hepspec for Project Allocation can only be blank');
+              return false;
+           }
+           totalhepspec = parseFloat(getElement("totalhepspec").value);
+           hepSpec = round_float(((hepSpecPer/100) * totalhepspec), 3);
+        }else{
+           hepSpec = '';
+        }
+
+        if (memoryPer != ''){
+           memoryPer= round_float(memoryPer, 3);
+           memoryPerElem.value = memoryPer;
+           if (getElement("totalmemory").value == ''){
+              alert('Memory for Top Level Allocation is Undefined and so Memory for Project Allocation can only be blank');
+              return false;
+           }
+           totalmemory = parseFloat(getElement("totalmemory").value);
+           memory = round_float(((memoryPer/100) * totalmemory), 3);
+        }else{
+           memory = '';
+        }
+
+        if (storagePer != ''){
+           storagePer= round_float(storagePer, 3);
+           storagePerElem.value = storagePer;
+           if (getElement("totalstorage").value == ''){
+              alert('Storage for Top Level Allocation is Undefined and so Storage for Project Allocation can only be blank');
+              return false;
+           }
+           totalstorage = parseFloat(getElement("totalstorage").value);
+           storage = round_float(((storagePer/100) * totalstorage), 3);
+        }else{
+           storage = '';
+        }
+
+        if (bandwidthPer != ''){
+           bandwidthPer= round_float(bandwidthPer, 3);
+           bandwidthPerElem.value = bandwidthPer;
+           if (getElement("totalbandwidth").value == ''){
+              alert('Bandwidth for Top Level Allocation is Undefined and so Bandwidth for Project Allocation can only be blank');
+              return false;
+           }
+           totalbandwidth = parseFloat(getElement("totalbandwidth").value);
+           bandwidth = round_float(((bandwidthPer/100) * totalbandwidth), 3);
+        }else{
+           bandwidth = '';
+        }
+
+     }
+
+     hepSpecChange = checkNumberParameterChange(currHepSpec, hepSpec);
+     memoryChange = checkNumberParameterChange(currMemory, memory);
+     storageChange = checkNumberParameterChange(currStorage, storage);
+     bandwidthChange = checkNumberParameterChange(currBandwidth, bandwidth);
+
+     if (hepSpecChange || memoryChange || storageChange || bandwidthChange){
+        updateSel = true;
+     }
+
+     if (hepSpec != ''){
+        hepSpec = round_float(hepSpec, 3);
+        hepSpecElem.value = hepSpec; 
+     }
+
+     if (memory != ''){
+        memory = round_float(memory, 3);
+        memoryElem.value = memory; 
+     }
+
+     if (storage != ''){
+        storage = round_float(storage, 3);
+        storageElem.value = storage;
+     }
+ 
+     if (bandwidth != ''){
+        bandwidth = round_float(bandwidth, 3);
+        bandwidthElem.value = bandwidth; 
+     }
+
+     hepSpecElem.value = hepSpec;
+     memoryElem.value = memory;
+     storageElem.value = storage;
+     bandwidthElem.value = bandwidth;
+
+     if (grAllocRtElem.selectedIndex < 0){
+        alert('Atleast one Resource Type should be selected for the Group Allocation');
+        return false;
+     }
+     for(i=0; i<grAllocRtElem.options.length; i++){
+        rtValue = grAllocRtElem.options[i].value;
+        rt_exists = false;
+        for(k=0; k<currGrAllocRtElem.options.length; k++){
+           if (currGrAllocRtElem.options[k].value == rtValue){
+              rt_exists = true;
+              break;
+           }
+        }
+        if (grAllocRtElem.options[i].selected){
+           if (!rt_exists){
+              updateSel = true;
+              break;
+           }
+        }else{
+           if (rt_exists){
+              updateSel = true;
+              break;
+           }
+        }
+     }
+     updateSel=true;//Added by Malik
+     if (!updateSel){
+        alert('No Changes done to perform Edit Operation');
+        return false;
+     }
+     return true;
+  }
+
+  function resetDefault(){
+     getElement("newname").value = getElement("currname").value;
+     getElement("hepspec").value = getElement("currhepspec").value;
+     getElement("memory").value = getElement("currmemory").value;
+     getElement("storage").value = getElement("currstorage").value;
+     getElement("bandwidth").value = getElement("currbandwidth").value;
+     getElement("hepspec_per").value = getElement("currhepspec_per").value;
+     getElement("memory_per").value = getElement("currmemory_per").value;
+     getElement("storage_per").value = getElement("currstorage_per").value;
+     getElement("bandwidth_per").value = getElement("currbandwidth_per").value;
+     resetAttributeDefault('group_allocation_attribute');
+     restoreResourceTypes();
+  }
+  
+</script>
+</head>
+<body onLoad="resetDefault();"><div id="container">
+{% load filters%}
+<form name="updategroupallocationform" id="updategroupallocationform" action="/cloudman/groupallocation/update/" method="post" class="niceform" onSubmit="return formValid();">{% csrf_token %}
+  <fieldset><legend> Edit Group Allocation {{grAllocName}}</legend>
+    <dl>
+      <dt> <label for="newname">Allocation Name</label>: </dt>
+      <dd> <input id="newname" type="text" name="newname" maxlength="50" value="{{grAllocObject.name}}"/>
+        <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+            onmouseover="return ShowToolTip('nameToolTip');" onmouseout="return HideToolTip('nameToolTip');" />
+        <div id="nameToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+            Enter Unique Name - Maximum of 50 Characters
+        </div>
+      </dd>
+    </dl>
+    <input type="hidden" name="currname" id="currname" value="{{grAllocObject.name}}">
+    <input type="hidden" name="name" id="name" value="{{grAllocObject.name}}">
+    <dl>
+      <dt><label for="group">Group</label>:</dt>
+      <dd> {{grAllocObject.group.name}} </dd>
+     </dl>
+     <dl>
+       <dt><label for="project_allocation">Project allocation</label>:</dt>
+       <dd> {{ grAllocObject.project_allocation.name|displayNone }}</dd>
+     </dl>
+     <dl>
+       <dt><label for="parent_group_allocation">Parent group allocation</label>:</dt>
+       <dd>{{ grAllocObject.parent_group_allocation.name|displayNone }}</dd>
+     </dl>
+
+     <dl>
+       <dt><input type="radio" id="valuetype1" name="valuetype" value="absolute" CHECKED onClick="changeValueType('absolute')"/>
+          Absolute Values
+       </dt>
+       <dd><input type="radio" id="valuetype2" name="valuetype" value="percentage" onClick="changeValueType('percentage')"/>
+          Percentage Values
+       </dd>
+     </dl>
+
+     <div name="absolutevaluesdiv" id="absolutevaluesdiv" style="display:block;">
+     <dl>
+        <dt> <label for="hepspec">Capacity(HS06)</label>: </dt>
+        <dd>
+        {% if grAllocObject.hepspec == None %}
+          <input type="text" name="hepspec" id="hepspec" value=""/>{% displayHepSpecUnit%}
+          <input type="hidden" name="currhepspec" id="currhepspec" value=""/>
+        {% else %}
+          <input type="text" name="hepspec" id="hepspec" value="{{grAllocObject.hepspec}}"/>{% displayHepSpecUnit%}
+          <input type="hidden" name="currhepspec" id="currhepspec" value="{{grAllocObject.hepspec}}"/>
+        {% endif %}
+          <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+                onmouseover="return ShowToolTip('hepspecToolTip');" onmouseout="return HideToolTip('hepspecToolTip');" />
+          <div id="hepspecToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+               Total Resources Capacity - If entered Positive Value greater than 0
+          </div>
+		  <br/>
+		  AutoScale: <input type="checkbox" name="scale" />	
+        </dd>
+     </dl>
+     <dl>
+        <dt> <label for="memory">Memory (GB)</label>: </dt>
+        <dd>
+        {% if grAllocObject.memory == None %}
+          <input type="text" name="memory" id="memory" value=""/>
+          <input type="hidden" name="currmemory" id="currmemory" value=""/>
+        {% else %}
+          <input type="text" name="memory" id="memory" value="{{grAllocObject.memory}}"/>
+          <input type="hidden" name="currmemory" id="currmemory" value="{{grAllocObject.memory}}"/>
+        {% endif %}
+          <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+                onmouseover="return ShowToolTip('memoryToolTip');" onmouseout="return HideToolTip('memoryToolTip');" />
+          <div id="memoryToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+               Total Available Memory in GB - Can be left blank
+          </div>
+
+        </dd>
+     </dl>
+
+     <dl>
+        <dt> <label for="storage">Storage (GB)</label>: </dt>
+        <dd>
+         {% if grAllocObject.storage == None %}
+          <input type="text" name="storage" id="storage" value=""/>{% displayStorageUnit%}
+          <input type="hidden" name="currstorage" id="currstorage" value=""/>
+         {% else %}
+          <input type="text" name="storage" id="storage" value="{{grAllocObject.storage}}"/>{% displayStorageUnit%}
+          <input type="hidden" name="currstorage" id="currstorage" value="{{grAllocObject.storage}}"/>
+         {% endif %}
+          <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+                onmouseover="return ShowToolTip('storageToolTip');" onmouseout="return HideToolTip('storageToolTip');" />
+          <div id="storageToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+dd
+               Total Available Storage in GB - If entered Positive Value greater than 0
+          </div>
+		  <br/>
+		  AutoScale: <input type="checkbox" name="storagescale" />	
+        </dd>
+     </dl>
+
+     <dl>
+        <dt> <label for="bandwidth">Bandwidth (Gbps)</label>: </dt>
+        <dd>
+         {% if grAllocObject.bandwidth == None %}
+          <input type="text" name="bandwidth" id="bandwidth" value=""/>
+          <input type="hidden" name="currbandwidth" id="currbandwidth" value=""/>
+         {% else %}
+          <input type="text" name="bandwidth" id="bandwidth" value="{{grAllocObject.bandwidth}}"/>
+          <input type="hidden" name="currbandwidth" id="currbandwidth" value="{{grAllocObject.bandwidth}}"/>
+         {% endif %}
+          <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+                onmouseover="return ShowToolTip('bandwidthToolTip');" onmouseout="return HideToolTip('bandwidthToolTip');" />
+          <div id="bandwidthToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+               Total Available Bandwidth in Gbps - Can be left blank
+          </div>
+        </dd>
+     </dl>
+     </div>
+
+     <div name="percentagevaluesdiv" id="percentagevaluesdiv" style="display:none;">
+      <dl>
+      <dt> <label for="hepspec_per">Capacity (%)</label>: </dt>
+      <dd>
+        {% if hepSpecPer == None %}
+          <input type="text" name="hepspec_per" id="hepspec_per" value=""/>
+          <input type="hidden" name="currhepspec_per" id="currhepspec_per" value=""/>
+        {% else %}
+          <input type="text" name="hepspec_per" id="hepspec_per" value="{{hepSpecPer}}"/>
+          <input type="hidden" name="currhepspec_per" id="currhepspec_per" value="{{hepSpecPer}}"/>
+        {% endif %}
+          <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+                onmouseover="return ShowToolTip('hepspecPerToolTip');" onmouseout="return HideToolTip('hepspecPerToolTip');" />
+          <div id="hepspecPerToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+               Total Capacity in Percentage of Parent Total Capacity
+          </div>
+          <br/>
+		  AutoScale: <input type="checkbox" name="scale" />	
+      </dd>
+       {% if totalHepSpec == None %}
+          <input type="hidden" name="totalhepspec" id="totalhepspec" value=""/>
+       {% else %}
+          <input type="hidden" name="totalhepspec" id="totalhepspec" value="{{totalHepSpec}}"/>
+       {% endif %}
+      </dl>
+
+      <dl>
+      <dt> <label for="memory_per">Memory (%)</label>: </dt>
+      <dd>
+        {% if memoryPer == None %}
+          <input type="text" name="memory_per" id="memory_per" value=""/>
+          <input type="hidden" name="currmemory_per" id="currmemory_per" value=""/>
+        {% else %}
+          <input type="text" name="memory_per" id="memory_per" value="{{memoryPer}}"/>
+          <input type="hidden" name="memory_per" id="memory_per" value="{{memoryPer}}"/>
+        {% endif %}
+          <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+                onmouseover="return ShowToolTip('memoryPerToolTip');" onmouseout="return HideToolTip('memoryPerToolTip');" />
+          <div id="memoryPerToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+               Total Memory in Percentage of Parent Total Memory
+          </div>
+       </dd>
+       {% if totalMemory == None %}
+          <input type="hidden" name="totalmemory" id="totalmemory" value=""/>
+       {% else %}
+          <input type="hidden" name="totalmemory" id="totalmemory" value="{{totalMemory}}"/>
+       {% endif %}
+      </dl>
+
+      <dl>
+      <dt> <label for="storage_per">Storage (%)</label>: </dt>
+      <dd>
+         {% if storagePer == None %}
+          <input type="text" name="storage_per" id="storage_per" value=""/>
+          <input type="hidden" name="currstorage_per" id="currstorage_per" value=""/>
+         {% else %}
+          <input type="text" name="storage_per" id="storage_per" value="{{storagePer}}"/>
+          <input type="hidden" name="currstorage_per" id="currstorage_per" value="{{storagePer}}"/>
+         {% endif %}
+          <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+                onmouseover="return ShowToolTip('storagePerToolTip');" onmouseout="return HideToolTip('storagePerToolTip');" />
+          <div id="storagePerToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+               Total Storage in Percentage of Parent Total Storage
+          </div>
+		  <br/>
+		  AutoScale: <input type="checkbox" name="storagescale" />	
+      </dd>
+       {% if totalStorage == None %}
+          <input type="hidden" name="totalstorage" id="totalstorage" value=""/>
+       {% else %}
+          <input type="hidden" name="totalstorage" id="totalstorage" value="{{totalStorage}}"/>
+        {% endif %}
+      </dl>
+
+      <dl>
+      <dt> <label for="bandwidth_per">Bandwidth (%)</label>: </dt>
+      <dd>
+         {% if bandwidthPer == None %}
+          <input type="text" name="bandwidth_per" id="bandwidth_per" value=""/>
+          <input type="hidden" name="currbandwidth_per" id="currbandwidth_per" value=""/>
+         {% else %}
+          <input type="text" name="bandwidth_per" id="bandwidth_per" value="{{bandwidthPer}}"/>
+          <input type="hidden" name="currbandwidth_per" id="currbandwidth_per" value="{{bandwidthPer}}"/>
+         {% endif %}
+          <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+                onmouseover="return ShowToolTip('bandwidthPerToolTip');" onmouseout="return HideToolTip('bandwidthPerToolTip');" />
+          <div id="bandwidthPerToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+               Total Bandwidth in Percentage of Parent Total Bandwidth
+          </div>
+      </dd>
+       {% if totalBandwidth == None %}
+          <input type="hidden" name="totalbandwidth" id="totalbandwidth" value=""/>
+       {% else %}
+          <input type="hidden" name="totalhepspec" id="totalbandwidth" value="{{totalBandwidth}}"/>
+       {% endif %}
+      </dl>
+
+     </div>
+
+     <div id="grallocrtlist" name="grallocrtlist" style="display:none;">
+        <select id="currgrallocrt" name="currgrallocrt" SIZE="5" MULTIPLE>
+        {% for onert in grAllocRTList %}
+        <option value="{{onert}}" SELECTED>{{onert}}</option>
+        {% endfor %}
+        </select>
+     </div>
+
+     <dl>
+      <dt> <label for="grallocallowedrt">Allowed Resource Types</label>: </dt>
+      <dd>
+        <select id="grallocallowedrt" name="grallocallowedrt" SIZE="5" MULTIPLE>
+        {% for onert in grAllocRTList %}
+          <option value="{{onert}}" SELECTED>{{onert}}</option>
+        {% endfor %}
+        </select>
+        <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+           onmouseover="return ShowToolTip('resourceTypesToolTip');" onmouseout="return HideToolTip('resourceTypesToolTip');" />
+        <div id="resourceTypesToolTip" style="width:120px; position:absolute; z-index:20; display:none" class="boxcontent">
+           Displayed Currently Allowed Resource Types as selected, Select or De-select for Changing the list
+        </div>
+      </dd>
+     </dl>
+     <dl>
+     	<dt><label for="comment">Comment</label>:</dt>
+           <dd><textarea id="comment" rows="5" cols="30" name="comment"  ></textarea>
+                <img height="9px" width="9px" src="/media/images/qmark.jpg" style="cursor:pointer"
+                        onmouseover="return ShowToolTip('commentToolTip');" onmouseout="return HideToolTip('commentToolTip');" />
+                 <div id="commentToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+                             Enter Comments about the Group Allocation(Useful for Logging)- Maximum of 3000 Characters
+                 </div>
+           </dd>
+     </dl>
+
+     <center>
+     	<input type="button" id="loadcurr" name="loadcurr" value="Reset to Current Values" style="padding: 5px 5px 5px 5px;" onClick="javascript:resetDefault();"/>
+     	<input type="button" value="Add Attribute" style="padding: 5px 5px 5px 5px;" onClick="addAttribute('group_allocation_attribute','','' );">
+     </center>
+  	<div id='group_allocation_attribute' class="niceform">
+  	{% for oneRow in grAllocMetadata %}
+	    <div id="curr_div{{forloop.counter}}">
+    	     <table align=center>
+        	    <tr>
+            	     <td>Attribute Name:</td>
+                	 <td><input type='text' name='attribute_name' value="{{ oneRow.attribute }}" ></td>
+	                 <td>Attribute Value:</td>
+    	             <td><input type='text' name='attribute_value' value="{{ oneRow.value }}"></td>
+        	         <td><a href='#' style='cursor: pointer' onClick="deleteAttribute('group_allocation_attribute','curr_div{{forloop.counter }}');">
+            	     <img src='{{ MEDIA_URL }}images/remove.png' height='15px' width='15px' align='center' title='delete Attribute' border='0'/></a>                              </td>
+	            </tr>                                                                                                                                                      </table>
+    	</div>
+	{% endfor %}
+  	</div>
+  </fieldset>
+
+  <br/>
+  <fieldset class="action">
+    <input type ="submit" id="submit" name="submit" title="Save" value="Save" style="padding: 5px 5px 5px 5px;" />
+  </fieldset>    
+</form>
+</div></body>
+</html>
+

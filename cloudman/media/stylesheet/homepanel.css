@@ -1,0 +1,92 @@
+/*********************
+	HTML Elements
+*********************/
+*{
+        margin:0;
+        padding:0;
+}
+
+#content{
+	/*width:840px;*/
+	width: 100%;
+	float:left;
+	margin:0px 0 0px 0;
+	padding:0px;
+        background:#FFF;
+}
+table{
+	margin:5px;
+	border-collapse: collapse;
+	table-layout:automatic;
+	width:98%;
+}
+td, th{
+	padding: 2px;
+}
+td.infotable, td.infotable{
+       border:1px solid #d9e6f0;
+} 
+#infobox{
+	/*width:370px;*/
+	width:50%;
+	float:left;
+	margin-top:10px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+#infobox h3{
+	padding:5px;
+	font-size:14px;
+        background:#f3f9ff;
+        border-bottom:1px solid #d9e6f0;
+        color:#375b91;
+}
+#rightnow .reallynow {
+	padding: 5px;
+	font-size:14px;
+        background:#f3f9ff;
+        color:#375b91;
+}
+#rightnow {
+        border:1px solid #d9e6f0;
+}
+#rightnow h3{
+	padding:2px;
+	padding: 0 10px;
+	font-size:14px;
+        background:#f3f9ff;
+        border-bottom:1px solid #d9e6f0;
+}
+#rightnow .reallynow span {
+	display: block;
+	text-align: left;
+	float: left;
+	padding:0 2px;
+	font-size:14px
+}
+#rightnow .reallynow a {
+	text-decoration:none;
+	display: block;
+	text-align: right;
+	float: right;
+	padding:0 0 0 18px;
+	margin-left:4px;
+	font-weight:normal;
+	font-size:12px;
+}
+#rightnow .reallynow a:hover{
+	text-decoration:underline;
+}
+#rightnow .youhave {
+	font-size:  12px;
+	padding: 10px;
+}
+#rightnow a {
+	font-weight: bold;
+}
+
+a.links:link { color: green; text-decoration: none;}
+a.links:active { color: green; text-decoration: none;}
+a.links:visited { color: green; text-decoration: none;}
+a.links:hover { color: green; text-decoration: none;}

@@ -1,0 +1,49 @@
+<html>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Side Panel Options</title>
+    <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}stylesheet/sidepanel.css" />
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}stylesheet/ie_special.css" />
+    <![endif]-->
+    </head>
+
+ <body>
+    <div id="sidebar">
+	{% if menuOption == 'home' %}
+           <h3>Home</h3>
+           <ul>
+            <li><a class="sidemenu" href="/cloudman/homepanel" target="dataframe">Home</a></li>
+            <li><a class="sidemenu" href="https://twiki.cern.ch/twiki/bin/view/CloudServices/ProjectCloudManUserManual" target="dataframe">Documents</a></li>
+           </ul>
+	{% endif %}
+	{% if menuOption == 'resources' %}
+           <h3>Resources</h3>
+           <ul>
+            <li><a class="sidemenu" href="/cloudman/listregion" target="dataframe">Regions</a></li>
+            <li><a class="sidemenu" href="/cloudman/listzone" target="dataframe">Zones</a></li>
+           </ul>
+	{% endif %}
+        {% if menuOption == 'allocations' %}
+           <h3>Allocations</h3>
+           <ul>
+            <li><a class="sidemenu" href="/cloudman/listtoplevelallocation" target="dataframe">Top Level</a></li>
+            <li><a class="sidemenu" href="/cloudman/listprojectallocation" target="dataframe">Project</a></li>
+            <li><a class="sidemenu" href="/cloudman/listgroupallocation" target="dataframe">Group</a></li>
+           </ul>
+	{% endif %}
+        {% if menuOption == 'groups' %}
+           <h3>Groups</h3>
+           <ul>
+            <li><a class="sidemenu" href="/cloudman/listgroup" target="dataframe">Groups</a></li>
+           </ul>
+	{% endif %}
+        {% if menuOption == 'management' %}
+           <h3>Management</h3>
+           <ul>
+            <li><a class="sidemenu" href="/cloudman/listresourcetype" target="dataframe">Resource Types</a></li>
+            <li><a class="sidemenu" href="/cloudman/listproject" target="dataframe">Projects</a></li>
+           </ul>
+	{% endif %}
+    </div>
+ </body>
+</html>

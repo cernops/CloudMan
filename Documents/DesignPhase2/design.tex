@@ -1,0 +1,92 @@
+\documentclass[12pt]{article}
+\usepackage{epsfig,a4}
+\usepackage{draftcopy}
+\begin{document}
+\thispagestyle{empty}
+\title{CloudMan: design document Betelgeuze. Draft Version 0.92}
+\author{CERN IT-DEP/PES-PS, BARC}
+%\version{0.0.2}
+\date{\today}
+\maketitle 
+\begin{abstract}
+This document describes the design for the Betelgeuze release of CloudMan.
+
+\end{abstract}
+%
+% contents
+%
+\tableofcontents
+\listoffigures 
+\listoftables
+
+%
+% introduction 
+%
+\input{introduction}
+
+%
+% Purpose
+%
+\input{purpose}
+
+%
+% terms and definitions
+%
+\input{definitions}
+
+%
+% goals of phase 1
+%
+\input{Phase2Goals}
+
+%
+% Use cases
+%
+%\section{Use cases}
+%\input{UseCases}
+
+\input{backendtypes}
+\input{backendsamples}
+\section{Storage}
+At CERN, different storage solutions are in place. Resource allocation for the existing storage solutions is often done already in a hierarchical way, similar to the ideas of the CloudMan design. 
+
+The storage solutions at CERN have special requirements though. These are summarized in this section.
+
+\subsection{AFS}
+\input{afs}
+\subsection{EOS}
+\input{eos}
+\subsection{CASTOR}
+\input{castor}
+%\subsubsection{Configuration files}
+%\input{configuration}
+
+%\section{Resource pools}
+%\input{ResourcePools}
+
+%
+% details
+%
+\input{details}
+
+\subsection{Definition of Interfaces}
+
+\subsubsection{Low level data export layer}
+\input{lld_schema}
+
+\subsubsection{Backend state data}
+\input{backendstate_schema}
+
+\subsubsection{CloudMan database schema}
+\input{ddb_schema}
+
+
+%
+% references
+%
+\begin{thebibliography}{99}
+\input{bib}
+\end{thebibliography}
+\end{document}
+
+

@@ -1,0 +1,9 @@
+We have 5 different CASTOR instances (atlas, cms, alice, lhbc, public)
+each of them has its own resource (diskservers). The resources are divided into service class (svcclass which are mapped as separate subclusters/pools).
+For example in c2atlas (the atlas instance) there are 7 svcclass:
+t0atlas, t0merge, atlcal, etc..
+In general we discourage to create new svcclass (Except for new "big" experiment in castor public e.g. ams)
+
+User have the privilege to store data only via their experiment resources, we have kind of "acl" at the svcclass level.
+We delegate the power of setting these rules to specific person that are the group admin. In this case the admin can decide which commands users can run (stager\_get, recall, ..) 
+Unfortunately in castor there is no easy way to manage quota, we only manage the resources (diskservers installed) in a particular svcclass (diskpace)

@@ -1,0 +1,64 @@
+import ldap
+import sys
+
+def main(argv):
+    server = 'xldap.cern.ch'
+    who = ""
+    cred = ""
+
+    keyword = "visharma"
+
+    try :
+        l = ldap.open(server)
+        l.simple_bind_s(who, cred)
+        print "Success..."
+
+        if len(argv) <= 0:
+            print "Please input username..."
+        else:
+            print "Searching..."
+            keyword = argv[0]
+            my_search(l, keyword)
+
+    except ldap.LDAPError, error_message:
+        print "Couldn't connect. %s " % error_message
+
+
+def my_search(l, keyword):
+    base = "OU=Workgroups,DC=cern,DC=ch"
+    scope = ldap.SCOPE_SUBTREE
+    filter = "(member:1.2.840.113556.1.4.1941:=cn=%s,ou=users,ou=organic units,DC=cern,dc=ch)" % keyword
+    retrieve_attributes = ['cn']
+    count = 0
+    result_set = []
+    timeout = 0
+    try:
+        result_id = l.search(base, scope, filter, retrieve_attributes)
+        while 1:
+            result_type, result_data = l.result(result_id, timeout)
+            if (result_data == []):
+                break
+            else:
+                if (result_type == ldap.RES_SEARCH_ENTRY):
+                    result_set.append(result_data)
+
+        if len(result_set) == 0:
+            print "Not a member of any group ....strange...Check input username"
+            return
+
+        for i in range(len(result_set)):
+            for entry in result_set[i]:
+                try:
+                    name = entry[1]['cn'][0]
+                    count = count + 1
+                    print "%s" % name
+                except:
+                    print "In exception..."
+        print "In all, part of %d e-groups" % count
+    except ldap.LDAPError, error_message:
+        print error_message
+
+
+
+if __name__ == '__main__':
+    main(sys.argv[1:])

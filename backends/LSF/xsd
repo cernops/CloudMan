@@ -1,0 +1,126 @@
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="ALLOCATION">
+	<xs:complexType>
+    	<xs:sequence>
+      		<xs:element name="PROJECT">      				
+	    		<xs:complexType>
+	    			<xs:sequence>
+            			<xs:element name="PROJECT_METADATA" type="projectmetadatatype" />
+         				<xs:element name="TOP_LEVEL_ALLOCATION" type="toplevelalloctype" minOccurs="0" maxOccurs="unbounded"/>
+         			</xs:sequence>
+	    			<xs:attribute name="ADMINGROUP" type="xs:string" />
+    				<xs:attribute name="NAME" type="xs:string" />
+    				<xs:attribute name="DESCRIPTION" type="xs:string" />
+    			</xs:complexType>
+    		</xs:element>
+    	</xs:sequence>
+  	</xs:complexType>
+  </xs:element>
+	
+	<xs:complexType name="toplevelalloctype">
+		<xs:sequence>
+			<xs:element name="ZONE_ALLOCATION" type="zonealloctype" />
+			<xs:element name="ALLOWED_RESOURCE_TYPE" type="allowedresourcetype" />
+			<xs:element name="PROJECT_ALLOCATION" type="projectalloctype" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>	
+			<xs:attribute name="GROUP" type="xs:string" />
+			<xs:attribute name="NAME" type="xs:string" />
+			<xs:attribute name="HS06" type="xs:float" />
+			<xs:attribute name="KSI2K" type="xs:float" />
+	</xs:complexType> 
+	<xs:complexType name="projectalloctype">
+		<xs:sequence>
+			<xs:element name="GROUP_ALLOCATION" type="groupalloctype" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>	
+		<xs:attribute name="GROUP" type="xs:string" />
+		<xs:attribute name="NAME" type="xs:string" />
+		<xs:attribute name="HS06" type="xs:float" />
+		<xs:attribute name="KSI2K" type="xs:float" />
+		<xs:attribute name="HS06PERCENT" type="xs:float" />
+	</xs:complexType> 
+	<xs:complexType name="groupalloctype">
+		<xs:sequence>
+			<xs:element name="GROUP_ALLOCATION_METADATA" type="groupallocmetadatatype"/>
+			<xs:element name="GROUP_ALLOCATION" type="subgroupalloctype" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>	
+		<xs:attribute name="GROUP" type="xs:string" />
+		<xs:attribute name="NAME" type="xs:string" />
+		<xs:attribute name="HS06" type="xs:float" />
+		<xs:attribute name="KSI2K" type="xs:float" />
+		<xs:attribute name="HS06PERCENT" type="xs:float" />
+	</xs:complexType> 
+	<xs:complexType name="subgroupalloctype">
+		<xs:sequence>
+			<xs:element name="GROUP_ALLOCATION_METADATA" type="subgroupallocmetadatatype"/>
+		</xs:sequence>	
+		<xs:attribute name="GROUP" type="xs:string" />
+		<xs:attribute name="NAME" type="xs:string" />
+		<xs:attribute name="HS06" type="xs:float" />
+		<xs:attribute name="KSI2K" type="xs:float" />
+		<xs:attribute name="HS06PERCENT"  type="xs:float"/>
+	</xs:complexType> 
+	<xs:complexType name="zonealloctype">
+	  <xs:sequence>
+	    <xs:element name="ZONE" minOccurs="1" maxOccurs="unbounded">
+    		<xs:complexType>
+				<xs:attribute name="NAME" type="xs:string" />
+				<xs:attribute name="HS06" type="xs:float" />
+				<xs:attribute name="KSI2K" type="xs:float" />
+				<xs:attribute name="REGION" type="xs:string" />
+			</xs:complexType>
+		</xs:element>
+	  </xs:sequence>
+	</xs:complexType> 
+	
+	<xs:complexType name="allowedresourcetype">
+	  <xs:sequence>
+	    <xs:element name="RESOURCE_TYPE" minOccurs="1" maxOccurs="unbounded">
+    		<xs:complexType>
+				<xs:attribute name="BANDWIDTH" type="xs:string" />
+				<xs:attribute name="CLASS" type="xs:string" />
+				<xs:attribute name="HS06" type="xs:float" />
+				<xs:attribute name="REGION" type="xs:string" />
+				<xs:attribute name="MEMORY" type="xs:float" />
+				<xs:attribute name="NAME" type="xs:string" />
+				<xs:attribute name="STORAGE" type="xs:string" />
+				<xs:attribute name="ZONE" type="xs:string" />
+			</xs:complexType>
+		</xs:element>
+	  </xs:sequence>
+	</xs:complexType> 
+	<xs:complexType name="subgroupallocmetadatatype">
+	  <xs:sequence>
+	    <xs:element name="METADATA">
+    		<xs:complexType>
+				<xs:attribute name="NAME" type="xs:string" />
+				<xs:attribute name="VALUE" type="xs:string" />
+			</xs:complexType>
+		</xs:element>
+		<xs:element name="METADATA" minOccurs="0" maxOccurs="unbounded" />
+	  </xs:sequence>
+	</xs:complexType> 
+	<xs:complexType name="groupallocmetadatatype">
+	  <xs:sequence>
+	    <xs:element name="METADATA">
+    		<xs:complexType>
+				<xs:attribute name="NAME" type="xs:string" />
+				<xs:attribute name="VALUE" type="xs:string" />
+			</xs:complexType>
+		</xs:element>
+		<xs:element name="METADATA" minOccurs="0" maxOccurs="unbounded" />
+	  </xs:sequence>
+	</xs:complexType> 
+	<xs:complexType name="projectmetadatatype">
+	  <xs:sequence>
+	    <xs:element name="METADATA">
+    		<xs:complexType>
+				<xs:attribute name="NAME" type="xs:string" />
+				<xs:attribute name="VALUE" type="xs:string" />
+			</xs:complexType>
+		</xs:element>
+		<xs:element name="METADATA" minOccurs="0" maxOccurs="unbounded" />
+	  </xs:sequence>
+	</xs:complexType> 
+</xs:schema>
+  
+ 

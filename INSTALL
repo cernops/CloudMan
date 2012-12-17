@@ -1,0 +1,14 @@
+Installation:
+
+./autogen.sh 
+./configure 
+make 
+su
+# make install 
+
+To build an rpm do:
+./autogen.sh
+./configure
+make rpm
+
+

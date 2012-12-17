@@ -1,0 +1,42 @@
+#sidebar h3{
+        background:#f3f9ff repeat-x top;
+        border-bottom:1px solid #d9e6f0;
+        width: 100%;
+        text-align: center;
+        height: 30px;
+        font-size: 16px;
+        margin: 0 auto;
+}
+#sidebar{
+        background:#0a3360;
+        width:100%;
+}
+
+#sidebar ul{
+        list-style:none;
+        line-height:30px;
+        margin-left: 0px;
+}
+#sidebar ul li a,#sidebar ul li a:visited{
+        text-decoration:none;
+        #display:block;
+}
+#sidebar ul li a:hover{
+        text-decoration:underline;
+}
+#sidebar ul li {
+        margin-left:0px;
+        padding: 0px 0px 0px 0px;
+}
+
+a.sidemenu:link{
+    color: white;
+}
+
+a.sidemenu:visited{
+    color: white;
+}
+a.sidemenu:hover{
+    color:white;
+    text-decoration: underline;
+}

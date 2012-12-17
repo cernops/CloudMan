@@ -1,0 +1,91 @@
+\documentclass[12pt]{article}
+\usepackage{epsfig,a4}
+%\usepackage{draftcopy}
+\begin{document}
+\thispagestyle{empty}
+\title{CloudMan: design document Update 4}
+\author{CERN IT-DEP/PES-PS}
+%\version{0.0.1}
+\date{\today}
+\maketitle 
+\begin{abstract}
+This document describes the design for the Betelgeuze release of CloudMan.
+\end{abstract}
+%
+% contents
+%
+\tableofcontents
+\listoffigures 
+
+%
+% introduction 
+%
+\section{Purpose of this document} 
+\input{purpose}
+
+%
+% goals of phase 1
+%
+\section{First phase implementation goals}
+\input{Phase1Goals}
+%
+% Use cases
+%
+\section{Use cases}
+\input{UseCases}
+
+%
+% details
+%
+\section{Details}
+\input{details}
+
+\subsection{Definition of Interfaces}
+\subsubsection{CloudMan database schema}
+\input{ddb_schema}
+
+\subsubsection{Low level data export layer}
+\input{lld_schema}
+
+\subsubsection{Configuration files}
+\input{configuration}
+
+\section{Resource pools}
+\input{ResourcePools}
+
+\section{Backends}
+Backends are plugins to CloudMan which can and should be shipped separately from the CloudMan interface itself. This way it is easy to deploy highly customized backends which consume the data from the central interface. The base distribution 
+of CloudMan can therefore ship with a sample implementation for such a backend. 
+
+Possible backends include 
+\begin{itemize}
+\item One or more plugins to configure batch system shares, one per batch system in use (eg LSF, SLURM, ...)
+\item One or more plugins to configure an OpenNebula instance
+\item One or more plugins to configure an OpenStack instance
+\end{itemize}
+Plugins are expected to be project driven but they don't have to be. This is specifically true for plugins which talk to
+an internal cloud setup: A site may choose to have one plugin for each tenant in an OpenStack instance, or rather use
+only one plugin which will configure the whole cloud instance. 
+
+\subsection{Batch shares}
+\input{LSFBatchShares}
+\subsection{OpenNebula}
+\input{OpenNebula}
+\subsection{OpenStack}
+\input{OpenStack}
+
+
+\section{Benefits, assumptions, risks/issues}
+Writing backends for Cloud controllers like OpenStack and Opennebula bears some risk as the concepts and definitions used by those young projects are still changing rapidly. In addition, the backends for these systems will be very model dependent, in the sense that each site who deploys them will configure them differently. 
+
+ 
+
+%
+% references
+%
+\begin{thebibliography}{99}
+\input{bib}
+\end{thebibliography}
+\end{document}
+
+

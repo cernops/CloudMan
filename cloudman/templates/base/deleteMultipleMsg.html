@@ -1,0 +1,25 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Groups List</title>
+  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}stylesheet/listTable.css" />
+  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}stylesheet/common.css" />
+</head>
+<body id="databody">
+  <pre style="white-space:normal;text-align:center;"> {{ title }} (Total:{{ printArray|length }}) </pre>
+  <table class="autosort" border="1" align="center" style="table-layout: auto;">
+  <tbody>
+   {% for oneRow in printArray %}
+   {% if  forloop.counter|divisibleby:"2" %}
+    <tr class="odd" text="wrap">
+   {% else %}
+    <tr class="even" text="wrap">
+   {% endif %}
+    <td name="tcol0" id="tcol0" scope="row" text="wrap"> <p>{{ oneRow }}</p></td>
+    </tr>
+   {% endfor %}
+  </tbody>
+  </table>
+</body>
+</html>

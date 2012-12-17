@@ -1,0 +1,54 @@
+#!/usr/bin/python
+'''
+Created on May 21, 2012
+@author: Malik Ehsanullah
+'''
+import os
+import sys
+sys.path.append('/var/www/cloudman')
+os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
+from cloudman.ldapSearch import checkEGroup
+from cloudman.models import Egroups
+from cloudman.logQueries import printStackTrace
+from cloudman.commonFunctions import addEgroupLog,getUserListfromEgroup
+
+
+def synchronizeEgroup():
+    try:
+        egroupList = Egroups.objects.all().order_by('name')
+        for egroupObj in egroupList:
+            eGroupExist = checkEGroup(egroupObj.name)
+            if not egroupObj.status and eGroupExist:
+                egroupObj.status = True
+                comment = 'Egroup %s has been made active in CERN'%egroupObj.name
+                print comment                
+                addEgroupLog(None,egroupObj.name,'egroup','update',comment,True)
+            elif egroupObj.status and not eGroupExist:    
+                egroupObj.status = False
+                comment ='Egroup %s deleted on CERN' %egroupObj.name
+                print comment
+                addEgroupLog(None,egroupObj.name,'egroup','deleteCERN',comment,True)
+            egroupObj.save()
+    except Exception:
+        printStackTrace
+
+
+def checkForEmptyEgroup():
+    try:
+        egroupList = Egroups.objects.all().order_by('name')
+        for egroupObj in egroupList:
+            if egroupObj.status:
+                userList = getUserListfromEgroup(egroupObj.name)
+                if userList =='':
+                    comment = 'Egroup %s has no User'%egroupObj.name
+                    print comment                
+                    addEgroupLog(None,egroupObj.name,'egroup','emptyEgroup',comment,True)
+                    egroupObj.empty = True
+                    egroupObj.save()
+    except Exception:
+        printStackTrace
+    
+
+if __name__ == '__main__':
+    synchronizeEgroup()
+    checkForEmptyEgroup()

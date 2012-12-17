@@ -1,0 +1,215 @@
+	<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Project Allocation Detailed Information</title>
+  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}stylesheet/listTable.css" />
+  <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}stylesheet/common.css" />
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/general.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/table_sort_filter.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/jquery-1.7.1.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/highcharts.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/gray.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/piechart.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/selectmultiple.js"></script>
+  
+  <script type="text/javascript">
+    $(document).ready(function() {
+        projectAllocName = getElement("projectallocname").value; 
+        $.ajax( {
+          type: 'get',
+          data: {'name': projectAllocName},
+          url:  '/cloudman/projectallocation/gethepspecstats',
+          success: function( result ) {
+             var obj = jQuery.parseJSON(result);
+             if (obj.length <= 0){
+               alert('No Data Available to Draw Pie Charts');
+               getElement("toplevelhepspecs").innerHTML = 'No Data Available to Draw Pie Chart for Top Level Hepspec Allocation Share for the Project Allocation - ' + projectAllocName;
+               getElement("projectallochepspecs").innerHTML = 'No Data Available to Draw Pie Chart for Hepspec Allocation for - ' + projectAllocName;
+             }else{
+               for (i=0; i<obj.length; i++){
+                  modelName = obj[i].model;
+                  modelSplit = modelName.split(".");
+                  if (modelSplit[1] == "toplevelallocation"){
+                      tpAllocName = obj[i].pk 
+                      tpTotalHepSpecs = round_float(obj[i].fields.totalhepspec, 3);
+                      thisProjectShare = round_float(obj[i].fields.projectallocfrac, 3);
+                      othersShare = round_float(obj[i].fields.othersallocfrac, 3);
+                      tpData = [];
+                      tpData.push([projectAllocName, thisProjectShare]);
+                      if (othersShare > 0){
+                         tpData.push(['Other Project Allocs', othersShare]);
+                      }
+                      freeShare = 100 - thisProjectShare - othersShare;
+                      if (freeShare > 0){
+			 tpData.push(['Free', freeShare]);
+                      }
+                      tp_piechart = initPieChart('toplevelhepspecs', ('To Level Hepspec Allocation - ' + tpAllocName + '<br/> Total: ' + tpTotalHepSpecs + ' HS06'));
+                      tp_piechart.addSeries({
+                         type: 'pie',
+                         name: 'Top Level Allocation',
+                         data: tpData,
+                         labels: {
+                           formatter: function() {
+                             return Highcharts.numberFormat(this.value, 3);
+                           }
+                         },
+                         cursor:'pointer',
+                         events: {
+                           //click: function(event) {
+                           //   openNewWinLinkUrl('/cloudman/listonlyregionsname');
+                           //}
+                         },
+                         showInLegend: false,
+                         allowPointSelect: true,
+                         legendItemClick: false
+                      }, true);
+                  }else if (modelSplit[1] == "projectallocation"){
+                      prTotalHepSpecs = round_float(obj[i].fields.totalhepspec, 3);
+                      allotedPer = round_float(obj[i].fields.allotedfrac, 3);
+                      freePer = 100 - allotedPer;
+                      pr_piechart = initPieChart('projectallochepspecs', ('Project Allocation - Hepspec Stats - ' + projectAllocName + '<br/> Total: ' + prTotalHepSpecs + ' HS06'));
+                      pr_piechart.addSeries({
+                         type: 'pie',
+                         name: 'Project Allocation',
+                         data: [
+                                ['Free', freePer],
+                                ['Allocated', allotedPer]
+                         ],
+                         labels: {
+                           formatter: function() {
+                             return Highcharts.numberFormat(this.value, 3);
+                           }
+                         },
+                         cursor:'pointer',
+                         events: {
+                           //click: function(event) {
+                           //   openNewWinLinkUrl('/cloudman/listonlyregionsname');
+                           //}
+                         },
+                         showInLegend: false,
+                         allowPointSelect: true,
+                         legendItemClick: false
+                      }, true);
+                  }
+               }
+             }
+          }
+       });
+    });
+
+  </script>
+</head>
+<body id="databody">
+{% load filters %}	
+{% include "base/search.html" %}
+<form name="dataForm" id="dataForm">
+  <pre style="white-space:normal:text-align:center"> <center>Detailed Information of Project Allocation <br/> Name: {{ allocName }} &nbsp; &nbsp; &nbsp; Top Level Allocation : <a class="links" href="/cloudman/toplevelallocation/getdetails?name={{ allocInfo.top_level_allocation.name }}" style="cursor:pointer;"> {{ allocInfo.top_level_allocation.name }} </a> &nbsp; &nbsp; &nbsp; Project: <a class="links" href="/cloudman/project/getdetails?name={{ allocInfo.project.name }}" style="cursor:pointer;"> {{ allocInfo.project.name }} </a> &nbsp; &nbsp; &nbsp;Group: <a class="links" href="/cloudman/group/getdetails?name={{ allocInfo.group.name }}" style="cursor:pointer;"> {{ allocInfo.group.name }} </a>
+Capacity(HS06): {% if allocInfo.hepspec == None %} {% displayUndefined%} {% else %} {{ allocInfo.totalhepspec }} (TLA: {{ allocInfo.hepspec_fraction }}%) {% endif %} &nbsp; &nbsp; &nbsp; Memory: {% if allocInfo.memory == None %} {% displayUndefined%} {% else %} {{ allocInfo.totalmemory }} (TLA: {{ allocInfo.memory_fraction }}%) {% endif %} &nbsp; &nbsp; &nbsp; Storage: {% if allocInfo.storage == None %} {% displayUndefined%} {% else %} {{ allocInfo.totalstorage }} (TLA: {{ allocInfo.storage_fraction }}%) {% endif %} &nbsp; &nbsp; &nbsp; Bandwidth: {% if allocInfo.bandwidth == None %} {% displayUndefined %} {% else %} {{ allocInfo.totalbandwidth }} (TLA: {{ allocInfo.bandwidth_fraction }}%) {% endif %} </center> </pre>
+
+  <pre style="white-space:normal;text-align:center;"> Allocation : {{ allocName }} Allowed Resource Types (Total : {{ allowedResourceTypesList|length }}) </pre>
+  <table class="autosort" border="1" id='allowedrttable' align="center" style="table-layout: auto;">
+  <thead>
+   <tr>
+    <th name="tcol0" id="tcol0" class="table-sortable:ignorecase">No</th>
+    <th name="tcol1" id="tcol1" class="table-sortable:ignorecase">Name</th>
+    <th name="tcol2" id="tcol2" class="table-sortable:ignorecase">Resource Class</th>
+    <th name="tcol3" id="tcol3" class="table-sortable:numeric">Capacity (HS06)</th>
+    <th name="tcol4" id="tcol4" class="table-sortable:numeric">Memory (MB)</th>
+    <th name="tcol5" id="tcol5" class="table-sortable:numeric">Storage (MB)</th>
+    <th name="tcol6" id="tcol6" class="table-sortable:numeric">Bandwidth (Mbps)</th>
+   </tr>
+  </thead>
+  <tbody>
+   {% for oneRow in allowedResourceTypesList %}
+   {% if  forloop.counter|divisibleby:"2" %}
+    <tr class="odd" text="wrap">
+   {% else %}
+    <tr class="even" text="wrap">
+   {% endif %}
+    <td name="tcol0" id="tcol0" scope="row" text="wrap">{{ forloop.counter }}</td>
+    <td name="tcol1" id="tcol1" scope="row" text="wrap"><a class="links" href="/cloudman/resourcetype/getdetails?name={{ oneRow.resource_type.name }}" style="cursor:pointer;">{{ oneRow.resource_type.name }}</a></td>
+    <td name="tcol2" id="tcol2" scope="row" text="wrap">{{ oneRow.resource_type.resource_class }}</td>
+    <td name="tcol3" id="tcol3" scope="row" text="wrap">{{ oneRow.resource_type.hepspecs|displayNone }}</td>
+    <td name="tcol4" id="tcol4" scope="row" text="wrap">{{ oneRow.resource_type.memory|displayNone }}</td>
+    <td name="tcol5" id="tcol5" scope="row" text="wrap">{{ oneRow.resource_type.storage|displayNone }}</td>
+    <td name="tcol6" id="tcol6" scope="row" text="wrap">{{ oneRow.resource_type.bandwidth|displayNone }}</td>
+    </tr>
+   {% endfor %}
+  </tbody>
+  </table>
+  <br/>
+
+  <pre style="white-space:normal;text-align:center;"> List of Group Allocations Using this Project Allocation (Total : {{ groupAllocationsInfo|length }}) </pre>
+  <table class="autosort" border="1" id='grpalloctable' align="center" style="table-layout: auto;">
+  <thead>
+   <tr>
+    <th name="tcol0" id="tcol0" class="table-sortable:numeric">No</th>
+    <th name="tcol1" id="tcol1" class="table-sortable:ignorecase">Name</th>
+    <th name="tcol2" id="tcol2" class="table-sortable:ignorecase">Group</th>
+    <th name="tcol5" id="tcol5" class="table-sortable:numeric">Capacity (HS06) </th>
+    <th name="tcol6" id="tcol6" class="table-sortable:numeric">Memory (MB)</th>
+    <th name="tcol7" id="tcol7" class="table-sortable:numeric">Storage (MB) </th>
+    <th name="tcol8" id="tcol8" class="table-sortable:numeric">Bandwidth (Mbps) </th>
+   </tr>
+  </thead>
+  <tbody>
+   {% for oneRow in groupAllocationsInfo %}
+   {% if  forloop.counter|divisibleby:"2" %}
+    <tr class="odd" text="wrap">
+   {% else %}
+    <tr class="even" text="wrap">
+   {% endif %}
+    <td name="tcol0" id="tcol0" scope="row" text="wrap">{{ forloop.counter }}</td>
+    <td name="tcol1" id="tcol1" scope="row" text="wrap"><a class="links" href="/cloudman/groupallocation/getdetails?name={{ oneRow.name }}" style="cursor:pointer;">{{ oneRow.name }}</a></td>
+    <td name="tcol2" id="tcol2" scope="row" text="wrap"><a class="links" href="/cloudman/group/getdetails?name={{ oneRow.group.name }}" style="cursor:pointer;">{{ oneRow.group.name }}</a></td>
+    <td name="tcol5" id="tcol5" scope="row" text="wrap">{{ oneRow.hepspec|displayNone }}</td>
+    <td name="tcol6" id="tcol6" scope="row" text="wrap">{{ oneRow.memory|displayNone }}</td>
+    <td name="tcol7" id="tcol7" scope="row" text="wrap">{{ oneRow.storage|displayNone }}</td>
+    <td name="tcol8" id="tcol8" scope="row" text="wrap">{{ oneRow.bandwidth|displayNone }}</td>
+    </tr>
+   {% endfor %}
+  </tbody>
+  </table>
+  <br/>
+  <input type="hidden" name="projectallocname" id="projectallocname" value="{{allocName}}">
+  <table style="width:100%;height:100%"><tr><td>
+  <div style="align:center;"><pre style="white-space:normal;text-align:left;">Top Level Allocation Share</pre>
+  <div id="toplevelhepspecs" class="image" style="overflow:auto;float:center;width:360px;height:300px;" ></div>
+  </div>
+  </td></tr></table>
+  <br/>
+  <table style="width:100%;height:100%"><tr><td>
+  <div style="align:center;"><pre style="white-space:normal;text-align:left;">Project Allocation Share</pre>
+  <div id="projectallochepspecs" class="image" style="overflow:auto;float:center;width:360px;height:300px;" ></div>
+  </div>
+  </td></tr></table>
+  	<pre style="white-space:normal;text-align:center;"> Attribute for this Project Allocation  </pre>
+    <center>
+    	{% if prAllocMetadata|length == 0 %}
+                   None
+        {% else %}
+        <table class="autosort" border="1" align="center" style="table-layout: auto;">
+          <thead>
+        	<tr>
+                <th name="tcol0" id="tcol0" class="table-sortable:numeric">Attribute Name</th>
+                <th name="tcol1" id="tcol1" class="table-sortable:ignorecase">Attribute Value</th>
+            </tr>
+          </thead>
+          {% for oneRow in prAllocMetadata %}
+             {% if  forloop.counter|divisibleby:"2" %}
+               <tr class="odd" text="wrap">
+             {% else %}
+               <tr class="even" text="wrap">
+             {% endif %}
+               <td>{{ oneRow.attribute }} </td>
+               <td>{{ oneRow.value }} </td>
+            </tr>
+          {% endfor %}
+        </table>
+        {% endif %}
+     </center>
+</form>
+{% include "log/logshow.html"%}
+</body>
+</html>

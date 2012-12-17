@@ -1,0 +1,93 @@
+<html>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Top Panel Menu Options</title>
+    <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}stylesheet/theme.css" />
+    <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}stylesheet/style.css" />
+
+    <!--[if IE]>
+    <link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}stylesheet/ie_special.css" />
+    <![endif]-->
+    </head>
+
+ <body>
+    <div id="top-panel">
+       <div id="panel">
+	{% if menuOption == 'home' %}
+           <ul>
+            <li><a href="homepanel" class="home" target="dataframe">Home</a></li>
+           </ul>
+	{% endif %}
+	{% if menuOption == 'region' %}
+	   <ul>
+            <li><a href="listregion" target="dataframe" class="report">List</a></li>
+            <li><a href="addregion" target="dataframe" class="add">Add</a></li>
+            <li><a href="#" class="edit">Update</a></li>
+            <li><a href="selregionfordelete" target="dataframe" class="delete">Delete</a></li>
+           </ul>
+	{% endif %}
+        {% if menuOption == 'zone' %}
+	   <ul>
+            <li><a href="listzone" target="dataframe" class="report">List</a></li>
+            <li><a href="addzone" target="dataframe" class="add">Add</a></li>
+            <li><a href="#" class="edit">Update</a></li>
+            <li><a href="selzonefordelete" target="dataframe" class="delete">Delete</a></li>
+           </ul>
+	{% endif %}
+        {% if menuOption == 'group' %}
+	   <ul>
+            <li><a href="listgroup" target="dataframe" class="report">List</a></li>
+            <li><a href="addgroup" target="dataframe" class="add">Add</a></li>
+            <li><a href="#" class="edit">Update</a></li>
+            <li><a href="selgroupfordelete" target="dataframe" class="delete">Delete</a></li>
+           </ul>
+	{% endif %}
+        {% if menuOption == 'resourcetype' %}
+	   <ul>
+            <li><a href="listresourcetype" target="dataframe" class="report">List</a></li>
+            <li><a href="addresourcetype" target="dataframe" class="add">Add</a></li>
+            <li><a href="#" class="edit">Update</a></li>
+            <li><a href="selresourcetypefordelete" target="dataframe" class="delete">Delete</a></li>
+           </ul>
+	{% endif %}
+        {% if menuOption == 'topalloc' %}
+           <ul>
+            <li><a href="listtoplevelallocation" target="dataframe" class="report">List</a></li>
+            <li><a href="addtoplevelallocation" target="dataframe" class="add">Add</a></li>
+            <li><a href="#" class="edit">Update</a></li>
+            <li><a href="seltoplevelallocationfordelete" target="dataframe" class="delete">Delete</a></li>
+           </ul>
+	{% endif %}
+        {% if menuOption == 'project' %}
+           <ul>
+            <li><a href="listproject" target="dataframe" class="report">List</a></li>
+            <li><a href="addproject" target="dataframe" class="add">Add</a></li>
+            <li><a href="#" class="edit">Update</a></li>
+            <li><a href="selprojectfordelete" target="dataframe" class="delete">Delete</a></li>
+           </ul>
+        {% endif %}
+        {% if menuOption == 'pralloc' %}
+	   <ul>
+            <li><a href="listprojectallocation" target="dataframe" class="report">List</a></li>
+            <li><a href="addprojectallocation" target="dataframe" class="add">Add</a></li>
+            <li><a href="#" class="edit">Update</a></li>
+            <li><a href="selprojectallocationfordelete" target="dataframe" class="delete">Delete</a></li>
+           </ul>
+	{% endif %}
+        {% if menuOption == 'gralloc' %}
+	   <ul>
+            <li><a href="listgroupallocation" target="dataframe" class="report">List</a></li>
+            <li><a href="addgroupallocation" target="dataframe" class="add">Add</a></li>
+            <li><a href="#" class="edit">Update</a></li>
+            <li><a href="selgroupallocationfordelete" target="dataframe" class="delete">Delete</a></li>
+           </ul>
+	{% endif %}
+        {% if menuOption == 'contactus' %}
+	   <ul>
+            <li><a href="#" class="email">Email</a></li>
+            <li><a href="#" class="phone">Phone</a></li>
+           </ul>
+        {% endif %} 
+       </div>
+    </div>
+ </body>
+</html>

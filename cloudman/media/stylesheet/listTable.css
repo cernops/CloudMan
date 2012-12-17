@@ -1,0 +1,240 @@
+/*
+    Document   : listTable
+    Created on : Jun 3, 2011, 10:56:08 AM
+    Author     : User
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+/*
+   TODO customize this sample style
+   Syntax recommendation http://www.w3.org/TR/REC-CSS2/
+*/
+
+table {
+	font: normal 75%/150% Verdana, Arial, Helvetica, sans-serif;
+	border-collapse: collapse;
+	border: 1px solid #38160C;
+	border-top: 5px single #87CEFA;
+	border-bottom: 5px single #87CEFA;
+}
+
+.normaltable {
+       font: normal 95%/150% Verdana, Arial, Helvetica, sans-serif;
+       border: 0px;
+}
+
+.normaltable th{
+       font: bold 1.1em/120% Verdana, Arial, Helvetica, sans-serif;
+       padding: 5px 10px;
+       font-variant: small-caps;
+       color: #047;
+       font-weight: bold;
+       text-align: center;
+       letter-spacing: -1px;
+}
+
+.normaltable thead th{
+       border: 0px;
+       white-space: nowrap;
+       background: #F0F8FF;
+}
+
+.normaltable tbody td, tbody th{
+       border: 0px;
+       text-align: center;
+       padding: 5px 10px;
+       background: #fff;
+       color: #000;
+}
+
+th {
+	font: bold 1.1em/120% Verdana, Arial, Helvetica, sans-serif;
+	padding: 5px 10px;
+	font-variant: small-caps;
+	color: #047;
+	font-weight: bold;
+	text-align: center;
+	letter-spacing: -1px;
+}
+thead th {
+	border: 1px solid #38160C;
+	white-space: nowrap;
+	background: #F0F8FF;
+}
+tbody td ,tbody th {
+        border: 1px solid #38160C;
+	padding: 5px 10px;
+	background: #fff;
+	color: #000;
+}
+tbody th {
+	color: #047;
+	font-weight: normal;
+	font-variant: normal;
+	font-size: 1em;
+}
+tbody tr.odd {
+	 border: 1px solid #38160C;
+    text-align: center;
+}
+
+tbody tr.even td, tbody tr.even th{
+    background: #ffffff;
+    text-align: center;
+}
+
+tbody tr.odd td, tbody tr.odd th {
+	/*background: #F0F8FF;*/
+        background: #CCCCCC;
+}
+
+tfoot td, tfoot th {
+	border: none;
+	padding-top: 10px;
+}
+caption {
+	font-family: "Georgia", serif;
+	letter-spacing: 5px;
+	/*font-style: italic;*/
+	text-align: left;
+	text-indent: 2em;
+	/*text-transform: uppercase;*/
+	font-size: 110%;
+	padding: 2px 0;
+        width: 800px;
+}
+
+.wrapword{
+        white-space: -moz-pre-wrap !important;  /* Mozilla, since 1999 */
+        white-space: -pre-wrap;      /* Opera 4-6 */
+        white-space: -o-pre-wrap;    /* Opera 7 */
+        white-space: pre-wrap;       /* css-3 */
+        word-wrap: break-word;       /* Internet Explorer 5.5+ */
+}
+
+table a:link {
+	color: #DC143C;
+        text-decoration: none;
+}
+table th a:link {
+	color: #047;
+	text-decoration: none;
+}
+table a:visited{
+	color: #036;
+        text-decoration: none;
+}
+table a:hover{
+	color: #000;
+	text-decoration:bold;
+}
+table a:active{
+	color: #000;
+}
+
+a.links:link { color: green; text-decoration: none;}
+a.links:active { color: green; text-decoration: none;}
+a.links:visited { color: green; text-decoration: none;}
+a.links:hover { color: green; text-decoration: none;}
+
+th.table-sortable {
+	cursor:pointer;
+	background-image:url("../images/sortable.gif");
+	background-position:center right;
+	background-repeat:no-repeat;
+        text-align:center;
+	/*padding-left:3px;*/
+}
+th.table-sorted-asc {
+	background-image:url("../images/sorted_up.gif");
+	background-position:center right;
+	background-repeat:no-repeat;
+}
+th.table-sorted-desc {
+	background-image:url("../images/sorted_down.gif");
+	background-position:center right;
+	background-repeat:no-repeat;
+}
+.tborder
+{
+	background: #dadada;
+	color: #333333;
+}
+.vbmenu_control
+{
+	background: #eb7b00 url(../images/_vBmenu.gif) repeat-x top left;
+	color: #fafafa;
+	font: bold 11px tahoma, verdana, geneva, lucida, 'lucida grande', arial, helvetica, sans-serif;
+	padding: 6px 7px 6px 7px;
+	white-space: nowrap;
+}
+
+.alt1, .alt1Active
+{
+	background: #fcfcfc;
+	color: #333333;
+	border-left: 1px solid #ffffff;
+	border-top: 1px solid #000000;
+}
+
+.smallfont
+{
+	font: 11px verdana, geneva, lucida, 'lucida grande', arial, helvetica, sans-serif;
+}
+
+.vbmenu_popup
+{
+	background: #284773;
+	color: #eaeaea;
+}
+
+.vbmenu_option
+{
+	background: #00335b;
+	color: #ffffff;
+	font: 11px verdana, geneva, lucida, 'lucida grande', arial, helvetica, sans-serif;
+	white-space: nowrap;
+	cursor: pointer;
+}
+
+.bginput
+{
+	background: #fafafa;
+	color: #333333;
+	font: 12px verdana, geneva, lucida, 'lucida grande', arial, helvetica, sans-serif;
+	border: 1px solid #dadada;
+}
+
+.pgButton
+{
+	background: #eb7b00 url(../images/_vBmenu.gif) repeat-x top left;
+	color: #ffffff;
+	font: 11px verdana, geneva, lucida, 'lucida grande', arial, helvetica, sans-serif;
+	border: 1px solid #a25500;
+	margin-left: 3px;
+}
+
+.pgHead
+{ color: #DDDDDD;
+  background: #d7dee3 url(../images/cat.gif) repeat-x top left;
+  color: #063961;
+  font: bold 11px tahoma, verdana, geneva, lucida, 'lucida grande', arial, helvetica, sans-serif;
+}
+
+.vbmenu_control a:visited, .vbmenu_control_avisited
+{
+	color: #ffffff;
+	text-decoration: none;
+}
+.vbmenu_option a:visited, .vbmenu_option_avisited
+{
+	color: #ffffff;
+	text-decoration: none;
+}
+.vbmenu_option a:hover, .vbmenu_option a:active, .vbmenu_option_ahover
+{
+	color: #ffffff;
+	text-decoration: none;
+}
+

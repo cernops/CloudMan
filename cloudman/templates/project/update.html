@@ -1,0 +1,130 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Edit Project</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" media="all" href="{{ MEDIA_URL }}stylesheet/niceforms.css" />
+<link rel="stylesheet" type="text/css" media="all" href="{{ MEDIA_URL }}stylesheet/jquery-ui.css" />
+<script type="text/javascript" src="{{ MEDIA_URL }}javascript/general.js"></script>
+<script type="text/javascript" src="{{ MEDIA_URL }}javascript/attribute.js"></script>
+<script type="text/javascript" src='{{ MEDIA_URL }}javascript/jquery-1.7.1.js'></script>
+<script type="text/javascript" src='{{ MEDIA_URL }}javascript/jquery-ui.min.js'></script>
+{% include "base/resetattribute.html" %}
+{% include "base/autocomplete.html"%}
+<script type="text/javascript">
+    function formValid(){
+       currName = getElement("currname").value;
+       currDescription = getElement("currdescription").value;
+       currAdmin_group = getElement("curradmin_group").value;
+       nameElem = getElement("newname");
+       nameElem.value = trim(nameElem.value);
+       descriptionElem = getElement("description");
+       descriptionElem.value = trim(descriptionElem.value);
+       admin_groupElem = getElement("admin_group");
+       admin_groupElem.value = trim(admin_groupElem.value);
+       updateSel = false;
+       if (currName != nameElem.value){
+          if (nameElem.value == ''){
+             alert('Provide some name to the Project');
+             return false;
+          }
+          updateSel = true;
+       }
+       if (currDescription != descriptionElem.value){
+          updateSel = true;
+       }
+       if (currAdmin_group != admin_groupElem.value){
+          if (admin_groupElem.value == ''){
+             alert('Enter an Egroup name for Administrative E-Group field');
+             return false;
+          }
+          updateSel = true;
+       }
+       return true;
+    }
+
+    function resetDefault(){
+       getElement("newname").value = getElement("currname").value;
+       getElement("description").value = getElement("currdescription").value;
+       getElement("admin_group").value = getElement("curradmin_group").value;
+	   resetAttributeDefault('project_attribute');	
+    }
+</script>
+</head>
+<body onLoad="resetDefault();"><div id="container">
+<form action="/cloudman/project/update/" method="post" class="niceform" onSubmit="return formValid();">{% csrf_token %}
+  <fieldset><legend> Edit Project {{projectName}}</legend>
+    <dl>
+       <dt><label for="newname">Project Name</label>:</dt>
+       <dd><input id="newname" type="text" name="newname" maxlength="50" value="{{projectObject.name}}" {% if not userIsSuperUser %} readonly="readonly" {% endif%}/>
+          <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+            onmouseover="return ShowToolTip('nameToolTip');" onmouseout="return HideToolTip('nameToolTip');" />
+          <div id="nameToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+            Enter Unique Name - Maximum of 50 Characters
+          </div>
+       </dd>
+     </dl>
+     <input type="hidden" name="currname" id="currname" value="{{projectObject.name}}">
+     <input type="hidden" name="name" id="name" value="{{projectObject.name}}">
+     <dl>
+       <dt><label for="description">Description of Project</label>:</dt>
+       <dd><input id="description" type="text" name="description" maxlength="100" value="{{projectObject.description}}"/>
+          <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+            onmouseover="return ShowToolTip('descriptionToolTip');" onmouseout="return HideToolTip('descriptionToolTip');" />
+          <div id="descriptionToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+            Brief Description of Project - Maximum of 100 Characters
+          </div>
+        </dd>
+     </dl>
+     <input type="hidden" name="currdescription" id="currdescription" value="{{projectObject.description}}">
+     <dl>
+       <dt><label for="admin_group">Administrative E-Group</label>:</dt>
+       <dd><input type="text" name="admin_group" id="id_admin_group" value="{{projectObject.admin_group}}" {% if not userIsSuperUser %} readonly="readonly" {% endif%}/>
+          <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+            onmouseover="return ShowToolTip('admin_groupToolTip');" onmouseout="return HideToolTip('admin_groupToolTip');" />
+          <div id="admin_groupToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+            Enter an E-Group name
+          </div>
+       </dd>
+     </dl>
+   <dl>
+ 	<dt><label for="comment">Comment</label>:</dt>
+    <dd><textarea id="comment" rows="5" cols="30" name="comment"  ></textarea>
+        <img height="9px" width="9px" src="/media/images/qmark.jpg" style="cursor:pointer"
+           onmouseover="return ShowToolTip('commentToolTip');" onmouseout="return HideToolTip('commentToolTip');" />
+         <div id="commentToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+           Enter Comments about the project(Useful for Logging)- Maximum of 3000 Characters
+         </div>
+    </dd>
+   </dl>
+     <input type="hidden" name="curradmin_group" id="curradmin_group" value="{{projectObject.admin_group}}">
+	 <p align="center">	
+     	<input type="button" id="loadcurr" name="loadcurr" value="Reset to Current Values" style="padding: 5px 5px 5px 5px;" onClick="javascript:resetDefault();"/>
+	 	<input type="button" value="Add ProjectAttribute" style="padding: 5px 5px 5px 5px;" onClick="addAttribute('project_attribute');">
+     </p>
+     <div id='project_attribute' class="niceform">
+        {% for oneRow in prMetadata %}
+       <div id="curr_div{{forloop.counter}}">	
+       <table align=center>
+          <tr>
+     	      <td>Attribute Name:</td>
+     	      <td><input type='text' name='attribute_name' value="{{ oneRow.attribute }}" ></td>   
+     	      <td>Attribute Value:</td>
+     	      <td><input type='text' name='attribute_value' value="{{ oneRow.value }}"></td>
+     	      <td>
+     	           <a href='#' style='cursor: pointer' onClick="deleteAttribute('project_attribute','curr_div{{forloop.counter }}');">
+     	             <img src='{{ MEDIA_URL }}images/remove.png' height='15px' width='15px' align='center' title='delete Attribute' border='0'/></a>
+     	      </td>
+     	  </tr>
+     	</table>
+     	</div>
+     	{% endfor %}
+     </div>
+    </fieldset>
+    <fieldset class="action">
+      <input type="submit" name="submit" id="submit" title="Save" value="Save" style="padding: 5px 5px 5px 5px;" />
+    </fieldset>
+</form>
+</div></body>
+</html>
+

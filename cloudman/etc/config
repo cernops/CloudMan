@@ -1,0 +1,52 @@
+#
+# database access
+#
+[database]
+USER = <ddb user name>
+PASSWORD = <mysql database password>
+HOST = <hostname of the database server>
+PORT = <port for ddb access>
+ENGINE = django.db.backends.mysql 
+NAME = cloudman_prod 
+DB_SCHEMA_FILE = /etc/cloudman/db_schema_dump.sql 
+
+#
+# administrative egroup. Users in this group are the super users of the tool
+#
+[admin]
+SUPER_USER_GROUPS = ("cloudman-admins",) #At the end of list put comma otherwise it will break,
+
+#
+# conversion factors for different benchmarks
+#
+[conversion]
+##All the benchmark are stored in Cloudman DB as HS06 for KSI2K multiply by the conversion factor
+KSI2K = 0.256410256
+VCPU = 11
+MPERF = 162.284972412
+
+#
+# define default storage units. These will be used in the database
+#
+[unit]
+#cpu_resource = HS06
+DEFAULT_CPU_UNIT = HS06
+CPU_UNIT_NAME = ('KSI2K','VCPU','MPERF','HS06',)#At the end append , otherwise it will break
+CPU_UNIT_CONVERSION_FACTOR = ('0.256410256','11','162.284972412','1.0')#At the end append , otherwise it will break
+##All the storage are stored in DB as MB so for GB divide by the conversion factor
+DEFAULT_STORAGE_UNIT = MB
+STORAGE_UNIT_NAME = ('MB','GB','TB','PB')#At the end append , otherwise it will break
+STORAGE_UNIT_CONVERSION_FACTOR = ('1.0','1024','1048576','1073741824')#At the end append , otherwise it will break
+
+#
+# ldap access
+#
+[ldap]
+LDAP_SERVER = xldap.cern.ch
+LDAP_BASE = DC=cern,DC=ch
+
+[group_allocation]
+GROUP_ALLOC_DEPTH = 1000
+
+
+

@@ -1,0 +1,3 @@
+AC_INIT(cloudman/__init__.py)
+AM_INIT_AUTOMAKE(cloudman,0.1.1)
+AC_OUTPUT(Makefile cloudman/etc/Makefile cloudman/script/Makefile export/Makefile cloudman/Makefile doc/Makefile Documents/Makefile backends/LSF/Makefile)
