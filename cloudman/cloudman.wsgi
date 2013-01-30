@@ -1,8 +1,8 @@
 import os
 import sys
 
-sys.path.append('/var/www')
-sys.path.append('/var/www/cloudman')
+sys.path.append('/usr/apache')
+sys.path.append('/usr/apache/cloudman')
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'cloudman.settings'
 

@@ -1,0 +1,202 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Adding a Resource Type</title>
+  <link rel="stylesheet" type="text/css" media="all" href="{{ MEDIA_URL }}stylesheet/niceforms.css" />
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/general.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/cloudman.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/jquery-1.7.1.js"></script>
+  <script type="text/javascript">
+    
+    function actionSelector()
+      {
+      // var radioName='resourceButton'+id;
+         var buttonId='alloc';
+       //var resourceType=getRadioCheckedValue(radioName)
+       if(document.getElementById(buttonId).checked)
+            {
+
+              //alert("alloc");
+              addFields()
+            }
+       else
+            {
+             deleteField()
+            }
+
+      }
+    
+                     
+                                    
+    function addFields()
+     {
+     
+      var fieldId='allocfields';
+      var divId=fieldId+'div';
+      $("#"+fieldId).append("<div id='"+divId+"'>\
+                              <table style='width:100%'>\
+                              <tr>\
+                              <td align='right'style='width:15%'>\
+                               Base Unit : \
+                              </td>\
+                               <td align='left'  <td align='left' style='width:25%'>\
+                                 <input type='text' style='width:75px'>\
+                                  <img height='9px' width='9px' src='{{ MEDIA_URL }}images/qmark.jpg' style='cursor:pointer'\
+                                     onmouseover=\"return ShowToolTip('baseUnitToolTip');\"\
+                                     onmouseout=\"return HideToolTip('baseUnitToolTip');\" />\
+                                    <div id='baseUnitToolTip' style='width:150px; position:absolute;left:650px; display:none'\
+                                      class='boxcontent'>\
+                                      Enter the base unit\
+                                   </div>\
+                              </td>\
+                               <td style='width:20%'>\
+                               </td>\
+                               <td style='width:20%'>\
+                               </td>\
+                               <td align='right' style='width:20%'>\
+                                 <img src='{{ MEDIA_URL }}images/addicon.png' style='cursor:pointer'\
+                                 onclick=\"addUnits()\" onmouseover=\"return ShowToolTip('addUnitToolTip');\"\
+                                 onmouseout=\"return HideToolTip('addUnitToolTip+');\" />\
+                                 <div id='addUnitToolTip' style='width:150px; position:absolute;left:900px; display:none' class='boxcontent'>\
+                                 Click here to add alternate units\
+                              </div>\
+                              </td>\
+                            </tr>\
+                            </table>\
+                           </div>\
+                          ")
+     }
+    var unitCounter=0;
+   function addUnits()
+    {
+     unitCounter=unitCounter+1;
+     alternateUnitId=id+unitCounter.toString()+'alternateunit';
+     conversionFactorId=id+unitCounter.toString()+'cfactor';
+     var divId='allocfields'+'div';
+     var tableId='allocfields'+'table';
+     var alternateUnitToolTip=alternateUnitId+'toolTip';
+     var conversionFactorToolTip=conversionFactorId+'toolTip';
+     $("#"+divId).append("<table id='"+tableId+"' style='width:100%'>\
+                           <tr style='background-color:white'>\
+                             <td align='right' style='width:15%'>\
+                                 Alt. Unit :\
+                               </td>\
+                               <td align='left' style='width:25%'>\
+                               <input id='"+ alternateUnitId+"'type='text' style='width:75px'>\
+                                <img height='9px' width='9px' src='{{ MEDIA_URL }}images/qmark.jpg' style='cursor:pointer'\
+                                     onmouseover=\"return ShowToolTip('"+alternateUnitToolTip+"');\"\
+                                     onmouseout=\"return HideToolTip('"+alternateUnitToolTip+"');\" />\
+                                    <div id='"+alternateUnitToolTip+"' style='width:150px; position:absolute;left:650px; display:none'\
+                                      class='boxcontent'>\
+                                      Type an alternate unit\
+                                   </div>\
+                              </td>\
+                               <td style='width:20%'>\
+                                 Conv. Factor\
+                               </td>\
+                               <td style='width:20%'>\
+                                <input id='"+conversionFactorId+"'type=text style='width:25px' value=\"1\">\
+                                <img height='9px' width='9px' src='{{ MEDIA_URL }}images/qmark.jpg' style='cursor:pointer'\
+                                     onmouseover=\"return ShowToolTip('"+conversionFactorToolTip+"');\"\
+                                     onmouseout=\"return HideToolTip('"+conversionFactorToolTip+"');\" />\
+                                    <div id='"+conversionFactorToolTip+"' style='width:150px; position:absolute;left:650px; display:none'\
+                                      class='boxcontent'>\
+                                      Enter the conversion factor\
+                                   </div>\
+                               </td>\
+                              <td style='width:20%'>\
+                                <img style='width:15px;height:17px' src='{{ MEDIA_URL }}images/edit.jpg' style='cursor:pointer'>\
+                                <img style='width:15px;height:17px'src='{{ MEDIA_URL }}images/deletered.png' onclick=\"deleteUnit()\"\
+                                style='cursor:pointer'>\
+                              </td>\
+                             </tr>\
+                          ")
+    }            
+   function deleteUnit(id)
+    {
+       var tableId='allocfields'+'table';
+       $("#"+tableId).remove();
+    } 
+  function deleteField(id)
+    {
+      var divId='allocfields'+'div';
+      $("#"+divId).remove();
+    }
+  
+   function getRadioCheckedValue(radioName)
+     {
+       var oRadio = document.forms[0].elements[radioName];
+       for(var i = 0; i < oRadio.length; i++)
+        {
+           if(oRadio[i].checked)
+             {
+               oRadio[i].value;
+               return oRadio[i].value;
+             }
+       }
+
+      return '';
+    }
+
+  </script>  
+{% load filters %}
+</head>
+<body>
+	<div id="container">
+		<form action="/cloudman/resourcetype/add/" method="post" class="niceform" onSubmit="return formValid();">{% csrf_token %}
+  			
+                <fieldset style='width:750px' ><legend> Add a new Resource </legend>
+                <div id='addresource'>
+                  <div style='background-color:'yellow'>
+                   <table style="width:100%">
+                    <tr style='background-color:white'>
+                      <td style='width:20%' align='right' >
+                         Resource Name :
+                      </td> 
+                      <td style='width:30%' align='left'>
+                         <input  id ='resource1' type='text' style='width:100px'>
+                          <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+                             onmouseover="return ShowToolTip('resourceName1ToolTip');" onmouseout="return HideToolTip('resourceName1ToolTip');" />
+                            <div id="resourceName1ToolTip" style="width:150px; position:absolute;left:650px; display:none" class="boxcontent">
+                               Type a resource name
+                            </div>
+
+                      </td>
+                      <td align='right' style='width:50%'>
+                      </td>
+                </tr>
+                   </table>
+                      <br>
+                   <table style='width:100%'>
+                    <tr>
+                      <td align='right' style='width:20%'>
+                         <input type='radio'  id='nonalloc' name='resourceButton' checked='true' onchange="actionSelector()" value='nonallocatable'> 
+                             Non Allocatable
+                      </td>
+                      <td align= 'center' style='width:20%'>
+                          <input type='radio'  id ='alloc'   name ='resourceButton' onchange="actionSelector()" value='allocatable'>
+                             Allocatable
+                      </td>
+                     <td style='width:60%'>
+                     </td>
+                   </tr>
+                   <tr>
+                     <td style='width:20%'>
+                     </td>
+                     <td style='width:20%'>
+                     </td>
+                      <td style='width:60%'>
+                         <div id='allocfields'>
+                         </div>
+                      </td>
+                    </tr>
+                   </table>
+                  </div>
+                  </br>
+                </div>
+                </fieldset>
+		</form>
+	</div>
+</body>
+</html>

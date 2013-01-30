@@ -1,115 +1,133 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<title>Edit Region</title>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<link rel="stylesheet" type="text/css" media="all" href="{{ MEDIA_URL }}stylesheet/niceforms.css" />
-<script type="text/javascript" src="{{ MEDIA_URL }}javascript/general.js"></script>
-<script type="text/javascript">
+  <title>Edit Resource Type</title>
+  <link rel="stylesheet" type="text/css" media="all" href="{{ MEDIA_URL }}stylesheet/niceforms.css" />
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/general.js"></script>
+  <script type="text/javascript" src="{{ MEDIA_URL }}javascript/cloudman.js"></script>
+  {% load filters %}
+  <script type="text/javascript">
+    var name="";
+    var description="";
+    var admin_group="";
+    var comment="";
+    function initializeForm()
+        {
+         name ="{{regionObject.name}}";
+         description="{{regionObject.description}}";
+         admin_group="{{regionObject.admin_group}}";
+         comment="{{regionObject.comment}}";
+         if(name=="None")
+           {
+              name="";
+           }
+         if(description=="None")
+           {
+              description="";
+           }
+         if(admin_group=="None")
+           {
+              admin_group="";
+           }
+          if(comment=="None")
+           {
+              comment="";
+           }
+         document.getElementById("id_name").value=name;
+         document.getElementById("id_description").value=description;
+         document.getElementById("id_admin_group").value=admin_group;
+         document.getElementById("id_comment").value=comment;
+        }
     function formValid(){
-       // Existing values
-       currName = getElement("currname").value;
-       currDescription = getElement("currdescription").value;
-       currAdmin_group = getElement("curradmin_group").value;
+       //Existing Values
+       currName = name;
+       currDescription= description;
+       currAdmin_group = admin_group;
+       currComment= comment;
+       //New Values
+        var newName = getElementById("id_name").value;
+        var newDescription=document.getElementById("id_description").value;
+        var newAdmin_group=document.getElementById("id_admin_group").value;
+        var newComment=document.getElementById("comment").value;
 
-       // New Values
-       nameElem = getElement("newname");
-       name = trim(nameElem.value);
-       nameElem.value = name;
-       descriptionElem = getElement("description");
-       description = trim(descriptionElem.value);
-       descriptionElem.value = description;
-       admin_groupElem = getElement("admin_group");
-       admin_group = trim(admin_groupElem.value);        
-       admin_groupElem.value = admin_group;
-
-       // Check whether any value has been changed
+       //Remove any leading or trailing spaces
+       name=trim(newName);
+       description= trim(currDescription)
+       comment = trim(currComment);
+       admin_group= trim(currAdmin_group);
        updateSel = false;
-       if (currName != name){
-          if (name == ''){
-             alert('Provide some name to the Region');
-             return false;
-          }
+
+       //Check any change in the name or resource class attributes
+       if (currName != newName){
           updateSel = true;
        }
-
        if (currDescription != description){
           updateSel = true;
        }
-       if (currAdmin_group != admin_group){
-          if (admin_group == ''){
-             alert('Enter an Egroup name for Administrative E-Group field');
-             return false;
-          }
+      if (currAdmin_group!= admin_group){
           updateSel = true;
        }
+      if (currComment != comment){
+          updateSel = true;
+       }
+
+       // if there is no change in any of the parameter, then alert the user
        if (!updateSel){
           alert('No Changes done to perform Edit Operation');
           return false;
        }
+
+       document.getElementById("id_name").value=name;
+       document.getElementById("id_description").value=description;
+       document.getElementById("id_admin_group").value=admin_group;
+       document.getElementById("id_comment").value=comment;
+
        return true;
     }
    
-    function resetDefault(){
-       getElement("newname").value = getElement("currname").value;
-       getElement("description").value = getElement("currdescription").value;
-       getElement("admin_group").value = getElement("curradmin_group").value;
-    }
-</script>
+  </script>  
 </head>
-<body onLoad="resetDefault();"><div id="container">
+<body onLoad="initializeForm()">
+<div id="container">
 <form action="/cloudman/region/update/" method="post" class="niceform" onSubmit="return formValid();">{% csrf_token %}
-  <fieldset><legend> Edit Region {{regionName}}</legend>
-    <dl>
-       <dt><label for="newname">Region Name</label>:</dt>
-       <dd><input id="newname" type="text" name="newname" maxlength="50" value="{{regionObject.name}}"/>
-         <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
-            onmouseover="return ShowToolTip('nameToolTip');" onmouseout="return HideToolTip('nameToolTip');" />
-         <div id="nameToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
-            Enter Unique Name - Maximum of 50 Characters
-         </div>
-       </dd>
-     </dl>
-    <input type="hidden" name="currname" id="currname" value="{{regionObject.name}}">
-    <input type="hidden" name="name" id="name" value="{{regionObject.name}}">
-    <dl>
-       <dt><label for="description">Description of Region</label>:</dt>
-       <dd><input id="description" type="text" name="description" maxlength="100" value="{{regionObject.description}}"/>
-          <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
-            onmouseover="return ShowToolTip('descriptionToolTip');" onmouseout="return HideToolTip('descriptionToolTip');" />
-          <div id="descriptionToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
-            Brief Description of Region - Maximum of 100 Characters
-          </div>
-        </dd>
-    </dl>
-    <input type="hidden" name="currdescription" id="currdescription" value="{{regionObject.description}}">
-    <dl>
-       <dt><label for="admin_group">Administrative E-Group</label>:</dt>
-       <dd><input type="text" name="admin_group" id="admin_group" value="{{regionObject.admin_group}}"/>
-          <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
-           onmouseover="return ShowToolTip('admin_groupToolTip');" onmouseout="return HideToolTip('admin_groupToolTip');" />
-          <div id="admin_groupToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
-           Enter an E-Group name
-          </div>
-       </dd>
-    </dl>
-         <dl>
-     	<dt><label for="comment">Comment</label>:</dt>
-        <dd><textarea id="comment" rows="5" cols="30" name="comment"  ></textarea>
-            <img height="9px" width="9px" src="/media/images/qmark.jpg" style="cursor:pointer"
-               onmouseover="return ShowToolTip('commentToolTip');" onmouseout="return HideToolTip('commentToolTip');" />
-             <div id="commentToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
-               Enter Comments about the region(Useful for Logging)- Maximum of 3000 Characters
-             </div>
-        </dd>
-     </dl>
-    <input type="hidden" name="curradmin_group" id="curradmin_group" value="{{regionObject.admin_group}}">
-   <input type="button" id="loadcurr" name="loadcurr" value="Reset to Current Values" style="padding: 5px 5px 5px 5px;" onClick="javascript:resetDefault();"/>
-   </fieldset>
-   <fieldset class="action">
-     <input type="submit" name="submit" id="submit" title="Save" value="Save" style="padding: 5px 5px 5px 5px;" />
-   </fieldset>
+  <fieldset><legend> Edit Region</legend>
+  				{% for field in form %}
+    				{% for error in field.errors %}
+       					<h3> {{ field.label }} : {{ error }} </h3>
+    				{% endfor %}
+  				{% endfor %}
+    			{% for field in form %}
+     			<dl>
+        			<dt> {{ field.label_tag }}: 
+                                </dt>
+ 			        <dd> {{ field }}
+          				<img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+                			onmouseover="return ShowToolTip('{{ field.name }}ToolTip');" onmouseout="return HideToolTip('{{ field.name }}ToolTip');" />
+          				{%ifequal field.label "Resource Class" %}
+                                        
+                                       <div id="{{ field.name }}ToolTip" style="width:120px; position:relative;left:50px; display:none" class="boxcontent">
+               				{{ field.help_text }}
+          				</div>
+                                       {%  else  %}
+
+                                        <div id="{{ field.name }}ToolTip" style="width:120px; position:relative;left:200px; display:none" class="boxcontent">
+                                        {{ field.help_text }}
+                                        </div>
+
+
+
+                                      {% endifequal %}
+        			</dd>
+      			</dl>
+    			{% endfor %}
+  			</fieldset>
+  <fieldset class="action">
+    <input type ="submit" id="submit" name="submit" title="Save" value="Save" style="padding: 5px 5px 5px 5px;" />
+  </fieldset>   
 </form>
-</div></body>
+</div>
+</body>
 </html>
+
 

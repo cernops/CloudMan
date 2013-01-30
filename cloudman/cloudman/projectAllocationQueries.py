@@ -7,6 +7,7 @@ from models import Project
 from templatetags.filters import displayNone 
 from models import Groups,TopLevelAllocation,GroupAllocation,ProjectAllocationAllowedResourceType,ResourceType,ProjectAllocationAllowedResourceType
 from forms import ProjectAllocationForm
+from forms import ResourceForm
 from models import ProjectAllocation
 from models import ProjectMetadata
 from models import ProjectAllocationMetadata
@@ -299,7 +300,8 @@ def addnew(request):
 			   #projectNames = Project.objects.filter(projectQset).values_list('name', flat=True)
 			   projectNames = Project.objects.values_list('name', flat=True)
 		   groupNames = Groups.objects.values_list('name', flat=True)
-		   #form = ProjectAllocationForm(userGroups=groupsList, superUserRights=userIsSuperUser)
+		   form = ProjectAllocationForm(userGroups=groupsList, superUserRights=userIsSuperUser)
+                   resourceForm=ResourceForm();
 		   return render_to_response('projectallocation/addnew.html',locals(),context_instance=RequestContext(request))
 
 def listall(request):
@@ -760,8 +762,8 @@ def update(request):
 		currStorage = prAllocObject.storage
 		currBandwidth = prAllocObject.bandwidth
 		## New values
-		newName = request.REQUEST.get("newname", "")
-		newHepSpec = request.REQUEST.get("hepspec", "")
+		newName = request.REQUEST.get("name", "")
+		newHepSpec = request.REQUEST.get("hepspecs", "")
 		newMemory = request.REQUEST.get("memory", "")
 		newStorage = request.REQUEST.get("storage", "")
 		newBandwidth = request.REQUEST.get("bandwidth", "")
@@ -1025,7 +1027,8 @@ def update(request):
 		  bandwidthPer = 0
 	
 	## if the request is not a post request, then present the update form
-	return render_to_response('projectallocation/update.html',locals(),context_instance=RequestContext(request))
+	form =ResourceForm
+        return render_to_response('projectallocation/update.html',locals(),context_instance=RequestContext(request))
 
 
 

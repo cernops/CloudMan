@@ -8,6 +8,8 @@ from forms import ResourceTypeForm
 from models import ZoneAllowedResourceType,TopLevelAllocationAllowedResourceType,ProjectAllocationAllowedResourceType
 from models import GroupAllocationAllowedResourceType
 from validator import *
+import simplejson
+from django.core import serializers
 from getPrivileges import isSuperUser
 from commonFunctions import addLog,getLog,getResourceTypeInfo,checkAttributeValues,addUpdateLog,printQuery
 def checkNameIgnoreCase(resourceTypeName):
@@ -16,7 +18,7 @@ def checkNameIgnoreCase(resourceTypeName):
         nameExists = True
     return nameExists
 
-def validateParameters1(rtName, resourceClass, hepspec, memory, storage, bandwidth):
+def validateParameters1(rtName, resourceClass, hepspecs,memory, storage, bandwidth):
     errorMessage = ''
     if ( (rtName == None) or (rtName == '') ):
         errorMessage = 'Resource Type Name field cannot be blank. ';
@@ -43,7 +45,7 @@ def addnew(request):
             ## Get all the values of the form submitted through POST method 
             rtName = form.cleaned_data['name']
             resourceClass = form.cleaned_data['resource_class']
-            hepspec = form.cleaned_data['hepspec']
+            hepspecs= form.cleaned_data['hepspecs']
             memory = form.cleaned_data['memory']
             storage = form.cleaned_data['storage']
             bandwidth = form.cleaned_data['bandwidth']
@@ -54,8 +56,8 @@ def addnew(request):
             if nameExists:
                 msgAlreadyExists = 'Resource Type ' + rtName + ' already exists. Hence Add Resource Type Operation Stopped'
                 return HttpResponseRedirect(redirectURL + msgAlreadyExists)
-            if hepspec :
-                hepspec = round((float(hepspec)), 3)
+            if hepspecs :
+                hepspecs = round((float(hepspecs)), 3)
                 reqParam = True
             if memory :
                 memory = round((float(memory)), 3)
@@ -67,7 +69,7 @@ def addnew(request):
             if (not reqParam):
                 errorMsg = 'Either of CPU or Storage Capacity needs to be defined. Hence Add Resource Type Operation Stopped'
                 return HttpResponseRedirect(redirectURL + errorMsg);
-            rtObj = ResourceType(name=rtName, resource_class=resourceClass, hepspecs=hepspec, memory=memory, storage=storage, bandwidth=bandwidth)
+            rtObj = ResourceType(name=rtName, resource_class=resourceClass, hepspecs=hepspecs, memory=memory, storage=storage, bandwidth=bandwidth)
             rtObj.save()
             ## Return the success message and redirect to list template in 4 seconds
             rtObj = ResourceType.objects.get(name = rtName)
@@ -81,7 +83,7 @@ def addnew(request):
             return HttpResponse(html)
     else:
         form = ResourceTypeForm()
-    return render_to_response('resourcetype/addnew.html',locals(),context_instance=RequestContext(request))
+    return render_to_response('resourcetype/new.html',locals(),context_instance=RequestContext(request))
 
 def listall(request):
     groups = request.META.get('ADFS_GROUP','')
@@ -199,14 +201,14 @@ def update(request):
         ## Existing values
         currName = resourceTypeObject.name
         currResourceClass = resourceTypeObject.resource_class
-        currHepSpec = resourceTypeObject.hepspecs
+        currHepSpecs = resourceTypeObject.hepspecs
         currMemory = resourceTypeObject.memory
         currStorage = resourceTypeObject.storage
         currBandwidth = resourceTypeObject.bandwidth
         ## Get the new values
-        newName = request.POST['newname']
+        newName = request.POST['name']
         newResourceClass = request.POST['resource_class']
-        newHepSpec = request.POST['hepspec']
+        newHepSpecs = request.POST['hepspecs']
         newMemory = request.POST['memory']
         newStorage = request.POST['storage']
         newBandwidth = request.POST['bandwidth']
@@ -214,7 +216,7 @@ def update(request):
         try:
             validate_name(newName)
             validate_name(newResourceClass)
-            validate_float(newHepSpec)
+            validate_float(newHepSpecs)
             validate_float(newMemory)
             validate_float(newStorage)
             validate_float(newBandwidth)
@@ -224,14 +226,14 @@ def update(request):
             html = "<html><HEAD><meta HTTP-EQUIV=\"REFRESH\" content=\"4; url=/cloudman/resourcetype/list/\"></HEAD><body> %s.</body></html>" % message
             return HttpResponse(html)
         ## If resource parameters are changed, then validate them
-        errorMsg = checkAttributeValues(newHepSpec, newMemory, newStorage, newBandwidth)
+        errorMsg = checkAttributeValues(newHepSpecs, newMemory, newStorage, newBandwidth)
         if (errorMsg != ''):
             return HttpResponseRedirect(redirectURL + errorMsg)
         ## convert empty values for the following fields into None i.e NULL and if not empty, then round off to 3 decimals 
-        if (newHepSpec == ''):
-            newHepSpec = None
+        if (newHepSpecs == ''):
+            newHepSpecs = None
         else:
-            newHepSpec = round((float(newHepSpec)), 3)
+            newHepSpecs = round((float(newHepSpecs)), 3)
         if (newMemory == ''):
             newMemory = None
         else:
@@ -245,7 +247,7 @@ def update(request):
         else:
             newBandwidth = round((float(newBandwidth)), 3)
         ## Check atleast one parameter is changed from its existing value
-        if ( (currName == newName) and (currResourceClass == newResourceClass) and (currHepSpec == newHepSpec) and (currMemory == newMemory) and (currStorage == newStorage) and (currBandwidth == newBandwidth) ):
+        if ( (currName == newName) and (currResourceClass == newResourceClass) and (currHepSpecs== newHepSpecs) and (currMemory == newMemory) and (currStorage == newStorage) and (currBandwidth == newBandwidth) ):
             message = 'No New Value provided for any field to perform Edit Operation. Hence Edit Resource Type ' + rtName + ' aborted'
             return HttpResponseRedirect(redirectURL + message)
         ## If name is changed, then validate it and if success, then assign the new name to the object
@@ -261,8 +263,8 @@ def update(request):
         ## check the remaining parameters and if changed, then assign to the object
         if (currResourceClass != newResourceClass):
             resourceTypeObject.resource_class = newResourceClass
-        if (currHepSpec != newHepSpec):
-            resourceTypeObject.hepspecs = newHepSpec
+        if (currHepSpecs != newHepSpecs):
+            resourceTypeObject.hepspecs = newHepSpecs
         if (currMemory != newMemory):
             resourceTypeObject.memory = newMemory
         if (currStorage != newStorage):
@@ -282,4 +284,9 @@ def update(request):
         html = "<html><HEAD><meta HTTP-EQUIV=\"REFRESH\" content=\"4; url=/cloudman/resourcetype/list/\"></HEAD><body> %s.</body></html>" % message
         return HttpResponse(html)
     ## if it is not form submission, then call the template to display the update form 
-    return render_to_response('resourcetype/update.html',locals(),context_instance=RequestContext(request))
+    else:
+        form = ResourceTypeForm()
+        #resourceTypeList=list(resourceTypeObject)
+        #json_object=simplejson.dumps(resourceTypeObject)
+        return render_to_response('resourcetype/update.html',locals(),context_instance=RequestContext(request))
+

@@ -6,6 +6,7 @@ from django.http import HttpResponseRedirect
 from models import Zone
 from models import Region
 from forms import ZoneForm
+from forms import ResourceForm
 from models import ZoneFormValidate
 from models import TopLevelAllocationByZone
 from models import ZoneAllowedResourceType
@@ -195,6 +196,7 @@ def addnew(request):
 					html = "<html><body> %s.</body></html>" % message
 					return HttpResponse(html)
 		form = ZoneForm(userGroups=groupsList, superUserRights=userIsSuperUser)
+                resourceForm=ResourceForm
 	resourceType = ResourceType.objects.all()
 	return render_to_response('zone/addnew.html',locals(),context_instance=RequestContext(request))
 

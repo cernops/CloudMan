@@ -295,12 +295,12 @@ def update(request):
 	## If the current request is due to form submission then do update 
 	## or else return to template to display the update form
 	if request.method == 'POST':
-		## Existing values
+	        ## Existing values
 		currName = regionObject.name
 		currDescription = regionObject.description
 		currAdmin_group = regionObject.admin_group
 		## New Values
-		newName = request.POST['newname']
+		newName = request.POST['name']
 		newDescription = request.POST['description']
 		newAdmin_group = request.POST['admin_group']
 		comment = request.REQUEST.get("comment", "")
@@ -359,7 +359,11 @@ def update(request):
 			message = 'Error in Updating Region ' + regionName
 			transaction.rollback()
 		html = "<html><HEAD><meta HTTP-EQUIV=\"REFRESH\" content=\"4; url=/cloudman/region/list/\"></HEAD><body> %s.</body></html>" % message
-		return HttpResponse(html)
+
+      		return HttpResponse(html)
+        else:
+                form=RegionForm();    
+
 	return render_to_response('region/update.html',locals(),context_instance=RequestContext(request))
 
 def listonlynames(request):

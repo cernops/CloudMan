@@ -28,7 +28,7 @@
         }
 
         // get the resource parameters elements
-        hepSpecsElem = getElement("id_hepspecs");
+        hepSpecsElem = getElement("id_hepspec");
         memoryElem = getElement("id_memory");
         storageElem = getElement("id_storage");
         bandwidthElem = getElement("id_bandwidth");
@@ -124,6 +124,7 @@
        <h3> {{ field.label }} : {{ error }} </h3>
       {% endfor %}
     {% endfor %}
+   
     {% for field in form %}
      <dl>
       <dt> {{ field.label_tag }}: </dt>
@@ -135,6 +136,52 @@
         </div>
       </dd>
      </dl>
+   	{% ifequal field.label "Description"%}
+          				
+        {% for fieldR in resourceForm %}
+           
+    				{% for error in fieldR.errors %}
+       					<h3> {{ fieldR.label }} : {{ error }} </h3>
+    				{% endfor %}
+  				{% endfor %}
+    			{% for fieldR in resourceForm %}
+     			<dl>
+        			<dt> {{ fieldR.label_tag }}: 
+                                </dt>
+ 			        <dd> {{ fieldR }}
+
+                                        	
+          				{% ifequal fieldR.label "Capacity"%}
+          				
+          				{%displayHepSpecUnit%}
+          			
+          				{%   endifequal   %}
+          				{% ifequal fieldR.label "Storage"%}
+          				
+          				{%displayStorageUnit%}
+          				
+          				{%   endifequal    %}
+                                        
+          				<img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+                			onmouseover="return ShowToolTip('{{ fieldR.name }}ToolTip');" onmouseout="return HideToolTip('{{ fieldR.name }}ToolTip');" />
+          				{%ifequal fieldR.label "Resource Class" %}
+                                        
+                                       <div id="{{ fieldR.name }}ToolTip" style="width:120px; position:relative;left:50px; display:none" class="boxcontent">
+               				{{ fieldR.help_text }}
+          				</div>
+                                       {%  else  %}
+
+                                        <div id="{{ fieldR.name }}ToolTip" style="width:120px; position:relative;left:200px; display:none" class="boxcontent">
+                                        {{ fieldR.help_text }}
+                                        </div>
+
+
+
+                                      {% endifequal %}
+        			</dd>
+      			</dl>
+    			{% endfor %} 
+        {%   endifequal   %}
     {% endfor %}
     <col style="width: 40px" />
     <col style="" />

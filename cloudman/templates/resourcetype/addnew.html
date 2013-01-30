@@ -15,7 +15,7 @@
           return false;
        }
        nameElem.value = nameValue;
-       hepSpecsElem = getElement("id_hepspec");
+       hepSpecsElem = getElement("id_hepspecs);
        memoryElem = getElement("id_memory");
        storageElem = getElement("id_storage");
        bandwidthElem = getElement("id_bandwidth");
@@ -35,7 +35,7 @@
        return true;
     }
     function initialize(){
-/*       getElement("id_hepspec").value = '';
+/*       getElement("id_hepspecs").value = '';
        getElement("id_memory").value = '';
        getElement("id_storage").value = '';
        getElement("id_bandwidth").value = '';
@@ -44,11 +44,13 @@
 */
     }
   </script>  
+{% load filters %}
 </head>
 <body onLoad="initialize();">
 	<div id="container">
 		<form action="/cloudman/resourcetype/add/" method="post" class="niceform" onSubmit="return formValid();">{% csrf_token %}
-  			<fieldset><legend> Add a Resource Type </legend>
+  			
+                <fieldset><legend> Add a Resource Type </legend>
   				{% for field in form %}
     				{% for error in field.errors %}
        					<h3> {{ field.label }} : {{ error }} </h3>
@@ -56,13 +58,38 @@
   				{% endfor %}
     			{% for field in form %}
      			<dl>
-        			<dt> {{ field.label_tag }}: </dt>
- 					<dd> {{ field }}
+        			<dt> {{ field.label_tag }}: 
+                                </dt>
+ 			        <dd> {{ field }}
+
+                                        	
+          				{% ifequal field.label "Capacity"%}
+          				
+          				{%displayHepSpecUnit%}
+          			
+          				{%   endifequal   %}
+          				{% ifequal field.label "Storage"%}
+          				
+          				{%displayStorageUnit%}
+          				
+          				{%   endifequal    %}
+                                        
           				<img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
                 			onmouseover="return ShowToolTip('{{ field.name }}ToolTip');" onmouseout="return HideToolTip('{{ field.name }}ToolTip');" />
-          				<div id="{{ field.name }}ToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
+          				{%ifequal field.label "Resource Class" %}
+                                        
+                                       <div id="{{ field.name }}ToolTip" style="width:120px; position:relative;left:50px; display:none" class="boxcontent">
                				{{ field.help_text }}
           				</div>
+                                       {%  else  %}
+
+                                        <div id="{{ field.name }}ToolTip" style="width:120px; position:relative;left:200px; display:none" class="boxcontent">
+                                        {{ field.help_text }}
+                                        </div>
+
+
+
+                                      {% endifequal %}
         			</dd>
       			</dl>
     			{% endfor %}
@@ -70,6 +97,8 @@
   			<fieldset class="action">
     			<input type ="submit" id="submit" name="submit" title="Add" value="Add" style="padding: 5px 5px 5px 5px;" />
   			</fieldset>
+
+
 		</form>
 	</div>
 </body>

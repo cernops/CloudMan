@@ -6,39 +6,78 @@
   <link rel="stylesheet" type="text/css" media="all" href="{{ MEDIA_URL }}stylesheet/niceforms.css" />
   <script type="text/javascript" src="{{ MEDIA_URL }}javascript/general.js"></script>
   <script type="text/javascript" src="{{ MEDIA_URL }}javascript/cloudman.js"></script>
+  {% load filters %}
   <script type="text/javascript">
+    var name="";
+    var resource_class="";
+    var hepspecs="";
+    var memory="";
+    var storage="";
+    var bandwidth="";
+    function initializeForm()
+        {
+         name ="{{resourceTypeObject.name}}";
+         resource_class="{{resourceTypeObject.resource_class}}";
+         hepspecs="{{resourceTypeObject.hepspecs}}";
+         memory ="{{resourceTypeObject.memory}}";
+         storage="{{resourceTypeObject.storage}}";
+         bandwidth="{{resourceTypeObject.bandwidth}}";
+         comment="{{resourceTypeObject.comment}}";
+         if(hepspecs=="None")
+           {
+              hepspecs="";
+           }
+         if(memory=="None")
+           {
+              memory="";
+           }
+         if(storage=="None")
+           {
+              storage="";
+           }
+          if(bandwidth=="None")
+           {
+              bandwidth="";
+           }
+         document.getElementById("id_name").value=name;
+         var resource_class_obj = document.getElementById('id_resource_class');
+         resource_class_obj.selectedIndex=resource_class;
+         document.getElementById("id_hepspecs").value=hepspecs;
+         document.getElementById("id_memory").value=memory;
+         document.getElementById("id_storage").value=storage;
+         document.getElementById("id_bandwidth").value=bandwidth;
+        }
     function formValid(){
        //Existing Values
-       currName = getElement("currname").value;
-       currResourceClass = getElement("currresource_class").value;
-       currHepSpec = getElement("currhepspec").value;
-       currMemory = getElement("currmemory").value;
-       currStorage = getElement("currstorage").value;
-       currBandwidth = getElement("currbandwidth").value;
+       var currName = name;
+       currResourceClass = resource_class;
+       currHepSpecs = hepspecs;
+       currMemory = memory;
+       currStorage = storage;
+       currBandwidth = bandwidth;
 
        //New Values
-       nameElem = getElement("newname");
-       nameElem.value = trim(nameElem.value);
-       resourceClassElem = getElement("resource_class");
-       hepSpecsElem = getElement("hepspec");
-       memoryElem = getElement("memory");
-       storageElem = getElement("storage");
-       bandwidthElem = getElement("bandwidth");
+        var newName = getElementById("id_name").value;
+        var newResourceClass=document.getElementById('id_resource_class')..options[resourceClassElem.selectedIndex].value;
+        var newHepSpecs=document.getElementById("id_hepspecs").value;
+        var newMemory=document.getElementById("id_memory").value;
+        var newStorage=document.getElementById("id_storage").value;
+        var newBandwidth= document.getElementById("id_bandwidth").value;
 
        //Remove any leading or trailing spaces
-       hepSpecs = trim(hepSpecsElem.value);
-       memory = trim(memoryElem.value);
-       storage = trim(storageElem.value);
-       bandwidth = trim(bandwidthElem.value);
+       newName=trim(newName);
+       hepSpecs = trim(newHepSpecs);
+       memory = trim(newMemory);
+       storage = trim(newStorage);
+       bandwidth = trim(newBandwidth);
 
        updateSel = false;
 
        //Check any change in the name or resource class attributes
-       if (currName != nameElem.value){
+       if (currName != newName){
           updateSel = true;
        }
-       resourceClass = resourceClassElem.options[resourceClassElem.selectedIndex].value;
-       if (currResourceClass != resourceClass){
+       if (currResourceClass != newResourceClass){
           updateSel = true;
        }
 
@@ -56,7 +95,7 @@
        //   updateSel = true;
        //}
 
-       hepSpecChange = checkNumberParameterChange(currHepSpec, hepSpecs);
+       hepSpecChange = checkNumberParameterChange(currHepSpecs, hepSpecs);
        memoryChange = checkNumberParameterChange(currMemory, memory);
        storageChange = checkNumberParameterChange(currStorage, storage);
        bandwidthChange = checkNumberParameterChange(currBandwidth, bandwidth);
@@ -71,150 +110,63 @@
           return false;
        }
 
-       hepSpecsElem.value = hepSpecs;
-       memoryElem.value = memory;
-       storageElem.value = storage;
-       bandwidthElem.value = bandwidth;
+       document.getElementById("id_hepspecs").value=hepspecs;
+       document.getElementById("id_memory").value=memory;
+       document.getElementById("id_storage").value=storage;
+       document.getElementById("id_bandwidth").value=bandwidth;
 
        return true;
     }
    
-    function resetDefault(){
-       getElement("newname").value = getElement("currname").value;
-       getElement("hepspec").value = getElement("currhepspec").value;
-       getElement("memory").value = getElement("currmemory").value;
-       getElement("storage").value = getElement("currstorage").value;
-       getElement("bandwidth").value = getElement("currbandwidth").value;
-       currResourceClass = getElement("currresource_class").value;
-       resourceClass = getElement("resource_class");
-       for (i=0; i<resourceClass.options.length; i++){
-           if (resourceClass.options[i].value == currResourceClass){
-              resourceClass.options[i].selected = true;
-           }else{
-              resourceClass.options[i].selected = false;
-           }
-       }
-    }
   </script>  
 </head>
-<body onLoad="resetDefault();">
+<body onLoad="initializeForm()">
 <div id="container">
 <form action="/cloudman/resourcetype/update/" method="post" class="niceform" onSubmit="return formValid();">{% csrf_token %}
   <fieldset><legend> Edit Resource Type {{rtTypeName}}</legend>
+  				{% for field in form %}
+    				{% for error in field.errors %}
+       					<h3> {{ field.label }} : {{ error }} </h3>
+    				{% endfor %}
+  				{% endfor %}
+    			{% for field in form %}
+     			<dl>
+        			<dt> {{ field.label_tag }}: 
+                                </dt>
+ 			        <dd> {{ field }}
 
-   <dl>
-        <dt> <label for="newname">Resource Type Name</label>: </dt>
- 	<dd> <input id="newname" type="text" name="newname" maxlength="50" value="{{resourceTypeObject.name}}"/>
-          <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
-                onmouseover="return ShowToolTip('nameToolTip');" onmouseout="return HideToolTip('nameToolTip');" />
+                                        	
+          				{% ifequal field.label "Capacity"%}
+          				
+          				{%displayHepSpecUnit%}
+          			
+          				{%   endifequal   %}
+          				{% ifequal field.label "Storage"%}
+          				
+          				{%displayStorageUnit%}
+          				
+          				{%   endifequal    %}
+                                        
+          				<img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
+                			onmouseover="return ShowToolTip('{{ field.name }}ToolTip');" onmouseout="return HideToolTip('{{ field.name }}ToolTip');" />
+          				{%ifequal field.label "Resource Class" %}
+                                        
+                                       <div id="{{ field.name }}ToolTip" style="width:120px; position:relative;left:50px; display:none" class="boxcontent">
+               				{{ field.help_text }}
+          				</div>
+                                       {%  else  %}
 
-          <div id="nameToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
-               Enter Unique Name - Maximum of 50 Characters
-          </div>
-        </dd>
-      </dl>
-     <input type="hidden" name="currname" id="currname" value="{{resourceTypeObject.name}}"> 
-     <input type="hidden" name="name" id="name" value="{{resourceTypeObject.name}}"> 
-     <dl>
-        <dt> <label for="resource_class">Resource Class</label>: </dt>
- 	<dd> <select name="resource_class" id="resource_class">
-             <option value="virtual">virtual</option>
-             <option value="physical">physical</option>
-             </select>
-          <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
-                onmouseover="return ShowToolTip('resource_classToolTip');" onmouseout="return HideToolTip('resource_classToolTip');" />
-          <div id="resource_classToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
-               Select one of the choice
-          </div>
-        </dd>
-      </dl>
-    
-     <input type="hidden" name="currresource_class" id="currresource_class" value="{{resourceTypeObject.resource_class}}"> 
-     <dl>
-        <dt> <label for="hepspec">Capacity(HS06)</label>: </dt>
-        <dd>
-        {% if resourceTypeObject.hepspecs == None %} 
- 	  <input type="text" name="hepspec" id="hepspec" value=""/>
-          <input type="hidden" name="currhepspec" id="currhepspec" value=""/>
-        {% else %}
- 	  <input type="text" name="hepspec" id="hepspec" value="{{resourceTypeObject.hepspecs}}"/>         
-          <input type="hidden" name="currhepspec" id="currhepspec" value="{{resourceTypeObject.hepspecs}}"/>
-        {% endif %}
-          <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
-                onmouseover="return ShowToolTip('hepspecToolTip');" onmouseout="return HideToolTip('hepspecToolTip');" />
-          <div id="hepspecToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
-               Total Resources Hepspec - If entered Positive Value greater than 0
-          </div>
-        </dd>
-      </dl>
-      
-     <dl>
-        <dt> <label for="memory">Memory (MB)</label>: </dt>
-        <dd>
-        {% if resourceTypeObject.memory == None %}
- 	  <input type="text" name="memory" id="memory" value=""/>
-          <input type="hidden" name="currmemory" id="currmemory" value=""/>
-        {% else %}
-          <input type="text" name="memory" id="memory" value="{{resourceTypeObject.memory}}"/>
-          <input type="hidden" name="currmemory" id="currmemory" value="{{resourceTypeObject.memory}}"/>
-        {% endif %}
-          <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
-                onmouseover="return ShowToolTip('memoryToolTip');" onmouseout="return HideToolTip('memoryToolTip');" />
-          <div id="memoryToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
-               Total Available Memory in MB - Can be left blank
-          </div>
+                                        <div id="{{ field.name }}ToolTip" style="width:120px; position:relative;left:200px; display:none" class="boxcontent">
+                                        {{ field.help_text }}
+                                        </div>
 
-        </dd>
-      </dl>
-    
-     <dl>
-        <dt> <label for="storage">Storage (MB)</label>: </dt>
-        <dd>
-         {% if resourceTypeObject.storage == None %}
- 	  <input type="text" name="storage" id="storage" value=""/>
- 	  <input type="hidden" name="currstorage" id="currstorage" value=""/>
-         {% else %} 
- 	  <input type="text" name="storage" id="storage" value="{{resourceTypeObject.storage}}"/>
- 	  <input type="hidden" name="currstorage" id="currstorage" value="{{resourceTypeObject.storage}}"/>
-         {% endif %}
-          <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
-                onmouseover="return ShowToolTip('storageToolTip');" onmouseout="return HideToolTip('storageToolTip');" />
-          <div id="storageToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
 
-               Total Available Storage in MB - If entered Positive Value greater than 0
-          </div>
-        </dd>
-      </dl>
-    
-     <dl>
-        <dt> <label for="bandwidth">Bandwidth (Mbps)</label>: </dt>
-        <dd>
-         {% if resourceTypeObject.bandwidth == None %}
- 	  <input type="text" name="bandwidth" id="bandwidth" value=""/>
- 	  <input type="hidden" name="currbandwidth" id="currbandwidth" value=""/>
-         {% else %}
- 	  <input type="text" name="bandwidth" id="bandwidth" value="{{resourceTypeObject.bandwidth}}"/>
- 	  <input type="hidden" name="currbandwidth" id="currbandwidth" value="{{resourceTypeObject.bandwidth}}"/>
-         {% endif %}
-          <img height="9px" width="9px" src="{{ MEDIA_URL }}images/qmark.jpg" style="cursor:pointer"
-                onmouseover="return ShowToolTip('bandwidthToolTip');" onmouseout="return HideToolTip('bandwidthToolTip');" />
-          <div id="bandwidthToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
-               Total Available Bandwidth in Mbps - Can be left blank
-          </div>
-        </dd>
-      </dl>
-           <dl>
-     	<dt><label for="comment">Comment</label>:</dt>
-        <dd><textarea id="comment" rows="5" cols="30" name="comment"  ></textarea>
-            <img height="9px" width="9px" src="/media/images/qmark.jpg" style="cursor:pointer"
-               onmouseover="return ShowToolTip('commentToolTip');" onmouseout="return HideToolTip('commentToolTip');" />
-             <div id="commentToolTip" style="width:120px; position:absolute; display:none" class="boxcontent">
-               Enter Comments about the resource type(Useful for Logging)- Maximum of 3000 Characters
-             </div>
-        </dd>
-     </dl>
-   <input type="button" id="loadcurr" name="loadcurr" value="Reset to Current Values" style="padding: 5px 5px 5px 5px;" onClick="javascript:resetDefault();"/> 
-  </fieldset>
+
+                                      {% endifequal %}
+        			</dd>
+      			</dl>
+    			{% endfor %}
+  			</fieldset>
   <fieldset class="action">
     <input type ="submit" id="submit" name="submit" title="Save" value="Save" style="padding: 5px 5px 5px 5px;" />
   </fieldset>   
@@ -222,3 +174,5 @@
 </div>
 </body>
 </html>
+
+

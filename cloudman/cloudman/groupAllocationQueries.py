@@ -8,6 +8,7 @@ from django.db import transaction
 from models import GroupAllocationMetadata
 from models import GroupAllocationAllowedResourceType
 from forms import GroupAllocationForm
+from forms import ResourceForm
 from models import Groups
 from templatetags.filters import displayNone 
 from models import TopLevelAllocation
@@ -387,6 +388,7 @@ def addnew(request):
         
         grNames = Groups.objects.values_list('name', flat=True)
         ## return to the template for rendering the form
+        form = ResourceForm
         return render_to_response('groupallocation/addnew.html',locals(),context_instance=RequestContext(request))
 
 def listall(request):
