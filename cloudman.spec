@@ -1,6 +1,6 @@
 %global Basename cloudman
 %global Version 0.1.7
-%global Release 1
+%global Release 2
 
 Summary: A high level Resource management tool
 Name: %{Basename}
@@ -81,6 +81,9 @@ echo "When done run /usr/sbin/create_cloudman_ddb to create the cloudman ddb if 
 
 
 %changelog
+* Tue  June 24 2014 <ulrich schwickerath at cern ch> 0.1.7-2
+- fix path in wsgi file
+
 * Fri  Oct 5 2012 <ulrich schwickerath at cern ch> 0.1.7-1
 - update release 
 
